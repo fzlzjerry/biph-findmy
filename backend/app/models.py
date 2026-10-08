@@ -109,12 +109,12 @@ class Claim(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     found_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("items.id", ondelete="CASCADE"), index=True)
-    lost_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("items.id", ondelete="SET NULL"))
+    lost_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("items.id", ondelete="SET NULL"), index=True)
     claimant_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("profiles.id"), index=True)
     proof: Mapped[str] = mapped_column(Text)
     status: Mapped[str] = mapped_column(String(12), default="pending", index=True)
     review_note: Mapped[str] = mapped_column(Text, default="")
-    reviewer_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("profiles.id"))
+    reviewer_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("profiles.id"), index=True)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
     decided_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
 

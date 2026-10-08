@@ -1,0 +1,228 @@
+@import "tailwindcss";
+@import "@fontsource-variable/ibm-plex-sans/wght.css";
+
+/*
+ * Sea Dragon Coding Club design tokens ("Sea Dragon Mind Current").
+ * Only these colours exist in the app: the default Tailwind palette is switched off so every
+ * surface stays on-system. Flat surfaces, no decorative shadows, radii 6 / 10 / 14px.
+ */
+@theme {
+  --color-*: initial;
+  --color-white: oklch(1 0 0);
+  --color-black: oklch(0 0 0);
+
+  --color-brand: oklch(0.45 0.18 270); /* deep current indigo — primary actions, identity */
+  --color-brand-deep: oklch(0.35 0.155 270); /* abyss indigo — hover / pressed, strong headings */
+  --color-brand-muted: oklch(0.72 0.07 270); /* disabled primary: lower chroma, still readable */
+  --color-mist: oklch(0.935 0.03 270); /* current mist — selected rows, helpful notices */
+  --color-sonar: oklch(0.76 0.13 195); /* sonar cyan — ONE attention signal per viewport */
+  --color-sonar-deep: oklch(0.42 0.11 195);
+  --color-water: oklch(1 0 0); /* open water — page + reading surface */
+  --color-surface: oklch(0.968 0.008 270); /* shallow surface — grouped controls, tiles */
+  --color-ink: oklch(0.145 0.02 270); /* current ink — text, dark shells */
+  --color-muted: oklch(0.455 0.028 270); /* current muted — secondary text (>= 4.5:1) */
+  --color-line: oklch(0.855 0.018 270); /* current line — dividers, panel boundaries */
+  --color-line-strong: oklch(0.66 0.04 270); /* form-control boundaries (>= 3:1 on white) */
+  --color-alert: oklch(0.52 0.19 27); /* alert red — destructive / failed only */
+  --color-alert-deep: oklch(0.44 0.17 27);
+  --color-alert-soft: oklch(0.95 0.035 25);
+  --color-success: oklch(0.46 0.13 150);
+  --color-success-soft: oklch(0.94 0.04 150);
+
+  /* chart series (validated with the dataviz palette checker on white) */
+  --color-series-1: #3245b7;
+  --color-series-2: #eb6834;
+  --color-series-3: #1baf7a;
+  --color-series-other: #8892ab;
+
+  --radius-*: initial;
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+
+  --font-sans:
+    "IBM Plex Sans Variable", "IBM Plex Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    "Noto Sans CJK SC", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --animate-pulse-dot: pulse-dot 1.4s ease-in-out infinite;
+  --animate-shimmer: shimmer 1.6s ease-in-out infinite;
+
+  @keyframes pulse-dot {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.45;
+      transform: scale(0.8);
+    }
+  }
+  @keyframes shimmer {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.55;
+    }
+  }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    color-scheme: light;
+    background: var(--color-water);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    min-width: 320px;
+    margin: 0;
+    background: var(--color-water);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.55;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+    letter-spacing: -0.015em;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Crisp 3px focus ring — never removed, never replaced by elevation. */
+  :focus-visible {
+    outline: 3px solid var(--color-brand);
+    outline-offset: 2px;
+  }
+
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: none;
+  }
+
+  ::selection {
+    background: var(--color-mist);
+    color: var(--color-ink);
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+
+  button,
+  [role="button"],
+  label[for],
+  select,
+  summary {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+
+  input[type="search"]::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* Form controls: white fill, 10px radius, full boundary, 48px minimum, indigo boundary + 3px mist ring on focus. */
+  .field-control {
+    display: block;
+    width: 100%;
+    min-height: 48px;
+    border: 1px solid var(--color-line-strong);
+    border-radius: var(--radius-sm);
+    background-color: var(--color-water);
+    color: var(--color-ink);
+    padding: 0.625rem 0.875rem;
+    font-size: 1rem; /* 16px: stops iOS zooming into focused fields */
+    line-height: 1.4;
+    transition:
+      border-color 180ms ease-out,
+      box-shadow 180ms ease-out;
+  }
+  .field-control::placeholder {
+    color: oklch(0.58 0.025 270);
+    opacity: 1;
+  }
+  .field-control:focus,
+  .field-control:focus-visible {
+    border-color: var(--color-brand);
+    box-shadow: 0 0 0 3px var(--color-mist);
+    outline: none;
+  }
+  .field-control[aria-invalid="true"] {
+    border-color: var(--color-alert);
+  }
+  .field-control:disabled {
+    background-color: var(--color-surface);
+    color: var(--color-muted);
+    cursor: not-allowed;
+  }
+  textarea.field-control {
+    min-height: 7.5rem;
+    resize: vertical;
+  }
+  select.field-control {
+    appearance: none;
+    padding-right: 2.5rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23505667' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1.125rem;
+  }
+
+  .skeleton {
+    background: var(--color-surface);
+    border-radius: var(--radius-xs);
+    animation: var(--animate-shimmer);
+  }
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@utility container-page {
+  width: 100%;
+  max-width: 76rem;
+  margin-inline: auto;
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+  @media (width >= 40rem) {
+    padding-left: max(1.5rem, env(safe-area-inset-left));
+    padding-right: max(1.5rem, env(safe-area-inset-right));
+  }
+}
