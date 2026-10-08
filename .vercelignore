@@ -1,0 +1,16 @@
+# Not needed to build or run the deployment (the build fetches the model and builds the SPA itself).
+.venv/
+**/node_modules/
+data/
+docs/
+supabase/
+.github/
+matcher/models/*
+!matcher/models/.gitkeep
+frontend/dist/
+frontend/test-results/
+frontend/playwright-report/
+*.sqlite3
+.env
+.env.*
+!.env.example
