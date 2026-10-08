@@ -48,8 +48,13 @@ def main() -> None:
             f"ALTER TABLE {name} ENABLE ROW LEVEL SECURITY;",
             f"REVOKE ALL ON TABLE {name} FROM anon, authenticated;",
             f"GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE {name} TO app_backend;",
-            f"DROP POLICY IF EXISTS app_backend_all ON {name};",
-            f"CREATE POLICY app_backend_all ON {name} FOR ALL TO app_backend USING (true) WITH CHECK (true);",
+            # Idempotent without DROP (no destructive statements in migrations).
+            "do $$ begin",
+            f"  if not exists (select from pg_policies where schemaname = 'public' and tablename = '{name}'"
+            " and policyname = 'app_backend_all') then",
+            f"    create policy app_backend_all on {name} for all to app_backend using (true) with check (true);",
+            "  end if;",
+            "end $$;",
             "",
         ]
     lines += [

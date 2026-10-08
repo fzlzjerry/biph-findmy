@@ -83,7 +83,7 @@ export default function LoginPage() {
 
   const submitCode = (event: FormEvent) => {
     event.preventDefault();
-    if (!/^\d{6}$/.test(code)) {
+    if (!/^\d{6,10}$/.test(code)) {
       setCodeError(t("login.codeInvalidFormat"));
       codeRef.current?.focus();
       return;
@@ -152,11 +152,11 @@ export default function LoginPage() {
                 inputMode="numeric"
                 autoComplete="one-time-code"
                 pattern="[0-9]*"
-                maxLength={6}
+                maxLength={10}
                 className="field-control text-center text-2xl font-semibold tracking-[0.5em] tabular"
                 value={code}
                 onChange={(event) => {
-                  setCode(event.target.value.replace(/\D/g, "").slice(0, 6));
+                  setCode(event.target.value.replace(/\D/g, "").slice(0, 10));
                   if (codeError) setCodeError("");
                 }}
                 aria-invalid={Boolean(codeError) || undefined}

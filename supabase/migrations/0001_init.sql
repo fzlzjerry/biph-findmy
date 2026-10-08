@@ -19,8 +19,11 @@ CREATE TABLE IF NOT EXISTS audit_log (
 ALTER TABLE audit_log ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON TABLE audit_log FROM anon, authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE audit_log TO app_backend;
-DROP POLICY IF EXISTS app_backend_all ON audit_log;
-CREATE POLICY app_backend_all ON audit_log FOR ALL TO app_backend USING (true) WITH CHECK (true);
+do $$ begin
+  if not exists (select from pg_policies where schemaname = 'public' and tablename = 'audit_log' and policyname = 'app_backend_all') then
+    create policy app_backend_all on audit_log for all to app_backend using (true) with check (true);
+  end if;
+end $$;
 
 CREATE TABLE IF NOT EXISTS profiles (
 	id UUID NOT NULL, 
@@ -35,8 +38,11 @@ CREATE UNIQUE INDEX IF NOT EXISTS ix_profiles_email ON profiles (email);
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON TABLE profiles FROM anon, authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE profiles TO app_backend;
-DROP POLICY IF EXISTS app_backend_all ON profiles;
-CREATE POLICY app_backend_all ON profiles FOR ALL TO app_backend USING (true) WITH CHECK (true);
+do $$ begin
+  if not exists (select from pg_policies where schemaname = 'public' and tablename = 'profiles' and policyname = 'app_backend_all') then
+    create policy app_backend_all on profiles for all to app_backend using (true) with check (true);
+  end if;
+end $$;
 
 CREATE TABLE IF NOT EXISTS items (
 	id UUID NOT NULL, 
@@ -77,8 +83,11 @@ CREATE INDEX IF NOT EXISTS ix_items_status ON items (status);
 ALTER TABLE items ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON TABLE items FROM anon, authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE items TO app_backend;
-DROP POLICY IF EXISTS app_backend_all ON items;
-CREATE POLICY app_backend_all ON items FOR ALL TO app_backend USING (true) WITH CHECK (true);
+do $$ begin
+  if not exists (select from pg_policies where schemaname = 'public' and tablename = 'items' and policyname = 'app_backend_all') then
+    create policy app_backend_all on items for all to app_backend using (true) with check (true);
+  end if;
+end $$;
 
 CREATE TABLE IF NOT EXISTS claims (
 	id UUID NOT NULL, 
@@ -105,8 +114,11 @@ CREATE INDEX IF NOT EXISTS ix_claims_status ON claims (status);
 ALTER TABLE claims ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON TABLE claims FROM anon, authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE claims TO app_backend;
-DROP POLICY IF EXISTS app_backend_all ON claims;
-CREATE POLICY app_backend_all ON claims FOR ALL TO app_backend USING (true) WITH CHECK (true);
+do $$ begin
+  if not exists (select from pg_policies where schemaname = 'public' and tablename = 'claims' and policyname = 'app_backend_all') then
+    create policy app_backend_all on claims for all to app_backend using (true) with check (true);
+  end if;
+end $$;
 
 CREATE TABLE IF NOT EXISTS matches (
 	id UUID NOT NULL, 
@@ -132,8 +144,11 @@ CREATE INDEX IF NOT EXISTS ix_matches_lost_id ON matches (lost_id);
 ALTER TABLE matches ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON TABLE matches FROM anon, authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE matches TO app_backend;
-DROP POLICY IF EXISTS app_backend_all ON matches;
-CREATE POLICY app_backend_all ON matches FOR ALL TO app_backend USING (true) WITH CHECK (true);
+do $$ begin
+  if not exists (select from pg_policies where schemaname = 'public' and tablename = 'matches' and policyname = 'app_backend_all') then
+    create policy app_backend_all on matches for all to app_backend using (true) with check (true);
+  end if;
+end $$;
 
 GRANT USAGE ON SCHEMA public TO app_backend;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO app_backend;
