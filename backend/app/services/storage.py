@@ -36,22 +36,41 @@ class LocalStorage:
 
 
 class BlobStorage:
+    """Vercel Blob over its HTTP API (same protocol as the official SDK, without its ~40 MB of
+    dependencies — every MB here is paid again on each cold start)."""
+
+    API_URL = "https://vercel.com/api/blob"
+    API_VERSION = "11"
+
     def __init__(self, token: str):
+        import httpx
+
         self.token = token
+        # Token format: vercel_blob_rw_<storeId>_<secret>
+        store_id = token.split("_")[3] if token.count("_") >= 4 else ""
+        if not store_id:
+            raise RuntimeError("BLOB_READ_WRITE_TOKEN has an unexpected format")
+        self.public_base = f"https://{store_id.lower()}.public.blob.vercel-storage.com"
+        self.http = httpx.Client(timeout=30)
 
     def put(self, key: str, data: bytes, content_type: str) -> None:
-        from vercel import blob
-
-        blob.put(key, data, access="public", content_type=content_type, add_random_suffix=False,
-                 overwrite=True, cache_control_max_age=31536000, token=self.token)
+        resp = self.http.put(self.API_URL, params={"pathname": key}, content=data, headers={
+            "authorization": f"Bearer {self.token}",
+            "x-api-version": self.API_VERSION,
+            "x-vercel-blob-access": "public",
+            "x-content-type": content_type,
+            "x-add-random-suffix": "0",
+            "x-allow-overwrite": "1",
+            "x-cache-control-max-age": "31536000",
+        })
+        resp.raise_for_status()
 
     def get(self, key: str) -> bytes | None:
-        from vercel import blob
-
-        try:
-            return blob.get(key, access="public", token=self.token).content
-        except blob.BlobNotFoundError:
+        resp = self.http.get(f"{self.public_base}/{key}", follow_redirects=True)
+        if resp.status_code == 404:
             return None
+        resp.raise_for_status()
+        return resp.content
 
 
 @lru_cache
