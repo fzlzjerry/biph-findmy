@@ -12,7 +12,7 @@ _Generated 2026-10-08 by `python -m matcher.eval.run` — Data Science Club, BIP
 
 ## Datasets · 数据
 
-- **Synthetic** (seed 2026, never used for training): 97 lost reports ranked against 163 found reports. 45% Chinese / 40% English / 15% mixed, ~20% Traditional among Chinese, ~35% use held-out words the dictionary has never seen, owners misremember colours/places, look-alike families share category + colour.
+- **Synthetic** (seed 2026, never used for training): 97 lost reports ranked against 163 found reports. 45% Chinese / 40% English / 15% mixed, ~20% Traditional among Chinese, 25% use held-out words the dictionary has never seen, owners misremember colours/places, look-alike families share category + colour.
 - **Hand-written**: 32 objects + 10 distractors in `matcher/data/handwritten_pairs.yaml`, written to sound like real student posts (emoji, slang, Traditional characters, typos). Written by an LLM — *not* real data.
 - **Real**: `matcher/data/real_pairs.csv` (from the club activity) — not collected yet.
 - Weights were fitted on a *different* synthetic world (seed 7, train split) — see `matcher/eval/fit_weights.py`.
@@ -52,10 +52,10 @@ Each lost report is hidden among *k* look-alikes (same category and colour, diff
 
 | Look-alikes k | 0 | 1 | 3 | 5 | 10 | 20 |
 |---|---|---|---|---|---|---|
-| Full model (embeddings) | 99% | 81% | 63% | 49% | 36% | 25% |
+| Full model (embeddings) | 99% | 82% | 63% | 49% | 36% | 25% |
 | Full model (TF-IDF) | 100% | 80% | 64% | 52% | 38% | 27% |
 | Category + colour filter | 80% | 49% | 16% | 16% | 6% | 2% |
-| ↳ lost report names a distinguishing mark | 100% | 92% | 78% | 62% | 52% | 40% |
+| ↳ lost report names a distinguishing mark | 100% | 95% | 78% | 62% | 52% | 40% |
 | ↳ lost report has no distinguishing mark | 98% | 74% | 53% | 40% | 25% | 14% |
 
 ![distractors](img/distractor_curve.png)
@@ -72,7 +72,7 @@ Each row refits the weights using only the listed evidence.
 | Text only | 38.1% | 58.8% | 0.518 |
 | + category & colour | 62.9% | 83.5% | 0.752 |
 | + brand, codes, marks | 70.1% | 91.8% | 0.813 |
-| + detail residual | 72.2% | 90.7% | 0.822 |
+| + detail residual | 72.2% | 90.7% | 0.820 |
 | + place & time (full) | 88.7% | 99.0% | 0.938 |
 
 ![ablation](img/ablation.png)
@@ -97,11 +97,11 @@ Dictionary coverage (did the lost report use a held-out word?):
 | held-out word | 73.9% | 95.7% | 0.848 |
 
 
-If users skip the structured fields and only type free text, R@1 is 75% (R@3 93%) — the NLP extraction fills in category, colour and place.
+If users skip the structured fields and only type free text, R@1 is 75% (R@3 92%) — the NLP extraction fills in category, colour and place.
 
 ## False alarms · 误报
 
-When the owner's item has **not** been handed in, the top candidate still lands in the *strong* band for 8% of reports and is shown at all (possible band) for 31%. That is why the site says "possible match — please check the photo" instead of "this is yours".
+When the owner's item has **not** been handed in, the top candidate still lands in the *strong* band for 1% of reports and is shown at all (possible band) for 18%. That is why the site says "possible match — please check the photo" instead of "this is yours".
 
 ## What the model learned · 学到的权重
 
@@ -109,13 +109,13 @@ Weights are log-odds per unit of evidence, constrained to be ≥ 0 so more evide
 
 | Feature | onnx | tfidf |
 |---|---|---|
-| text | 3.32 | 1.18 |
+| text | 3.33 | 1.18 |
 | detail | 0.89 | 0.41 |
 | marks | 0.98 | 1.15 |
-| code | 2.97 | 3.17 |
+| code | 2.98 | 3.17 |
 | category | 2.73 | 2.92 |
 | color | 1.93 | 2.05 |
-| brand | 1.40 | 1.35 |
+| brand | 1.41 | 1.35 |
 | location | 1.91 | 2.01 |
 | time | 5.32 | 5.29 |
 

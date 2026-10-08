@@ -7,7 +7,8 @@ at it. The generator deliberately makes this hard:
   * look-alike families — many objects share category + colour (the "six black bottles" problem)
   * 45% Chinese / 40% English / 15% mixed, some Chinese converted to Traditional characters
   * owners forget details, misremember colours (navy → blue) and places
-  * ~35% of reports use held-out words (eval/heldout.yaml) the dictionary has never seen
+  * where a held-out word exists (eval/heldout.yaml), it replaces the dictionary word 35% of the time,
+    so about a quarter of all reports contain a word the dictionary has never seen
   * typos, finders who keep identifying details private, reports with no true match
 
 Everything is seeded, so the same seed always yields the same dataset.

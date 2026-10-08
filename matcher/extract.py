@@ -19,6 +19,16 @@ from dataclasses import dataclass, field
 from .normalize import detect_language, normalize
 from .vocab import Vocab, load_vocab
 
+# A mark right after a negation is absent: "没有贴纸", "无挂件", "no stickers", "doesn't have a keychain".
+_NEGATION_ZH = re.compile(r"(?:没有|没|无|不带|并无)(?:任何|什么|啥)?\s*$")
+_NEGATION_EN = re.compile(r"(?:\b(?:no|without|not|never|nothing|none)|n't\s+(?:have|has|got))"
+                          r"(?:\s+(?:any|a|an|the|other|visible|special|real))*\s*$")
+
+
+def _negated(norm: str, start: int) -> bool:
+    before = norm[max(0, start - 24):start]
+    return bool(_NEGATION_ZH.search(before) or _NEGATION_EN.search(before))
+
 
 @dataclass(frozen=True)
 class Span:
@@ -139,6 +149,17 @@ def extract(raw: str, vocab: Vocab | None = None) -> Extraction:
                 continue
             occupied[start:end] = b"\x01" * (end - start)
             spans.append(Span(phrase.kind, phrase.id, start, end, m.group(), phrase.weak))
+
+    # Drop negated marks/motifs; a negation also covers the mark it introduces ("没有恐龙贴纸", "no dinosaur sticker").
+    kept: list[Span] = []
+    negated_until = -1
+    for span in sorted(spans, key=lambda s: s.start):
+        if span.kind in ("mark", "motif") and (
+                _negated(norm, span.start) or (negated_until >= 0 and span.start - negated_until <= 2)):
+            negated_until = span.end
+            continue
+        kept.append(span)
+    spans = kept
 
     brand_spans: list[Span] = []
     for phrase in vocab.brand_phrases:

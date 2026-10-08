@@ -57,3 +57,20 @@ def test_brand_and_category_can_share_a_word():
 def test_residual_keeps_only_distinctive_words():
     ex = extract("Lost my black water bottle in the gym, it has a dinosaur sticker")
     assert ex.residual == "dinosaur sticker"
+
+
+@pytest.mark.parametrize("text", [
+    "黑色保温杯，没有贴纸", "黑色水杯 无挂件", "没有恐龙贴纸的黑色水杯", "black bottle, no stickers",
+    "black bottle without any stickers", "It doesn't have a keychain", "no dinosaur sticker on it",
+])
+def test_negated_marks_are_absent(text):
+    ex = extract(text)
+    assert ex.marks == [] and ex.motifs == [], (text, ex.marks, ex.motifs)
+
+
+def test_negation_only_covers_the_mark_it_introduces():
+    ex = extract("没有名字，但是有贴纸")
+    assert ex.marks == ["sticker"]
+    ex = extract("no name tag but a dinosaur sticker on the lid")
+    assert ex.marks == ["sticker"] and ex.motifs == ["dinosaur"]
+    assert extract("黑色保温杯 贴了恐龙贴纸").marks == ["sticker"]

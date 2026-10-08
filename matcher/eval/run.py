@@ -344,7 +344,8 @@ def write_report(results: dict) -> None:
         "",
         f"- **Synthetic** (seed {TEST_SEED}, never used for training): {syn['queries']} lost reports ranked against "
         f"{syn['pool']} found reports. 45% Chinese / 40% English / 15% mixed, ~20% Traditional among Chinese, "
-        "~35% use held-out words the dictionary has never seen, owners misremember colours/places, "
+        f"{syn.get('held_out_share', 0) * 100:.0f}% use held-out words the dictionary has never seen, "
+        "owners misremember colours/places, "
         "look-alike families share category + colour.",
         "- **Hand-written**: 32 objects + 10 distractors in `matcher/data/handwritten_pairs.yaml`, written to sound like "
         "real student posts (emoji, slang, Traditional characters, typos). Written by an LLM — *not* real data.",
@@ -448,7 +449,8 @@ def evaluate(quick: bool = False) -> dict:
     ev = Evaluator(test_set)
     results: dict = {"generated": date.today().isoformat(), "with_embeddings": with_onnx}
     syn: dict = {"queries": len([q for q in test_set.queries if q.id in ev.truth]), "pool": len(test_set.pool),
-                 "methods": methods_table(ev, with_onnx)}
+                 "methods": methods_table(ev, with_onnx),
+                 "held_out_share": float(np.mean([r.oov for r in test_set.queries + test_set.pool]))}
     main_backend = backends[0]
     syn["ci"] = bootstrap(ev.model_ranks(main_backend), n_boot=300 if quick else 1000)
     syn["false_alarms"] = false_alarms(ev, main_backend)
