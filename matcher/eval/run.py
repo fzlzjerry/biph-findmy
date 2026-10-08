@@ -329,8 +329,12 @@ def write_report(results: dict) -> None:
         lines.append(f"- On the hand-written (LLM-authored, not template) set: R@1 **{hb['R@1'] * 100:.0f}%**, "
                      f"R@3 **{hb['R@3'] * 100:.0f}%** over {hw['pool']} found items.")
     if results.get("real"):
-        rb = results["real"]["methods"].get("Full model — embeddings, fitted weights")
-        lines.append(f"- On **real** club-collected data: R@1 {rb['R@1'] * 100:.0f}%, R@3 {rb['R@3'] * 100:.0f}%.")
+        real = results["real"]
+        rb = real["methods"].get("Full model — embeddings, fitted weights") or real["methods"]["Full model — TF-IDF"]
+        lo, hi = real["ci"]["R@1"]
+        lines.append(f"- On **real** club-collected data ({real['queries']} lost reports vs {real['pool']} found): "
+                     f"R@1 **{rb['R@1'] * 100:.0f}%** (95% CI {lo * 100:.0f}–{hi * 100:.0f}%), "
+                     f"R@3 **{rb['R@3'] * 100:.0f}%**.")
     else:
         lines.append("- **Real data is still pending** — run the describe-an-object activity "
                      "(docs/data-collection.md) and re-run this script; synthetic numbers are an upper-bound sanity check, not a promise.")
@@ -359,7 +363,12 @@ def write_report(results: dict) -> None:
     if hw:
         lines += ["### Hand-written set", "", table_md(hw["methods"]), ""]
     if results.get("real"):
-        lines += ["### Real data", "", table_md(results["real"]["methods"]), ""]
+        real = results["real"]
+        lo, hi = real["ci"]["R@1"]
+        lines += ["### Real data", "",
+                  f"{real['queries']} lost reports ranked against {real['pool']} found reports from the club activity. "
+                  f"With this few objects the uncertainty is large: 95% bootstrap CI for R@1 is "
+                  f"{lo * 100:.0f}–{hi * 100:.0f}%.", "", table_md(real["methods"]), ""]
     if results.get("distractors"):
         d = results["distractors"]
         lines += [
@@ -468,7 +477,8 @@ def evaluate(quick: bool = False) -> dict:
     real = load_real()
     if real:
         rev = Evaluator(real)
-        results["real"] = {"queries": len(real.queries), "pool": len(real.pool), "methods": methods_table(rev, with_onnx)}
+        results["real"] = {"queries": len(real.queries), "pool": len(real.pool), "methods": methods_table(rev, with_onnx),
+                           "ci": bootstrap(rev.model_ranks(main_backend), n_boot=1000)}
     results["weights"] = {b: Matcher(backend=b).weights.weights for b in backends}
     return results
 

@@ -34,3 +34,27 @@ def test_handwritten_set_loads_and_scores():
 def test_generator_is_deterministic():
     a, b = generate(50, seed=11), generate(50, seed=11)
     assert [r.text for r in a.lost] == [r.text for r in b.lost]
+
+
+def test_real_csv_loads_and_scores(tmp_path):
+    """The format documented in docs/data-collection.md parses and ranks the true pair first."""
+    from matcher.eval.common import bootstrap
+    from matcher.eval.datasets import load_real
+
+    csv_path = tmp_path / "real_pairs.csv"
+    csv_path.write_text(
+        "object_id,kind,text,date,time,window_hours,places,colors,category,private_detail\n"
+        'A01,lost,"我的黑色保温杯不见了 上面贴了个恐龙贴纸，周二体育课之后",2026-10-20,14:30,2,gym,black,water_bottle,\n'
+        'A01,found,"Black thermos, green dinosaur sticker, gym bleachers",2026-10-20,16:00,,gym,black;green,'
+        "water_bottle,lid says K.L.\n"
+        'A02,lost,"white airpods case with a cat sticker, lost near the lockers",2026-10-21,,4,hallway_lockers,white,earbuds,\n'
+        'A02,found,"白色耳机盒 有猫咪贴纸 在走廊储物柜旁边",2026-10-21,17:00,,hallway_lockers,white,earbuds,\n'
+        'A03,found,"black water bottle, no stickers, library 2F",2026-10-21,10:00,,library,black,water_bottle,\n',
+        encoding="utf-8",
+    )
+    real = load_real(csv_path)
+    assert real is not None and len(real.queries) == 2 and len(real.pool) == 3
+    ev = Evaluator(real)
+    assert methods_table(ev, with_onnx=False)["Full model — TF-IDF"]["R@1"] == 1.0
+    ci = bootstrap(ev.model_ranks("tfidf"), n_boot=50)
+    assert ci["R@1"] == (1.0, 1.0)
