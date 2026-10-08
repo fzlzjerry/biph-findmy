@@ -1,0 +1,66 @@
+# Held-out vocabulary for the synthetic generator.
+#
+# These words are deliberately NOT in matcher/data/taxonomy.yaml. When a synthetic report uses
+# one of them, the dictionary cannot recognise the category, so the engine has to rely on the
+# text model instead — this is how we measure robustness to words we never anticipated.
+# matcher/tests/test_heldout.py fails if any of these accidentally becomes recognisable.
+categories:
+  water_bottle:
+    en: [drink container, hydration vessel, sports canteen, insulated vessel]
+    zh: [随行杯, 运动壶, 吸管杯]
+  earbuds:
+    en: [wireless buds, in-ear pods, bluetooth buds]
+    zh: [蓝牙小耳塞, 无线耳塞]
+  phone:
+    en: [handset, cell]
+    zh: [移动电话, 机子]
+  jacket:
+    en: [zip-up top, outer layer, pullover]
+    zh: [上衣, 拉链衫, 套头衫]
+  calculator:
+    en: [graphing device, math machine]
+    zh: [算数机, 数学机]
+  backpack:
+    en: [daypack, carryall]
+    zh: [背囊, 背篓]
+  id_card:
+    en: [campus pass, ident badge]
+    zh: [校园通行证, 学籍牌]
+  glasses:
+    en: [specs, frames]
+    zh: [近视镜, 镜框]
+  umbrella:
+    en: [brolly, parasol]
+    zh: [晴雨具]
+  pencil_case:
+    en: [stationery pouch, supply sleeve]
+    zh: [收纳袋, 文具收纳]
+  notebook:
+    en: [composition pad, spiral pad]
+    zh: [手账, 记事簿]
+  lunch_box:
+    en: [food tin, meal container]
+    zh: [保鲜盒, 便当]
+  tablet:
+    en: [touchscreen slate]
+    zh: [学习机]
+  keys:
+    en: [fob]
+    zh: [锁匙]
+  hat:
+    en: [snapback, headwear]
+    zh: [遮阳帽檐]
+  shoes:
+    en: [footwear, kicks]
+    zh: [球靴]
+  watch:
+    en: [timepiece]
+    zh: [腕表]
+
+marks:
+  sticker:
+    en: [a picture of a, decorated with a, printed with a]
+    zh: [印着, 画着]
+  keychain:
+    en: [dangling, hanging toy]
+    zh: [吊着小]

@@ -1,0 +1,56 @@
+[project]
+name = "biph-findmy"
+version = "0.1.0"
+description = "BIPH FindMy — campus lost & found with bilingual NLP matching (Data Science Club × Sea Dragon Coding Club)"
+readme = "README.md"
+requires-python = ">=3.12"
+# Runtime dependencies only: everything here ends up in the Vercel function bundle.
+dependencies = [
+    "fastapi>=0.143",
+    "pydantic>=2.10",
+    "pydantic-settings>=2.6",
+    "sqlalchemy>=2.0.36",
+    "psycopg[binary]>=3.2",
+    "httpx>=0.28",
+    "pyjwt[crypto]>=2.10",
+    "python-multipart>=0.0.20",
+    "pillow>=11.0",
+    "pillow-heif>=1.0",
+    "numpy>=2.1",
+    "onnxruntime>=1.20",
+    "tokenizers>=0.21",
+    "pyyaml>=6.0",
+    "opencc>=1.1.9",
+    "vercel>=0.11",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "uvicorn[standard]>=0.32",
+    "scikit-learn>=1.6",
+    "matplotlib>=3.9",
+    "ruff>=0.8",
+]
+
+[tool.uv]
+package = false
+
+[tool.vercel]
+entrypoint = "backend.app.main:app"
+
+[tool.vercel.scripts]
+build = "python scripts/vercel_build.py"
+
+[tool.vercel.fastapi.static]
+# The built SPA is served from Vercel's CDN; keep it out of the function bundle.
+exclude = true
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["matcher/tests", "backend/tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"

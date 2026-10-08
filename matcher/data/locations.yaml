@@ -1,0 +1,60 @@
+# BIPH campus places — DRAFT based on public information about the campus.
+# Club members: please correct names / add places (building floors, dorm buildings, etc.).
+# `aliases` are used to detect places mentioned in free-text descriptions.
+version: 1
+
+zones:
+  - id: academic
+    label: {en: Academic building, zh: 教学楼}
+    places:
+      - {id: classroom, label: {en: Classroom, zh: 教室}, aliases: [classroom, class room, homeroom, 教室, 班级]}
+      - {id: hallway_lockers, label: {en: Hallway / lockers, zh: 走廊 / 储物柜}, aliases: [hallway, corridor, hall, lockers, locker, stairs, staircase, 走廊, 储物柜, 楼梯, 楼道]}
+      - {id: science_lab, label: {en: Science lab, zh: 实验室}, aliases: [science lab, lab, laboratory, chem lab, bio lab, physics lab, 实验室, 化学实验室, 生物实验室, 物理实验室]}
+      - {id: computer_lab, label: {en: Computer lab, zh: 电脑室}, aliases: [computer lab, mac lab, apple lab, it room, 电脑室, 机房, 电脑教室]}
+      - {id: art_room, label: {en: Art room, zh: 美术室}, aliases: [art room, art studio, 美术室, 画室]}
+      - {id: music_room, label: {en: Music room, zh: 音乐室}, aliases: [music room, band room, practice room, 音乐室, 琴房]}
+      - {id: study_hall, label: {en: Study hall / commons, zh: 自习区 / 公共区}, aliases: [study hall, commons, study area, lounge, 自习室, 自习区, 公共区]}
+
+  - id: library
+    label: {en: Library, zh: 图书馆}
+    places:
+      - {id: library, label: {en: Library, zh: 图书馆}, aliases: [library, 图书馆, 阅览室]}
+
+  - id: dining
+    label: {en: Cafeteria, zh: 食堂}
+    places:
+      - {id: cafeteria, label: {en: Cafeteria, zh: 食堂}, aliases: [cafeteria, canteen, dining hall, lunch hall, lunchroom, 食堂, 饭堂, 餐厅]}
+
+  - id: sports
+    label: {en: Sports facilities, zh: 运动区}
+    places:
+      - {id: gym, label: {en: Gymnasium, zh: 体育馆}, aliases: [gym, gymnasium, sports hall, 体育馆, 室内体育馆]}
+      - {id: pool, label: {en: Swimming pool, zh: 游泳馆}, aliases: [pool, swimming pool, natatorium, 游泳馆, 游泳池, 泳池]}
+      - {id: field_track, label: {en: Field & track, zh: 足球场 / 跑道}, aliases: [field, soccer field, football field, track, running track, pitch, 足球场, 跑道, 田径场, 操场]}
+      - {id: basketball_courts, label: {en: Basketball courts, zh: 篮球场}, aliases: [basketball court, basketball courts, 篮球场]}
+      - {id: tennis_courts, label: {en: Tennis courts, zh: 网球场}, aliases: [tennis court, tennis courts, 网球场]}
+      - {id: locker_rooms, label: {en: Changing rooms, zh: 更衣室}, aliases: [locker room, locker rooms, changing room, changing rooms, 更衣室]}
+
+  - id: arts
+    label: {en: Performing arts, zh: 演艺区}
+    places:
+      - {id: auditorium, label: {en: Auditorium, zh: 礼堂}, aliases: [auditorium, assembly hall, 礼堂, 大礼堂]}
+      - {id: black_box, label: {en: Black box theater, zh: 黑盒剧场}, aliases: [black box, blackbox, black box theater, black box theatre, 黑盒剧场, 小剧场]}
+
+  - id: boarding
+    label: {en: Boarding, zh: 宿舍区}
+    places:
+      - {id: dorm, label: {en: Dormitory, zh: 宿舍}, aliases: [dorm, dorms, dormitory, boarding house, 宿舍, 寝室, 宿舍楼]}
+      - {id: dorm_common, label: {en: Dorm common room, zh: 宿舍公共区}, aliases: [common room, dorm lounge, 宿舍大厅, 公共休息室]}
+
+  - id: entrance
+    label: {en: Entrance & transport, zh: 校门 / 交通}
+    places:
+      - {id: main_gate, label: {en: Main gate, zh: 校门}, aliases: [main gate, gate, school gate, entrance, 校门, 大门, 门口]}
+      - {id: bus_stop, label: {en: School bus, zh: 校车}, aliases: [school bus, bus stop, bus, 校车, 校车站, 公交站]}
+      - {id: front_desk, label: {en: Front desk, zh: 前台}, aliases: [front desk, reception, front office, 前台, 接待处]}
+
+  - id: other
+    label: {en: Other / not sure, zh: 其他 / 不确定}
+    places:
+      - {id: other, label: {en: Other / not sure, zh: 其他 / 不确定}, aliases: []}

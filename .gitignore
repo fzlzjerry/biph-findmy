@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# Local data
+/data/
+*.sqlite3
+*.db
+.env
+.env.*
+!.env.example
+
+# Model weights are downloaded at build time (scripts/fetch_model.py)
+matcher/models/*
+!matcher/models/.gitkeep
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/test-results/
+frontend/playwright-report/
+
+# Vercel
+.vercel/
+
+# OS / editors
+.DS_Store
+._*
+.idea/
+.vscode/

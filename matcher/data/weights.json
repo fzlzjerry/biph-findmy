@@ -1,0 +1,68 @@
+{
+  "version": "synthetic-2026-10-08",
+  "trained_on": {
+    "generator_seed": 7,
+    "objects": 900,
+    "split": "train (60%)",
+    "thresholds_on": "val (20%)"
+  },
+  "features": [
+    "text",
+    "detail",
+    "marks",
+    "code",
+    "category",
+    "color",
+    "brand",
+    "location",
+    "time"
+  ],
+  "backends": {
+    "tfidf": {
+      "version": "synthetic-2026-10-08",
+      "bias": -10.6586,
+      "weights": {
+        "text": 1.1791,
+        "detail": 0.4088,
+        "marks": 1.1485,
+        "code": 3.1661,
+        "category": 2.9247,
+        "color": 2.0453,
+        "brand": 1.3455,
+        "location": 2.0081,
+        "time": 5.288
+      },
+      "centers": {
+        "text": 0.0,
+        "detail": 0.0
+      },
+      "thresholds": {
+        "strong": 0.7,
+        "possible": 0.15
+      }
+    },
+    "onnx": {
+      "version": "synthetic-2026-10-08",
+      "bias": -10.913,
+      "weights": {
+        "text": 3.3252,
+        "detail": 0.8905,
+        "marks": 0.9849,
+        "code": 2.985,
+        "category": 2.7299,
+        "color": 1.9325,
+        "brand": 1.4059,
+        "location": 1.9069,
+        "time": 5.3151
+      },
+      "centers": {
+        "text": 0.3068,
+        "detail": 0.3158
+      },
+      "thresholds": {
+        "strong": 0.7,
+        "possible": 0.15
+      }
+    }
+  }
+}

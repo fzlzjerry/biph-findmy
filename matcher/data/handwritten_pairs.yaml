@@ -1,0 +1,116 @@
+# A small "realistic" test set: messy, student-style posts written by an LLM (Claude) to
+# resemble real reports. It is NOT real data — it exists so the evaluation has at least one set
+# that was not produced by our own templates. Real data from the club's "describe an object"
+# activity goes in matcher/data/real_pairs.csv (see docs/data-collection.md).
+#
+# Times are day offsets from reference_day (school-day hours, China time). Each object has the
+# owner's lost post and the finder's found post. `distractors` are found posts with no owner here.
+reference_day: 2026-09-21
+objects:
+  - id: h01
+    lost: {text: "黑色保温杯 贴了恐龙贴纸，周二体育课后在体育馆不见了😭", day: 1, hour: 15, window_h: 2, places: [gym], category: water_bottle, colors: [black]}
+    found: {text: "Found a black thermos bottle with a green dinosaur sticker on the bleachers in the gym", day: 2, hour: 8.5, places: [gym], category: water_bottle, colors: [black]}
+  - id: h02
+    lost: {text: "lost my black hydroflask, it has a big dent near the bottom from when i dropped it lol", day: 0, hour: 12, window_h: 1, places: [cafeteria], category: water_bottle, colors: [black]}
+    found: {text: "black Hydro Flask, dented, left on a cafeteria table", day: 0, hour: 13.5, places: [cafeteria], category: water_bottle, colors: [black]}
+  - id: h03
+    lost: {text: "Black water bottle with K.L. written on the lid in silver marker", day: 3, hour: 9, window_h: 4, places: [science_lab, classroom], category: water_bottle, colors: [black]}
+    found: {text: "在化学实验室捡到一个黑色水杯", day: 3, hour: 14, places: [science_lab], category: water_bottle, colors: [black], private: "lid says K.L. in silver"}
+  - id: h04
+    lost: {text: "黑色Stanley大杯子（带把手那种），在操场跑道边上", day: 4, hour: 16, window_h: 1, places: [field_track], category: water_bottle, colors: [black]}
+    found: {text: "Stanley cup, black, with handle — found next to the track", day: 5, hour: 7.8, places: [field_track], category: water_bottle, colors: [black]}
+  - id: h05
+    lost: {text: "plain black bottle nothing special, lost it at the library", day: 2, hour: 11, window_h: 5, places: [library], category: water_bottle, colors: [black]}
+    found: {text: "图书馆二楼有个黑色的瓶子，没什么特征", day: 2, hour: 17, places: [library], category: water_bottle, colors: [black]}
+  - id: h06
+    lost: {text: "黑色吸管杯，盖子是透明的，宿舍楼下不见了", day: 6, hour: 19, window_h: 2, places: [dorm], category: water_bottle, colors: [black]}
+    found: {text: "black kids-style bottle with a clear straw lid, dorm entrance", day: 7, hour: 8, places: [dorm], category: water_bottle, colors: [black]}
+  - id: h07
+    lost: {text: "AirPods Pro 白色 外面套着一个小猫的硅胶壳 在音乐室", day: 1, hour: 10, window_h: 1, places: [music_room], category: earbuds, colors: [white]}
+    found: {text: "found airpods pro case with a cat silicone cover in the music room", day: 1, hour: 15, places: [music_room], category: earbuds, colors: [white]}
+  - id: h08
+    lost: {text: "my airpods (not pro) have J.W. engraved on the case!! lost around the hallway lockers", day: 3, hour: 13, window_h: 3, places: [hallway_lockers], category: earbuds, colors: [white]}
+    found: {text: "白色苹果耳机盒，走廊储物柜旁边捡到的", day: 4, hour: 9, places: [hallway_lockers], category: earbuds, colors: [white], private: "case engraved J.W."}
+  - id: h09
+    lost: {text: "AirPods 3 盒子摔裂了一道缝，在校车上丢的", day: 5, hour: 7.5, window_h: 1, places: [bus_stop], category: earbuds, colors: [white]}
+    found: {text: "Airpods with a cracked case found on the school bus seat", day: 5, hour: 16, places: [bus_stop], category: earbuds, colors: [white]}
+  - id: h10
+    lost: {text: "白色华为耳机 FreeBuds，在食堂", day: 2, hour: 12.5, window_h: 1, places: [cafeteria], category: earbuds, colors: [white]}
+    found: {text: "white Huawei earbuds in the canteen", day: 2, hour: 13, places: [cafeteria], category: earbuds, colors: [white]}
+  - id: h11
+    lost: {text: "Navy Nike hoodie size M, left it in the gym changing room after PE", day: 0, hour: 10, window_h: 1, places: [locker_rooms], category: jacket, colors: [navy]}
+    found: {text: "深蓝色耐克卫衣 M码 更衣室捡到", day: 0, hour: 15, places: [locker_rooms], category: jacket, colors: [navy]}
+  - id: h12
+    lost: {text: "藏青色校服外套，领子里面有名牌写着 Chen", day: 4, hour: 11, window_h: 6, places: [classroom], category: uniform, colors: [navy]}
+    found: {text: "Navy school uniform jacket found in a classroom on the 3rd floor, name tag says CHEN", day: 5, hour: 8, places: [classroom], category: uniform, colors: [navy]}
+  - id: h13
+    lost: {text: "dark blue north face fleece jacket, maybe at the auditorium after assembly", day: 6, hour: 10, window_h: 2, places: [auditorium], category: jacket, colors: [navy]}
+    found: {text: "礼堂座位上有一件深蓝色北面抓绒外套", day: 6, hour: 14, places: [auditorium], category: jacket, colors: [navy]}
+  - id: h14
+    lost: {text: "TI-84 Plus calculator, my name LEO is on masking tape on the back", day: 1, hour: 14, window_h: 2, places: [classroom], category: calculator, colors: [black]}
+    found: {text: "在教室捡到一个TI-84计算器，背面贴了胶带", day: 2, hour: 9, places: [classroom], category: calculator, colors: [black], private: "tape says LEO"}
+  - id: h15
+    lost: {text: "粉色的TI-84图形计算器，数学课后在图书馆", day: 3, hour: 15, window_h: 2, places: [library], category: calculator, colors: [pink]}
+    found: {text: "pink graphing calculator TI84 on a library desk", day: 3, hour: 17.5, places: [library], category: calculator, colors: [pink]}
+  - id: h16
+    lost: {text: "学生卡丢了，卡套是蓝色的，挂绳上有个熊猫挂件", day: 0, hour: 8, window_h: 10, places: [], category: id_card, colors: [blue]}
+    found: {text: "Student ID card in a blue holder with a panda charm on the lanyard, near the main gate", day: 1, hour: 7.6, places: [main_gate], category: id_card, colors: [blue], private: "name on card 周可欣"}
+  - id: h17
+    lost: {text: "swim goggles (blue speedo) left at the pool after swim team practice", day: 2, hour: 17, window_h: 1, places: [pool], category: swim_gear, colors: [blue]}
+    found: {text: "游泳馆捡到蓝色泳镜", day: 3, hour: 8, places: [pool], category: swim_gear, colors: [blue]}
+  - id: h18
+    lost: {text: "透明雨伞，伞柄是木头的，校门口", day: 5, hour: 16.5, window_h: 1, places: [main_gate], category: umbrella, colors: [transparent]}
+    found: {text: "clear umbrella with a wooden handle by the school gate", day: 6, hour: 7.5, places: [main_gate], category: umbrella, colors: [transparent]}
+  - id: h19
+    lost: {text: "glasses in a brown leather case, black frames. probably the study hall", day: 1, hour: 13, window_h: 4, places: [study_hall], category: glasses, colors: [brown]}
+    found: {text: "自习区捡到一个棕色眼镜盒，里面有黑框眼镜", day: 1, hour: 18, places: [study_hall], category: glasses, colors: [brown]}
+  - id: h20
+    lost: {text: "宿舍钥匙串 上面有个熊猫钥匙扣", day: 4, hour: 21, window_h: 1, places: [dorm_common], category: keys, colors: []}
+    found: {text: "keys with a panda keychain found in the dorm common room", day: 5, hour: 7, places: [dorm_common], category: keys, colors: []}
+  - id: h21
+    lost: {text: "purple striped pencil case (muji) with all my pens 😢 art room", day: 2, hour: 15, window_h: 1, places: [art_room], category: pencil_case, colors: [purple]}
+    found: {text: "紫色条纹笔袋 无印良品 美术室", day: 3, hour: 10, places: [art_room], category: pencil_case, colors: [purple]}
+  - id: h22
+    lost: {text: "green math notebook, 'Algebra II' on the cover", day: 0, hour: 9, window_h: 6, places: [classroom], category: notebook, colors: [green]}
+    found: {text: "綠色筆記本 封面寫著 Algebra II", day: 1, hour: 12, places: [classroom], category: notebook, colors: [green]}
+  - id: h23
+    lost: {text: "粉色象印保温饭盒，在食堂", day: 3, hour: 12.2, window_h: 1, places: [cafeteria], category: lunch_box, colors: [pink]}
+    found: {text: "pink zojirushi food jar left in the cafeteria", day: 3, hour: 13.5, places: [cafeteria], category: lunch_box, colors: [pink]}
+  - id: h24
+    lost: {text: "Apple Pencil 2nd gen, has a small star sticker", day: 6, hour: 10, window_h: 3, places: [computer_lab], category: stylus, colors: [white]}
+    found: {text: "机房捡到苹果笔，上面贴了个星星贴纸", day: 6, hour: 16, places: [computer_lab], category: stylus, colors: [white]}
+  - id: h25
+    lost: {text: "white type-c charger + cable, plugged in at the library and forgot it", day: 1, hour: 16, window_h: 1, places: [library], category: charger, colors: [white]}
+    found: {text: "图书馆插座上有个白色充电头和数据线", day: 2, hour: 8.2, places: [library], category: charger, colors: [white]}
+  - id: h26
+    lost: {text: "红色阿迪外套 三条杠 落在篮球场了", day: 4, hour: 17, window_h: 1, places: [basketball_courts], category: jacket, colors: [red]}
+    found: {text: "red adidas track jacket with white stripes at the basketball courts", day: 5, hour: 7.9, places: [basketball_courts], category: jacket, colors: [red]}
+  - id: h27
+    lost: {text: "ukulele in a black soft case, black box theater after drama club", day: 2, hour: 18, window_h: 1, places: [black_box], category: instrument, colors: [black]}
+    found: {text: "黑盒剧场里有一把尤克里里，装在黑色琴包里", day: 3, hour: 9, places: [black_box], category: instrument, colors: [black]}
+  - id: h28
+    lost: {text: "beige bucket hat, I think I left it on the bus", day: 5, hour: 16, window_h: 1, places: [bus_stop], category: hat, colors: [beige]}
+    found: {text: "米色渔夫帽 校车上", day: 6, hour: 7.6, places: [bus_stop], category: hat, colors: [beige]}
+  - id: h29
+    lost: {text: "black leather wallet with my bus card inside, lost somewhere between the gate and the dorm", day: 0, hour: 18, window_h: 2, places: [main_gate, dorm], category: wallet, colors: [black]}
+    found: {text: "黑色皮钱包，宿舍门口捡到", day: 1, hour: 7, places: [dorm], category: wallet, colors: [black], private: "has a bus card"}
+  - id: h30
+    lost: {text: "小米手环 黑色 体育课摘下来忘拿了", day: 3, hour: 10, window_h: 1, places: [field_track], category: watch, colors: [black]}
+    found: {text: "black xiaomi fitness band found on the field", day: 3, hour: 16, places: [field_track], category: watch, colors: [black]}
+  - id: h31
+    lost: {text: "Campbell Biology textbook, my name is inside the cover", day: 1, hour: 11, window_h: 5, places: [science_lab, library], category: textbook, colors: []}
+    found: {text: "生物课本 Campbell，在实验室", day: 2, hour: 10, places: [science_lab], category: textbook, colors: [], private: "name inside: Mia"}
+  - id: h32
+    lost: {text: "white nike air force 1 size 39 left in the changing room", day: 4, hour: 11, window_h: 1, places: [locker_rooms], category: shoes, colors: [white]}
+    found: {text: "更衣室有双白色耐克鞋 39码", day: 4, hour: 17, places: [locker_rooms], category: shoes, colors: [white]}
+distractors:
+  - {text: "black water bottle, no stickers, found in the gym", day: 2, hour: 10, places: [gym], category: water_bottle, colors: [black]}
+  - {text: "黑色保温杯 在食堂捡到", day: 1, hour: 13, places: [cafeteria], category: water_bottle, colors: [black]}
+  - {text: "white AirPods case, found in the library", day: 3, hour: 12, places: [library], category: earbuds, colors: [white]}
+  - {text: "navy hoodie, no logo, gym bleachers", day: 1, hour: 16, places: [gym], category: jacket, colors: [navy]}
+  - {text: "TI-84 calculator, no name, classroom", day: 2, hour: 15, places: [classroom], category: calculator, colors: [black]}
+  - {text: "蓝色雨伞 校门口", day: 6, hour: 8, places: [main_gate], category: umbrella, colors: [blue]}
+  - {text: "black glasses case, empty, cafeteria", day: 2, hour: 13, places: [cafeteria], category: glasses, colors: [black]}
+  - {text: "钥匙一串 没有挂件 宿舍楼梯", day: 5, hour: 20, places: [dorm], category: keys, colors: []}
+  - {text: "pink lunch box with a cat on it", day: 3, hour: 12.5, places: [cafeteria], category: lunch_box, colors: [pink]}
+  - {text: "white earbuds (not apple) found on the bus", day: 5, hour: 17, places: [bus_stop], category: earbuds, colors: [white]}

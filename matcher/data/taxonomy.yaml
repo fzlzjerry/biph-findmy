@@ -1,0 +1,338 @@
+# BIPH FindMy taxonomy — owned by the Data Science Club.
+#
+# Every synonym is matched against *normalized* text (NFKC, lowercase, Traditional→Simplified).
+# Longest match wins, so "pencil case" beats "pencil" and "笔记本电脑" beats "笔记本".
+# `weak` synonyms are generic words ("bag", "包", "card"): they still count, but with lower
+# confidence, and any more specific match in the same text overrides them.
+#
+# IMPORTANT for evaluation: never copy a word from matcher/eval/heldout.yaml into this file —
+# the held-out vocabulary is how we measure robustness to words the dictionary has never seen.
+version: 1
+
+categories:
+  - id: electronics
+    label: {en: Electronics, zh: 电子产品}
+    children:
+      - id: phone
+        label: {en: Phone, zh: 手机}
+        en: [phone, iphone, cellphone, cell phone, mobile phone, smartphone, android phone]
+        zh: [手机, 智能手机, 苹果手机, 华为手机, 小米手机]
+      - id: earbuds
+        label: {en: Earbuds / AirPods, zh: 无线耳机}
+        en: [airpods, airpod, earbuds, earbud, earphones, earphone, air pods, earpods, airpods case, charging case, airpods pro]
+        zh: [耳机, 蓝牙耳机, 无线耳机, 耳机盒, 耳机仓, 充电仓]
+      - id: headphones
+        label: {en: Headphones, zh: 头戴耳机}
+        en: [headphones, headphone, headset, over-ear headphones]
+        zh: [头戴耳机, 头戴式耳机, 耳麦]
+      - id: laptop
+        label: {en: Laptop, zh: 笔记本电脑}
+        en: [laptop, macbook, chromebook, notebook computer, computer]
+        zh: [笔记本电脑, 电脑, 手提电脑]
+      - id: tablet
+        label: {en: Tablet / iPad, zh: 平板}
+        en: [ipad, tablet, ipad mini, ipad air]
+        zh: [平板, 平板电脑]
+      - id: stylus
+        label: {en: Stylus / Apple Pencil, zh: 触控笔}
+        en: [apple pencil, stylus, stylus pen]
+        zh: [触控笔, 手写笔, 电容笔]
+      - id: charger
+        label: {en: Charger / Cable, zh: 充电器 / 数据线}
+        en: [charger, charging cable, cable, usb cable, power bank, adapter, plug, lightning cable, type-c cable, charging brick]
+        zh: [充电器, 充电线, 数据线, 充电宝, 移动电源, 充电头, 插头]
+      - id: calculator
+        label: {en: Calculator, zh: 计算器}
+        en: [calculator, graphing calculator, scientific calculator]
+        zh: [计算器, 图形计算器, 科学计算器]
+      - id: watch
+        label: {en: Watch, zh: 手表}
+        en: [watch, smartwatch, smart watch, apple watch, wristwatch, fitness band]
+        zh: [手表, 智能手表, 电话手表, 手环]
+      - id: other_electronics
+        label: {en: Other electronics, zh: 其他电子产品}
+        en: [mouse, keyboard, usb drive, flash drive, camera, speaker, kindle, e-reader]
+        zh: [鼠标, 键盘, u盘, 相机, 音箱, 电子书, kindle]
+
+  - id: bottles_food
+    label: {en: Bottles & lunch, zh: 水杯餐具}
+    children:
+      - id: water_bottle
+        label: {en: Water bottle, zh: 水杯}
+        en: [water bottle, bottle, flask, thermos, tumbler, cup, mug]
+        zh: [水杯, 水瓶, 保温杯, 杯子, 水壶, 保温瓶]
+        weak: [cup, bottle]
+      - id: lunch_box
+        label: {en: Lunch box, zh: 饭盒}
+        en: [lunch box, lunchbox, bento, bento box, food container]
+        zh: [饭盒, 便当盒, 午餐盒, 餐盒]
+      - id: utensils
+        label: {en: Cutlery, zh: 餐具}
+        en: [spoon, fork, chopsticks, cutlery]
+        zh: [勺子, 叉子, 筷子, 餐具]
+
+  - id: clothing
+    label: {en: Clothing, zh: 衣物}
+    children:
+      - id: jacket
+        label: {en: Jacket / Hoodie, zh: 外套 / 卫衣}
+        en: [jacket, hoodie, hoody, sweatshirt, sweater, coat, fleece, windbreaker, cardigan, puffer]
+        zh: [外套, 卫衣, 毛衣, 夹克, 大衣, 冲锋衣, 开衫, 羽绒服]
+      - id: uniform
+        label: {en: School uniform, zh: 校服}
+        en: [uniform, school uniform, polo, polo shirt, blazer]
+        zh: [校服, 校服外套, polo衫, 西装外套]
+      - id: pe_kit
+        label: {en: PE kit, zh: 运动服}
+        en: [pe shirt, pe uniform, pe kit, sports shirt, jersey, shorts, track pants, sweatpants]
+        zh: [运动服, 体育服, 球衣, 短裤, 运动裤]
+      - id: shoes
+        label: {en: Shoes, zh: 鞋}
+        en: [shoes, shoe, sneakers, sneaker, trainers, slippers, sandals, boots, cleats, crocs]
+        zh: [鞋, 鞋子, 运动鞋, 球鞋, 拖鞋, 凉鞋, 靴子]
+      - id: hat
+        label: {en: Hat / Cap, zh: 帽子}
+        en: [hat, cap, baseball cap, beanie, bucket hat]
+        zh: [帽子, 鸭舌帽, 棒球帽, 毛线帽, 渔夫帽]
+      - id: scarf_gloves
+        label: {en: Scarf / Gloves / Socks, zh: 围巾 / 手套 / 袜子}
+        en: [scarf, gloves, glove, mittens, socks, tie]
+        zh: [围巾, 手套, 袜子, 领带]
+
+  - id: bags
+    label: {en: Bags, zh: 包}
+    children:
+      - id: backpack
+        label: {en: Backpack, zh: 书包}
+        en: [backpack, school bag, schoolbag, rucksack, knapsack, bag]
+        zh: [书包, 背包, 双肩包, 包]
+        weak: [bag, 包]
+      - id: pencil_case
+        label: {en: Pencil case, zh: 笔袋}
+        en: [pencil case, pencil pouch, pen case, pencil box]
+        zh: [笔袋, 文具袋, 笔盒, 铅笔盒]
+      - id: tote_bag
+        label: {en: Tote / Handbag, zh: 手提袋}
+        en: [tote, tote bag, handbag, shoulder bag, crossbody, crossbody bag, drawstring bag, gym bag, purse]
+        zh: [手提袋, 帆布袋, 手提包, 斜挎包, 抽绳袋, 运动包, 单肩包]
+
+  - id: stationery_books
+    label: {en: Stationery & books, zh: 文具书本}
+    children:
+      - id: notebook
+        label: {en: Notebook / Folder, zh: 笔记本 / 文件夹}
+        en: [notebook, exercise book, notepad, journal, planner, binder, folder, sketchbook]
+        zh: [笔记本, 本子, 作业本, 练习本, 文件夹, 活页夹, 素描本]
+      - id: textbook
+        label: {en: Textbook / Book, zh: 课本 / 书}
+        en: [textbook, book, novel, workbook]
+        zh: [课本, 教材, 书, 练习册, 小说]
+        weak: [book, 书]
+      - id: pen
+        label: {en: Pens & small stationery, zh: 笔 / 小文具}
+        en: [pen, pencil, marker, highlighter, eraser, ruler, mechanical pencil, fountain pen]
+        zh: [笔, 钢笔, 铅笔, 自动铅笔, 马克笔, 荧光笔, 橡皮, 尺子]
+        weak: [笔]
+
+  - id: personal
+    label: {en: Personal items, zh: 个人物品}
+    children:
+      - id: id_card
+        label: {en: Student ID / Card, zh: 学生卡 / 证件}
+        sensitive: true
+        en: [student id, id card, student card, school card, access card, card holder, lanyard card, card]
+        zh: [学生卡, 校卡, 饭卡, 门禁卡, 证件, 卡套, 胸卡, 卡]
+        weak: [card, 卡]
+      - id: bank_card
+        label: {en: Bank card, zh: 银行卡}
+        sensitive: true
+        en: [bank card, credit card, debit card]
+        zh: [银行卡, 信用卡, 储蓄卡]
+      - id: wallet
+        label: {en: Wallet, zh: 钱包}
+        en: [wallet, coin purse, cardholder]
+        zh: [钱包, 零钱包, 卡包]
+      - id: keys
+        label: {en: Keys, zh: 钥匙}
+        en: [key, keys, key ring, house key, locker key]
+        zh: [钥匙, 钥匙串]
+      - id: glasses
+        label: {en: Glasses, zh: 眼镜}
+        en: [glasses, spectacles, sunglasses, eyeglasses, glasses case]
+        zh: [眼镜, 墨镜, 太阳镜, 眼镜盒]
+      - id: umbrella
+        label: {en: Umbrella, zh: 雨伞}
+        en: [umbrella]
+        zh: [雨伞, 伞, 遮阳伞]
+      - id: jewelry
+        label: {en: Jewelry / Hair accessories, zh: 饰品 / 发饰}
+        en: [necklace, bracelet, ring, earring, earrings, hair clip, hair tie, scrunchie, headband, jewelry]
+        zh: [项链, 手链, 戒指, 耳环, 发夹, 发圈, 头绳, 发箍, 饰品]
+
+  - id: sports
+    label: {en: Sports gear, zh: 运动器材}
+    children:
+      - id: ball
+        label: {en: Ball, zh: 球}
+        en: [ball, basketball, football, soccer ball, volleyball, tennis ball]
+        zh: [篮球, 足球, 排球, 网球]
+      - id: racket
+        label: {en: Racket, zh: 球拍}
+        en: [racket, racquet, badminton racket, tennis racket, ping pong paddle, paddle]
+        zh: [球拍, 羽毛球拍, 网球拍, 乒乓球拍]
+      - id: swim_gear
+        label: {en: Swim gear, zh: 游泳用品}
+        en: [goggles, swim goggles, swim cap, swimsuit, swimming trunks, swim trunks]
+        zh: [泳镜, 泳帽, 泳衣, 泳裤]
+      - id: towel
+        label: {en: Towel, zh: 毛巾}
+        en: [towel, beach towel]
+        zh: [毛巾, 浴巾]
+      - id: sports_other
+        label: {en: Other sports gear, zh: 其他运动用品}
+        en: [shin guards, jump rope, skipping rope, frisbee, water polo cap, kickboard]
+        zh: [护腿板, 跳绳, 飞盘, 浮板]
+
+  - id: music_art
+    label: {en: Music & art, zh: 乐器美术}
+    children:
+      - id: instrument
+        label: {en: Instrument, zh: 乐器}
+        en: [flute, violin, ukulele, recorder, clarinet, guitar, instrument]
+        zh: [长笛, 小提琴, 尤克里里, 竖笛, 单簧管, 吉他, 乐器]
+      - id: art_supplies
+        label: {en: Art supplies, zh: 美术用品}
+        en: [paint, paintbrush, brush, watercolor, colored pencils, palette]
+        zh: [颜料, 画笔, 水彩, 彩铅, 调色盘]
+
+  - id: other
+    label: {en: Other, zh: 其他}
+    children:
+      - id: other
+        label: {en: Other, zh: 其他}
+        en: []
+        zh: []
+
+colors:
+  - {id: black, en: [black, jet black, matte black], zh: [黑色, 黑, 纯黑], label: {en: Black, zh: 黑色}, hex: "#111111"}
+  - {id: white, en: [white, off-white], zh: [白色, 白, 纯白], label: {en: White, zh: 白色}, hex: "#f5f5f5"}
+  - {id: gray, en: [gray, grey, dark gray, dark grey, light gray, light grey, charcoal], zh: [灰色, 灰, 深灰, 浅灰], label: {en: Gray, zh: 灰色}, hex: "#8a8f98"}
+  - {id: silver, en: [silver, metallic], zh: [银色, 银], label: {en: Silver, zh: 银色}, hex: "#c0c4cc"}
+  - {id: red, en: [red, maroon, burgundy, crimson], zh: [红色, 红, 大红, 酒红], label: {en: Red, zh: 红色}, hex: "#d43a3a"}
+  - {id: pink, en: [pink, hot pink, rose], zh: [粉色, 粉红, 粉红色, 粉, 玫红], label: {en: Pink, zh: 粉色}, hex: "#f29bbd"}
+  - {id: orange, en: [orange], zh: [橙色, 橙, 橘色, 橘黄], label: {en: Orange, zh: 橙色}, hex: "#f08a24"}
+  - {id: yellow, en: [yellow], zh: [黄色, 黄], label: {en: Yellow, zh: 黄色}, hex: "#f2d024"}
+  - {id: gold, en: [gold, golden], zh: [金色, 金], label: {en: Gold, zh: 金色}, hex: "#c9a227"}
+  - {id: green, en: [green, dark green, olive, mint, mint green], zh: [绿色, 绿, 墨绿, 军绿, 薄荷绿], label: {en: Green, zh: 绿色}, hex: "#2f9e5b"}
+  - {id: blue, en: [blue, light blue, sky blue, baby blue, royal blue], zh: [蓝色, 蓝, 天蓝, 浅蓝, 宝蓝], label: {en: Blue, zh: 蓝色}, hex: "#3478e5"}
+  - {id: navy, en: [navy, navy blue, dark blue], zh: [深蓝, 深蓝色, 藏青, 藏青色, 藏蓝, 海军蓝], label: {en: Navy, zh: 深蓝色}, hex: "#1f2f5c"}
+  - {id: purple, en: [purple, violet, lavender, lilac], zh: [紫色, 紫, 淡紫, 薰衣草紫], label: {en: Purple, zh: 紫色}, hex: "#8e5bd6"}
+  - {id: brown, en: [brown, tan, chocolate], zh: [棕色, 棕, 咖啡色, 褐色], label: {en: Brown, zh: 棕色}, hex: "#8b5a2b"}
+  - {id: beige, en: [beige, cream, khaki, ivory], zh: [米色, 米白, 奶白, 卡其, 卡其色], label: {en: Beige, zh: 米色}, hex: "#e3d3b0"}
+  - {id: transparent, en: [transparent, clear, see-through], zh: [透明], label: {en: Transparent, zh: 透明}, hex: "#dde8ee"}
+  - {id: multicolor, en: [multicolor, multicolored, multi-colored, colorful, colourful, rainbow], zh: [彩色, 多色, 彩虹色], label: {en: Multicolor, zh: 彩色}, hex: "#b06ab3"}
+
+# Compounds that contain a colour character but are not colours (masked before colour extraction).
+color_stop_compounds:
+  zh: [蓝牙, 白板, 黑板, 红包, 金属, 银行, 白天, 粉笔, 黄昏, 绿茶, 红茶, 黑客, 金鱼, 白菜, 明白, 空白, 坦白, 网红,
+       现金, 金额, 灰尘, 粉丝, 奶粉, 白开水]
+  en: [blackboard, whiteboard, white board, orange juice]
+
+# Similarity between different colours (symmetric). Unlisted pairs are 0.
+color_similarity:
+  - [navy, blue, 0.8]
+  - [gray, silver, 0.8]
+  - [gold, yellow, 0.7]
+  - [beige, white, 0.6]
+  - [beige, brown, 0.5]
+  - [pink, red, 0.5]
+  - [navy, black, 0.4]
+  - [purple, pink, 0.4]
+  - [orange, red, 0.4]
+  - [orange, yellow, 0.4]
+  - [purple, blue, 0.3]
+  - [gray, white, 0.3]
+  - [gray, black, 0.3]
+  - [brown, orange, 0.3]
+  - [transparent, white, 0.3]
+
+brands:
+  - {id: apple, label: Apple, en: [apple, iphone, ipad, macbook, airpods, apple watch, apple pencil], zh: [苹果]}
+  - {id: hydro_flask, label: Hydro Flask, en: [hydro flask, hydroflask, hydro-flask], zh: []}
+  - {id: stanley, label: Stanley, en: [stanley], zh: [史丹利]}
+  - {id: thermos, label: Thermos, en: [thermos brand], zh: [膳魔师]}
+  - {id: zojirushi, label: Zojirushi, en: [zojirushi], zh: [象印]}
+  - {id: nike, label: Nike, en: [nike], zh: [耐克]}
+  - {id: adidas, label: Adidas, en: [adidas], zh: [阿迪达斯, 阿迪]}
+  - {id: under_armour, label: Under Armour, en: [under armour, under armor], zh: [安德玛]}
+  - {id: puma, label: Puma, en: [puma], zh: [彪马]}
+  - {id: lululemon, label: Lululemon, en: [lululemon], zh: [露露乐蒙]}
+  - {id: uniqlo, label: Uniqlo, en: [uniqlo], zh: [优衣库]}
+  - {id: north_face, label: The North Face, en: [north face, the north face, tnf], zh: [北面]}
+  - {id: anta, label: Anta, en: [anta], zh: [安踏]}
+  - {id: li_ning, label: Li-Ning, en: [li-ning, li ning, lining], zh: [李宁]}
+  - {id: samsung, label: Samsung, en: [samsung, galaxy], zh: [三星]}
+  - {id: huawei, label: Huawei, en: [huawei, freebuds], zh: [华为]}
+  - {id: xiaomi, label: Xiaomi, en: [xiaomi, redmi], zh: [小米, 红米]}
+  - {id: lenovo, label: Lenovo, en: [lenovo, thinkpad], zh: [联想]}
+  - {id: sony, label: Sony, en: [sony], zh: [索尼]}
+  - {id: beats, label: Beats, en: [beats], zh: []}
+  - {id: casio, label: Casio, en: [casio], zh: [卡西欧]}
+  - {id: texas_instruments, label: Texas Instruments, en: [texas instruments, ti-84, ti84, ti-nspire, ti nspire], zh: [德州仪器]}
+  - {id: muji, label: Muji, en: [muji], zh: [无印良品]}
+  - {id: deli, label: Deli, en: [deli stationery], zh: [得力]}
+  - {id: jansport, label: JanSport, en: [jansport], zh: [杰斯伯]}
+  - {id: herschel, label: Herschel, en: [herschel], zh: [赫歇尔]}
+  - {id: kanken, label: Fjällräven Kånken, en: [kanken, fjallraven], zh: [北极狐]}
+
+# Distinguishing marks: what makes *this* bottle different from the other five black bottles.
+marks:
+  - {id: sticker, label: {en: sticker, zh: 贴纸}, en: [sticker, stickers, decal, decals], zh: [贴纸, 贴画]}
+  - {id: name, label: {en: name written on it, zh: 写了名字}, en: [name tag, name label, my name, name on it, name written, written on it, labeled, labelled], zh: [名字, 姓名, 名牌, 写着, 写了, 签名]}
+  - {id: keychain, label: {en: keychain / charm, zh: 挂件}, en: [keychain, key chain, charm, pendant, bag charm], zh: [挂件, 钥匙扣, 挂坠, 吊坠, 挂饰, 挂链]}
+  - {id: dent, label: {en: dent, zh: 凹痕}, en: [dent, dented, dents], zh: [凹痕, 凹, 瘪, 磕瘪]}
+  - {id: scratch, label: {en: scratches, zh: 划痕}, en: [scratch, scratched, scratches, scuffed, worn], zh: [划痕, 刮花, 磨损, 掉漆]}
+  - {id: crack, label: {en: crack, zh: 裂痕}, en: [crack, cracked, broken screen, shattered], zh: [裂痕, 碎屏, 裂了, 摔碎, 裂]}
+  - {id: case, label: {en: case / cover, zh: 保护壳}, en: [case, cover, protective case, phone case, silicone case], zh: [手机壳, 保护壳, 保护套, 壳]}
+  - {id: strap, label: {en: strap / lanyard, zh: 挂绳}, en: [strap, lanyard, wrist strap], zh: [挂绳, 背带, 手绳]}
+  - {id: engraving, label: {en: engraving, zh: 刻字}, en: [engraved, engraving], zh: [刻字, 刻着, 刻了]}
+  - {id: pattern, label: {en: pattern / print, zh: 图案}, en: [pattern, striped, stripes, polka dots, plaid, floral, print, printed, logo], zh: [条纹, 图案, 波点, 格子, 印花, 花纹, logo]}
+  - {id: tape, label: {en: tape, zh: 胶带}, en: [tape, taped], zh: [胶带, 胶布]}
+
+# Motifs (stickers, charms, prints) — canonical tokens make "恐龙贴纸" and "dinosaur sticker" agree
+# even without the neural model.
+motifs:
+  - {id: dinosaur, en: [dinosaur, dino, t-rex], zh: [恐龙]}
+  - {id: cat, en: [cat, kitty, kitten], zh: [猫, 小猫, 猫咪]}
+  - {id: dog, en: [dog, puppy], zh: [狗, 小狗]}
+  - {id: bear, en: [bear, teddy], zh: [熊, 小熊]}
+  - {id: rabbit, en: [rabbit, bunny], zh: [兔子, 兔]}
+  - {id: panda, en: [panda], zh: [熊猫]}
+  - {id: star, en: [star, stars], zh: [星星, 五角星]}
+  - {id: heart, en: [heart, hearts], zh: [爱心, 心形]}
+  - {id: flower, en: [flower, flowers, daisy], zh: [花朵, 小花, 雏菊]}
+  - {id: shark, en: [shark], zh: [鲨鱼]}
+  - {id: dragon, en: [dragon, sea dragon], zh: [龙, 海龙]}
+  - {id: rocket, en: [rocket, spaceship], zh: [火箭]}
+  - {id: planet, en: [planet, saturn], zh: [星球, 土星]}
+  - {id: moon, en: [moon], zh: [月亮]}
+  - {id: smiley, en: [smiley, smiley face, smile], zh: [笑脸]}
+  - {id: anime, en: [anime, manga, cartoon], zh: [动漫, 卡通, 二次元]}
+  - {id: flag, en: [flag], zh: [国旗, 旗子]}
+  - {id: basketball_motif, en: [nba, lakers, warriors], zh: [湖人, 勇士队]}
+  - {id: music_motif, en: [music note, band], zh: [音符]}
+  - {id: fruit, en: [strawberry, cherry, avocado, banana], zh: [草莓, 樱桃, 牛油果, 香蕉]}
+
+# Words that carry no identifying information (removed when computing the "detail" residual).
+stopwords:
+  en: [i, me, my, mine, a, an, the, it, its, is, was, were, be, been, has, have, had, with, without,
+       of, "on", in, at, near, by, to, from, for, and, or, but, this, that, there, some, one, lost,
+       found, lose, find, someone, somebody, left, please, help, contact, thanks, thank, you, if,
+       anyone, seen, see, saw, picked, up, pick, today, yesterday, morning, afternoon, after, before,
+       during, class, school, around, maybe, probably, think, behind, under, next, room, area, while,
+       just, really, very, little, kind, sort, has, had, got, any, me, us, our, we, dropped, forgot,
+       forgotten, missing, return, returned, reward, front, desk, handed, bring, brought, item]
+  zh: [我, 我的, 的, 了, 在, 一个, 个, 是, 有, 和, 把, 被, 丢了, 丢失, 弄丢, 捡到, 找到, 发现, 请, 谢谢,
+       联系, 今天, 昨天, 上午, 下午, 早上, 晚上, 时候, 可能, 应该, 好像, 附近, 旁边, 里面, 上面, 下面,
+       一下, 一只, 一件, 一副, 一把, 一本, 一条, 一顶, 一双, 有人, 看到, 吗, 呢, 吧, 啊, 帮忙, 帮我,
+       找, 丢, 捡, 放, 交到, 前台, 失主, 认领, 东西, 物品, 那个, 这个, 上课, 课后, 之后, 之前]
