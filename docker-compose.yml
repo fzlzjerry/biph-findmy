@@ -1,0 +1,29 @@
+# Self-hosted fallback: the app + Caddy (automatic HTTPS, same headers as vercel.json).
+# See docs/self-hosting.md.
+#
+#   cp .env.example .env    # then edit it
+#   SITE_ADDRESS=findmy.example.com docker compose up -d --build
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      APP_ENV: production
+    volumes:
+      - findmy-data:/data          # SQLite database + uploaded photos
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on: [app]
+    ports: ["80:80", "443:443"]
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data           # TLS certificates
+
+volumes:
+  findmy-data:
+  caddy-data:

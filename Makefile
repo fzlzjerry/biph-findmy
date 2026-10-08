@@ -1,4 +1,4 @@
-.PHONY: setup model test eval fit dev web build e2e schema
+.PHONY: setup model test eval fit dev web build e2e schema notebooks docker
 
 setup:            ## install Python + frontend deps
 	uv sync
@@ -32,3 +32,9 @@ e2e:              ## Playwright end-to-end tests
 
 schema:           ## regenerate supabase/migrations from the SQLAlchemy models
 	uv run python scripts/gen_schema.py
+
+notebooks:        ## re-run the Data Science Club notebooks (outputs are saved in place)
+	uv run python scripts/run_notebooks.py
+
+docker:           ## self-hosted fallback image (docs/self-hosting.md)
+	docker compose build

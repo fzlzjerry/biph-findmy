@@ -24,6 +24,10 @@ dependencies = [
 ]
 
 [dependency-groups]
+# Only for the self-hosted Docker image (Vercel brings its own ASGI server).
+server = [
+    "uvicorn[standard]>=0.32",
+]
 dev = [
     "pytest>=8.3",
     "uvicorn[standard]>=0.32",
@@ -31,6 +35,10 @@ dev = [
     "matplotlib>=3.9",
     "ruff>=0.8",
     "httpx2>=2.13.1",
+    "nbclient>=0.11.0",
+    "nbformat>=5.11.1",
+    "ipykernel>=7.4.0",
+    "pandas>=3.0.6",
 ]
 
 [tool.uv]

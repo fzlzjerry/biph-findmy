@@ -22,7 +22,7 @@ This is the Q1 project of two clubs. The only interface between them is two func
 |---|---|---|
 | Code | [`matcher/`](matcher/) | [`backend/`](backend/), [`frontend/`](frontend/) |
 | Work | bilingual taxonomy, NLP extraction, evidence scoring, weight fitting, evaluation, the real-data activity | reporting, database, search and filters, claims, admin tools, website, deployment |
-| Read | [evaluation report](docs/eval_report.md) · [data collection guide](docs/data-collection.md) | [architecture](#architecture--架构) · [Supabase setup](docs/supabase-auth-setup.md) |
+| Read | [evaluation report](docs/eval_report.md) · [notebooks](matcher/notebooks/) · [data collection guide](docs/data-collection.md) | [architecture](#architecture--架构) · [Supabase setup](docs/supabase-auth-setup.md) · [self-hosting](docs/self-hosting.md) |
 
 ## How matching works · 匹配原理
 
@@ -81,11 +81,13 @@ flowchart LR
 
 ```
 matcher/           DS Club: normalize, extract, features, scoring, explain, embed (ONNX), eval/, data/
+matcher/notebooks/ 01 data exploration · 02 text models compared · 03 weight fitting
 backend/app/       FastAPI: routers (auth, items, claims, admin, cron, media), services, models, seed
 frontend/          React 19 + Vite + Tailwind, zh/en, Playwright e2e (tests/e2e)
 supabase/          generated Postgres migration
-scripts/           fetch_model.py (pinned, checksummed), gen_schema.py, vercel_build.py
-docs/              evaluation report, data collection, Supabase setup, screenshots
+scripts/           fetch_model.py (pinned, checksummed), gen_schema.py, vercel_build.py, run_notebooks.py
+docs/              evaluation report, data collection, Supabase setup, self-hosting, screenshots
+Dockerfile         self-hosted fallback (docker-compose.yml + deploy/Caddyfile)
 ```
 
 ## Run it locally · 本地运行
@@ -104,7 +106,7 @@ console instead of being emailed. Demo accounts: `student.demo@findmy.local`, `f
 and `desk.demo@findmy.local` (front desk / admin).
 
 ```bash
-make test         # 52 Python tests: extraction, scoring, golden cases, API, permissions, images
+make test         # 60 Python tests: extraction, scoring, golden cases, API, permissions, images
 make e2e          # Playwright: browse, report → match, claim → approve → returned, zh/en, screenshots
 ```
 
@@ -117,6 +119,9 @@ Settings are listed in [`.env.example`](.env.example). Production uses `APP_ENV=
 `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `CRON_SECRET`, `ALLOWED_EMAIL_DOMAINS` and `ADMIN_EMAILS`.
 
 Schema changes: edit `backend/app/models.py`, then run `make schema` and apply the new migration in Supabase.
+
+If campus can't reach Vercel, the same app runs on a Hong Kong VPS or a school server with
+`docker compose up -d --build`. See [docs/self-hosting.md](docs/self-hosting.md).
 
 ## Privacy · 隐私
 

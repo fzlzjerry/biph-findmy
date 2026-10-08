@@ -1,0 +1,14 @@
+.git
+.venv
+**/node_modules
+**/__pycache__
+.pytest_cache
+data
+docs
+frontend/dist
+frontend/test-results
+frontend/playwright-report
+matcher/models/*
+.env
+.env.*
+.vercel
