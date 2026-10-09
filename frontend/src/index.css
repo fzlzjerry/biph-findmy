@@ -189,6 +189,11 @@
     letter-spacing: 0 !important;
   }
 
+  /* CJK display lines need more air than the Latin face's tight 0.98–1.02 leading. */
+  :lang(zh) h1 {
+    line-height: 1.18 !important;
+  }
+
   .tabular,
   time,
   td {

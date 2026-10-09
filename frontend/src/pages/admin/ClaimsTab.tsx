@@ -7,7 +7,7 @@ import { BandBadge } from "@/components/badges";
 import { BusyButton } from "@/components/BusyButton";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FormField } from "@/components/form";
-import { ItemThumb, itemTitle, ProbabilityMeter, ReasonChips } from "@/components/ItemBits";
+import { Email, ItemThumb, itemTitle, ProbabilityMeter, ReasonChips } from "@/components/ItemBits";
 import { SectionHeader } from "@/components/page";
 import { EmptyState, ErrorState, RowsSkeleton } from "@/components/States";
 import { useToast } from "@/components/Toast";
@@ -110,7 +110,7 @@ function ClaimReview({ claim }: { claim: Claim }) {
           {found ? <ItemSummary item={found} showPrivate /> : <p className="text-sm text-muted-foreground">{t("me.itemRemoved")}</p>}
           {found?.reporter && (
             <p className="text-sm text-muted-foreground">
-              {t("admin.reporter")}: <span className="text-foreground">{found.reporter.display_name}</span> · {found.reporter.email}
+              {t("admin.reporter")}: <span className="text-foreground">{found.reporter.display_name}</span> · <Email value={found.reporter.email} />
             </p>
           )}
         </section>
@@ -118,7 +118,7 @@ function ClaimReview({ claim }: { claim: Claim }) {
           <div className="space-y-1">
             <SubHeading>{t("admin.claimant")}</SubHeading>
             <p className="font-medium">{claim.claimant?.display_name}</p>
-            <p className="text-sm break-all text-muted-foreground">{claim.claimant?.email}</p>
+            <p className="text-sm text-muted-foreground">{claim.claimant && <Email value={claim.claimant.email} />}</p>
           </div>
           <div className="space-y-1.5">
             <SubHeading>{t("admin.proof")}</SubHeading>
@@ -205,7 +205,7 @@ function PickupRow({ claim, onReturn }: { claim: Claim; onReturn: (claim: Claim)
         <div className="min-w-0 flex-1">{found && <ItemSummary item={found} />}</div>
         <div className="min-w-0 text-sm sm:w-56">
           <p className="font-medium">{claim.claimant?.display_name}</p>
-          <p className="break-all text-muted-foreground">{claim.claimant?.email}</p>
+          <p className="text-muted-foreground">{claim.claimant && <Email value={claim.claimant.email} />}</p>
           {claim.decided_at && <p className="text-muted-foreground">{t("admin.approvedOn", { time: formatRelative(claim.decided_at, lang, now) })}</p>}
         </div>
         <Button onClick={() => onReturn(claim)} className="sm:shrink-0">

@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { KindBadge, ToneBadge } from "@/components/badges";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { ItemThumb, itemTitle, RelativeTime } from "@/components/ItemBits";
+import { Email, ItemThumb, itemTitle, RelativeTime } from "@/components/ItemBits";
 import { EmptyState, ErrorState, RowsSkeleton } from "@/components/States";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
@@ -66,8 +66,8 @@ function ItemRow({ item, onReturn }: { item: Item; onReturn: (item: Item) => voi
               {item.reporter && (
                 <>
                   <span aria-hidden>·</span>
-                  <span className="break-all">
-                    {item.reporter.display_name} ({item.reporter.email})
+                  <span className="min-w-0">
+                    {item.reporter.display_name} (<Email value={item.reporter.email} />)
                   </span>
                 </>
               )}

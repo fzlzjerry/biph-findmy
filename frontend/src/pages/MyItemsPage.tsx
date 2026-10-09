@@ -7,7 +7,7 @@ import { ClaimBadge, KindBadge, StatusBadge, ToneBadge } from "@/components/badg
 import { BusyButton } from "@/components/BusyButton";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FormField } from "@/components/form";
-import { ItemThumb, itemTitle, RelativeTime } from "@/components/ItemBits";
+import { Email, ItemThumb, itemTitle, RelativeTime } from "@/components/ItemBits";
 import { PageHeader } from "@/components/page";
 import { EmptyState, ErrorState, RowsSkeleton } from "@/components/States";
 import { useToast } from "@/components/Toast";
@@ -135,7 +135,11 @@ function ProfileForm() {
         <CardTitle role="heading" aria-level={2}>
           {t("me.profile")}
         </CardTitle>
-        <CardDescription className="break-all">{t("me.signedInAs", { email: user.email })}</CardDescription>
+        <CardDescription>
+          {t("me.signedInAs", { email: "\u0000" }).split("\u0000")[0]}
+          <Email value={user.email} />
+          {t("me.signedInAs", { email: "\u0000" }).split("\u0000")[1]}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={submit} className="space-y-3">

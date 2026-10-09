@@ -16,8 +16,8 @@ await mkdir(outDir, { recursive: true });
 const targets = [
   ["icon-192.png", 192, null, 1],
   ["icon-512.png", 512, null, 1],
-  ["maskable-512.png", 512, "#2563eb", 0.8], // the rounded square bleeds into the brand blue; mark stays in the safe zone
-  ["apple-touch-icon.png", 180, "#2563eb", 1], // iOS does not support transparency and rounds the corners itself
+  ["maskable-512.png", 512, "#2c2e2a", 0.8], // the rounded square bleeds into the ink ground; mark stays in the safe zone
+  ["apple-touch-icon.png", 180, "#2c2e2a", 1], // iOS does not support transparency and rounds the corners itself
 ];
 
 const browser = await chromium.launch();

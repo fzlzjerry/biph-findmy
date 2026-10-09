@@ -180,7 +180,7 @@ function MobileMenu() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="lg:hidden" aria-label={open ? t("nav.closeMenu") : t("nav.openMenu")}>
+        <Button variant="ghost" size="icon" className="xl:hidden" aria-label={open ? t("nav.closeMenu") : t("nav.openMenu")}>
           <Menu aria-hidden className="size-5" />
         </Button>
       </SheetTrigger>
@@ -256,7 +256,7 @@ function Header() {
     <header className="sticky top-0 z-40 bg-background/92 backdrop-blur-md supports-backdrop-filter:bg-background/80">
       <div className="container-page flex h-[4.5rem] items-center gap-6">
         <Wordmark />
-        <nav aria-label={t("nav.main")} className="hidden min-w-0 items-center gap-1 lg:flex">
+        <nav aria-label={t("nav.main")} className="hidden min-w-0 items-center gap-1 xl:flex">
           {items.map((item) => (
             <NavLink key={item.to} to={item.to} end={item.to === "/admin"} className={link}>
               {item.label}
@@ -277,7 +277,7 @@ function Header() {
             </Button>
           </div>
           <LanguageToggle />
-          <div className="hidden lg:block">
+          <div className="hidden xl:block">
             {me.isPending ? (
               <div className="h-9 w-24" />
             ) : user ? (

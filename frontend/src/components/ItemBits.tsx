@@ -168,3 +168,18 @@ export function ReasonChips({ reasons }: { reasons: Reason[] }) {
     </ul>
   );
 }
+
+/** An email address that may only wrap at "@" or ".", never in the middle of a word. */
+export function Email({ value }: { value: string }) {
+  const parts = value.split(/(?=[@.])/);
+  return (
+    <span className="whitespace-normal">
+      {parts.map((part, i) => (
+        <span key={i}>
+          {i > 0 && <wbr />}
+          <span className="whitespace-nowrap">{part}</span>
+        </span>
+      ))}
+    </span>
+  );
+}
