@@ -1,7 +1,7 @@
 import { ArrowRight, Check, ThumbsDown, Undo2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
-import { BandBadge, ToneBadge } from "@/components/badges";
+import { ToneBadge } from "@/components/badges";
 import { ItemThumb, itemTitle, ProbabilityMeter, ReasonChips, RelativeTime } from "@/components/ItemBits";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -31,8 +31,10 @@ export function MatchCard({ match, lostItemId, canFeedback, onFeedback, feedback
       data-testid="match-card"
       data-band={match.band}
       className={cn(
-        "grid grid-cols-[4.5rem_minmax(0,1fr)] gap-3 p-3 sm:grid-cols-[7rem_minmax(0,1fr)] sm:gap-x-4 sm:p-4",
-        match.band === "strong" && "ring-primary/40",
+        "grid gap-3 rounded-[1.5rem] sm:gap-x-5",
+        match.band === "strong"
+          ? "grid-cols-[4.5rem_minmax(0,1fr)] p-5 sm:grid-cols-[6rem_minmax(0,1fr)] sm:p-6"
+          : "grid-cols-[3.5rem_minmax(0,1fr)] p-4 sm:grid-cols-[4rem_minmax(0,1fr)]",
         match.feedback === "rejected" && "opacity-70",
       )}
     >
@@ -40,14 +42,14 @@ export function MatchCard({ match, lostItemId, canFeedback, onFeedback, feedback
         to={`/items/${other.id}`}
         tabIndex={-1}
         aria-hidden="true"
-        className="block size-18 overflow-hidden rounded-lg bg-muted sm:row-span-2 sm:size-28"
+        className={cn("block overflow-hidden rounded-full sm:row-span-2", match.band === "strong" ? "size-18 sm:size-24" : "size-14 sm:size-16")}
       >
-        <ItemThumb item={other} />
+        <ItemThumb item={other} iconClass="size-2/5" />
       </Link>
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-          <BandBadge band={match.band} />
           <ProbabilityMeter value={match.probability} />
+          <span className="text-sm font-semibold">{t(`band.${match.band}`)}</span>
           {match.feedback === "confirmed" && (
             <ToneBadge tone="green" icon={Check}>
               {t("item.confirmedNote")}
@@ -55,8 +57,8 @@ export function MatchCard({ match, lostItemId, canFeedback, onFeedback, feedback
           )}
           {match.feedback === "rejected" && <ToneBadge tone="gray">{t("item.rejectedNote")}</ToneBadge>}
         </div>
-        <h3 id={headingId} className="mt-2 font-medium leading-snug break-words">
-          <Link to={`/items/${other.id}`} className="underline-offset-4 hover:underline">
+        <h3 id={headingId} className={cn("mt-2 leading-snug font-semibold break-words", match.band === "strong" ? "text-xl" : "text-base")}>
+          <Link to={`/items/${other.id}`} className="hover:underline">
             {itemTitle(other, 110)}
           </Link>
         </h3>
@@ -73,11 +75,22 @@ export function MatchCard({ match, lostItemId, canFeedback, onFeedback, feedback
         </p>
       </div>
       <div className="col-span-2 min-w-0 sm:col-span-1 sm:col-start-2">
-        <ReasonChips reasons={match.reasons} />
+        {match.band === "weak" ? (
+          <details className="group/reasons">
+            <summary className="w-fit rounded-full text-sm font-semibold text-muted-foreground hover:text-foreground">
+              {t("item.reasons")} ({match.reasons.length})
+            </summary>
+            <div className="mt-2">
+              <ReasonChips reasons={match.reasons} />
+            </div>
+          </details>
+        ) : (
+          <ReasonChips reasons={match.reasons} />
+        )}
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
           {canFeedback && match.feedback !== "confirmed" && (
-            <Button variant="outline" disabled={feedbackPending} onClick={() => onFeedback?.("confirmed")}>
+            <Button variant="sun" disabled={feedbackPending} onClick={() => onFeedback?.("confirmed")}>
               <Check aria-hidden data-icon="inline-start" />
               {t("item.mine")}
             </Button>
@@ -91,7 +104,7 @@ export function MatchCard({ match, lostItemId, canFeedback, onFeedback, feedback
             </Button>
           )}
           {canFeedback && match.feedback === null && (
-            <Button variant="ghost" disabled={feedbackPending} onClick={() => onFeedback?.("rejected")}>
+            <Button variant="outline" disabled={feedbackPending} onClick={() => onFeedback?.("rejected")}>
               <ThumbsDown aria-hidden data-icon="inline-start" />
               {t("item.notMine")}
             </Button>

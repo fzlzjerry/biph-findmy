@@ -183,19 +183,24 @@ def list_items(
     items = list(db.scalars(stmt.order_by(Item.created_at.desc()).limit(800)).unique().all())
     if color:
         items = [i for i in items if color in (i.colors or [])]
-    if place:
-        items = [i for i in items if place in (i.locations or [])]
-    elif zone:
-        items = [i for i in items if any(v.zone_of(p) == zone for p in i.locations or [])]
     if q.strip():
         scores = search_scores(q, items)
         floor = 0.45 if get_matcher().embedder is not None else 0.08
         items = [i for i in items if scores.get(i.id, 0) >= floor]
         items.sort(key=lambda i: -scores[i.id])
+    # Per-zone counts under every filter except the place/zone one: the campus map is that filter.
+    zones: dict[str, int] = {}
+    for i in items:
+        for z in {v.zone_of(p) for p in i.locations or []} - {None}:
+            zones[z] = zones.get(z, 0) + 1
+    if place:
+        items = [i for i in items if place in (i.locations or [])]
+    elif zone:
+        items = [i for i in items if any(v.zone_of(p) == zone for p in i.locations or [])]
     total = len(items)
     start = (page - 1) * page_size
     return {"items": [item_view(i, viewer) for i in items[start:start + page_size]], "total": total,
-            "page": page, "page_size": page_size}
+            "page": page, "page_size": page_size, "zones": zones}
 
 
 @router.get("/items/{item_id}")

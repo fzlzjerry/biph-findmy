@@ -106,6 +106,15 @@ const en = {
     chinaTime: "China time (UTC+8)",
     between: "{{from}} – {{to}}",
   },
+  map: {
+    label: "Campus zones",
+    count_one: "{{count}} item",
+    count_other: "{{count}} items",
+    title: "Where things turn up",
+    hint: "Tap a zone to see what was found there.",
+    allZones: "All of campus",
+    short: { sports: "Sports", academic: "Academic", library: "Library", dining: "Cafeteria", arts: "Arts", boarding: "Boarding", entrance: "Gate & bus", other: "Other" },
+  },
   home: {
     title: "Lost something at school? Let’s get it back.",
     eyebrow: "BIPH campus lost & found",
@@ -120,6 +129,8 @@ const en = {
     recent: "Recently found",
     recentLead: "Handed in at the front desk or reported by students.",
     browseAll: "Browse all found items",
+    mapLead: "Found items by where they turned up. Tap a zone.",
+    searchTitle: "Or describe what you lost",
     emptyRecent: "Nothing has been handed in yet. Lucky you!",
     stepsTitle: "How it works",
     step1Title: "Describe it",
@@ -218,7 +229,7 @@ const en = {
     marksHint:
       "Stickers, keychains, initials, a name label, dents, scratches… This is the #1 thing that helps us tell look-alikes apart.",
     marksPlaceholder: "e.g. dinosaur sticker, “K.L.” written under the lid",
-    marksStat: "In our tests, reports with a distinguishing mark were matched first 62% of the time, versus 40% without.",
+    marksStat: "In our tests on a synthetic look-alike set, reports with a distinguishing mark were matched first 62% of the time, versus 40% without.",
     zone: "Area",
     zonePlaceholder: "Choose an area…",
     placesIn: "Places in {{zone}}",
@@ -616,7 +627,7 @@ const en = {
     evalNote: "Synthetic test data — an upper-bound sanity check, not a promise. Full report: docs/eval_report.md.",
     marksTitle: "Why we ask about distinguishing marks",
     marksBody:
-      "Two plain black bottles look identical to any algorithm. With five look-alikes on campus, reports that mention a sticker, keychain or initials were matched first 62% of the time, versus 40% without.",
+      "Two plain black bottles look identical to any algorithm. On a synthetic test set with five look-alikes on campus, reports that mention a sticker, keychain or initials were matched first 62% of the time, versus 40% without.",
     privacyTitle: "Privacy promises",
     privacy1Title: "No contact details are shared",
     privacy1: "Owners and finders never see each other’s names or emails — the front desk handles every handover.",

@@ -1,0 +1,636 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-09T04:54:20+00:00",
+  "title": "Design System: BIPH FindMy",
+  "extensions": {
+    "colorMeta": {
+      "ink": {
+        "role": "primary",
+        "displayName": "Map Ink",
+        "canonical": "oklch(29.8% 0.008 128.7)",
+        "tonalRamp": [
+          "oklch(15% 0.008 128.7)",
+          "oklch(26% 0.008 128.7)",
+          "oklch(38% 0.008 128.7)",
+          "oklch(50% 0.008 128.7)",
+          "oklch(62% 0.008 128.7)",
+          "oklch(74% 0.008 128.7)",
+          "oklch(85% 0.008 128.7)",
+          "oklch(95% 0.008 128.7)"
+        ]
+      },
+      "sun": {
+        "role": "primary",
+        "displayName": "Signpost Sun",
+        "canonical": "oklch(90.0% 0.187 103.2)",
+        "tonalRamp": [
+          "oklch(15% 0.092 103.2)",
+          "oklch(26% 0.118 103.2)",
+          "oklch(38% 0.146 103.2)",
+          "oklch(50% 0.174 103.2)",
+          "oklch(62% 0.187 103.2)",
+          "oklch(74% 0.165 103.2)",
+          "oklch(85% 0.139 103.2)",
+          "oklch(95% 0.115 103.2)"
+        ]
+      },
+      "sun-deep": {
+        "role": "primary",
+        "displayName": "Sun Deep",
+        "canonical": "oklch(87.0% 0.183 103.1)",
+        "tonalRamp": [
+          "oklch(15% 0.090 103.1)",
+          "oklch(26% 0.115 103.1)",
+          "oklch(38% 0.143 103.1)",
+          "oklch(50% 0.170 103.1)",
+          "oklch(62% 0.183 103.1)",
+          "oklch(74% 0.161 103.1)",
+          "oklch(85% 0.136 103.1)",
+          "oklch(95% 0.113 103.1)"
+        ]
+      },
+      "coral": {
+        "role": "secondary",
+        "displayName": "Found Coral",
+        "canonical": "oklch(71.6% 0.178 29.8)",
+        "tonalRamp": [
+          "oklch(15% 0.088 29.8)",
+          "oklch(26% 0.113 29.8)",
+          "oklch(38% 0.139 29.8)",
+          "oklch(50% 0.166 29.8)",
+          "oklch(62% 0.178 29.8)",
+          "oklch(74% 0.157 29.8)",
+          "oklch(85% 0.133 29.8)",
+          "oklch(95% 0.110 29.8)"
+        ]
+      },
+      "coral-deep": {
+        "role": "secondary",
+        "displayName": "Coral Deep",
+        "canonical": "oklch(69.2% 0.199 30.6)",
+        "tonalRamp": [
+          "oklch(15% 0.097 30.6)",
+          "oklch(26% 0.124 30.6)",
+          "oklch(38% 0.154 30.6)",
+          "oklch(50% 0.184 30.6)",
+          "oklch(62% 0.199 30.6)",
+          "oklch(74% 0.174 30.6)",
+          "oklch(85% 0.147 30.6)",
+          "oklch(95% 0.122 30.6)"
+        ]
+      },
+      "zone-sports": {
+        "role": "tertiary",
+        "displayName": "Field Green",
+        "canonical": "oklch(79.9% 0.164 134.8)",
+        "tonalRamp": [
+          "oklch(15% 0.082 134.8)",
+          "oklch(26% 0.104 134.8)",
+          "oklch(38% 0.129 134.8)",
+          "oklch(50% 0.153 134.8)",
+          "oklch(62% 0.164 134.8)",
+          "oklch(74% 0.145 134.8)",
+          "oklch(85% 0.122 134.8)",
+          "oklch(95% 0.102 134.8)"
+        ]
+      },
+      "zone-academic": {
+        "role": "tertiary",
+        "displayName": "Sky Block",
+        "canonical": "oklch(79.6% 0.111 244.6)",
+        "tonalRamp": [
+          "oklch(15% 0.059 244.6)",
+          "oklch(26% 0.074 244.6)",
+          "oklch(38% 0.091 244.6)",
+          "oklch(50% 0.107 244.6)",
+          "oklch(62% 0.111 244.6)",
+          "oklch(74% 0.102 244.6)",
+          "oklch(85% 0.086 244.6)",
+          "oklch(95% 0.073 244.6)"
+        ]
+      },
+      "zone-library": {
+        "role": "tertiary",
+        "displayName": "Library Mint",
+        "canonical": "oklch(86.7% 0.071 181.3)",
+        "tonalRamp": [
+          "oklch(15% 0.041 181.3)",
+          "oklch(26% 0.051 181.3)",
+          "oklch(38% 0.061 181.3)",
+          "oklch(50% 0.071 181.3)",
+          "oklch(62% 0.071 181.3)",
+          "oklch(74% 0.068 181.3)",
+          "oklch(85% 0.059 181.3)",
+          "oklch(95% 0.050 181.3)"
+        ]
+      },
+      "zone-dining": {
+        "role": "tertiary",
+        "displayName": "Canteen Coral",
+        "canonical": "oklch(75.8% 0.145 30.0)",
+        "tonalRamp": [
+          "oklch(15% 0.074 30.0)",
+          "oklch(26% 0.094 30.0)",
+          "oklch(38% 0.115 30.0)",
+          "oklch(50% 0.137 30.0)",
+          "oklch(62% 0.145 30.0)",
+          "oklch(74% 0.130 30.0)",
+          "oklch(85% 0.110 30.0)",
+          "oklch(95% 0.092 30.0)"
+        ]
+      },
+      "zone-arts": {
+        "role": "tertiary",
+        "displayName": "Stage Lilac",
+        "canonical": "oklch(86.7% 0.095 314.7)",
+        "tonalRamp": [
+          "oklch(15% 0.052 314.7)",
+          "oklch(26% 0.065 314.7)",
+          "oklch(38% 0.079 314.7)",
+          "oklch(50% 0.093 314.7)",
+          "oklch(62% 0.095 314.7)",
+          "oklch(74% 0.088 314.7)",
+          "oklch(85% 0.075 314.7)",
+          "oklch(95% 0.063 314.7)"
+        ]
+      },
+      "zone-boarding": {
+        "role": "tertiary",
+        "displayName": "Dorm Apricot",
+        "canonical": "oklch(86.2% 0.100 66.3)",
+        "tonalRamp": [
+          "oklch(15% 0.054 66.3)",
+          "oklch(26% 0.068 66.3)",
+          "oklch(38% 0.083 66.3)",
+          "oklch(50% 0.098 66.3)",
+          "oklch(62% 0.100 66.3)",
+          "oklch(74% 0.093 66.3)",
+          "oklch(85% 0.079 66.3)",
+          "oklch(95% 0.066 66.3)"
+        ]
+      },
+      "zone-entrance": {
+        "role": "tertiary",
+        "displayName": "Gate Yellow",
+        "canonical": "oklch(90.0% 0.187 103.2)",
+        "tonalRamp": [
+          "oklch(15% 0.092 103.2)",
+          "oklch(26% 0.118 103.2)",
+          "oklch(38% 0.146 103.2)",
+          "oklch(50% 0.174 103.2)",
+          "oklch(62% 0.187 103.2)",
+          "oklch(74% 0.165 103.2)",
+          "oklch(85% 0.139 103.2)",
+          "oklch(95% 0.115 103.2)"
+        ]
+      },
+      "zone-other": {
+        "role": "tertiary",
+        "displayName": "Sandbar",
+        "canonical": "oklch(87.6% 0.025 91.6)",
+        "tonalRamp": [
+          "oklch(15% 0.021 91.6)",
+          "oklch(26% 0.024 91.6)",
+          "oklch(38% 0.025 91.6)",
+          "oklch(50% 0.025 91.6)",
+          "oklch(62% 0.025 91.6)",
+          "oklch(74% 0.025 91.6)",
+          "oklch(85% 0.025 91.6)",
+          "oklch(95% 0.024 91.6)"
+        ]
+      },
+      "cream": {
+        "role": "neutral",
+        "displayName": "Cream Water",
+        "canonical": "oklch(95.8% 0.018 92.7)",
+        "tonalRamp": [
+          "oklch(15% 0.018 92.7)",
+          "oklch(26% 0.018 92.7)",
+          "oklch(38% 0.018 92.7)",
+          "oklch(50% 0.018 92.7)",
+          "oklch(62% 0.018 92.7)",
+          "oklch(74% 0.018 92.7)",
+          "oklch(85% 0.018 92.7)",
+          "oklch(95% 0.018 92.7)"
+        ]
+      },
+      "card-white": {
+        "role": "neutral",
+        "displayName": "Card White",
+        "canonical": "oklch(100.0% 0.000 89.9)",
+        "tonalRamp": [
+          "oklch(15% 0.000 89.9)",
+          "oklch(26% 0.000 89.9)",
+          "oklch(38% 0.000 89.9)",
+          "oklch(50% 0.000 89.9)",
+          "oklch(62% 0.000 89.9)",
+          "oklch(74% 0.000 89.9)",
+          "oklch(85% 0.000 89.9)",
+          "oklch(95% 0.000 89.9)"
+        ]
+      },
+      "ink-reverse": {
+        "role": "neutral",
+        "displayName": "Ink Reverse",
+        "canonical": "oklch(99.4% 0.009 93.6)",
+        "tonalRamp": [
+          "oklch(15% 0.009 93.6)",
+          "oklch(26% 0.009 93.6)",
+          "oklch(38% 0.009 93.6)",
+          "oklch(50% 0.009 93.6)",
+          "oklch(62% 0.009 93.6)",
+          "oklch(74% 0.009 93.6)",
+          "oklch(85% 0.009 93.6)",
+          "oklch(95% 0.009 93.6)"
+        ]
+      },
+      "sand": {
+        "role": "neutral",
+        "displayName": "Sand",
+        "canonical": "oklch(92.2% 0.025 91.6)",
+        "tonalRamp": [
+          "oklch(15% 0.021 91.6)",
+          "oklch(26% 0.024 91.6)",
+          "oklch(38% 0.025 91.6)",
+          "oklch(50% 0.025 91.6)",
+          "oklch(62% 0.025 91.6)",
+          "oklch(74% 0.025 91.6)",
+          "oklch(85% 0.025 91.6)",
+          "oklch(95% 0.024 91.6)"
+        ]
+      },
+      "muted-sand": {
+        "role": "neutral",
+        "displayName": "Muted Sand",
+        "canonical": "oklch(93.4% 0.022 89.8)",
+        "tonalRamp": [
+          "oklch(15% 0.020 89.8)",
+          "oklch(26% 0.022 89.8)",
+          "oklch(38% 0.022 89.8)",
+          "oklch(50% 0.022 89.8)",
+          "oklch(62% 0.022 89.8)",
+          "oklch(74% 0.022 89.8)",
+          "oklch(85% 0.022 89.8)",
+          "oklch(95% 0.022 89.8)"
+        ]
+      },
+      "muted-ink": {
+        "role": "neutral",
+        "displayName": "Muted Ink",
+        "canonical": "oklch(47.4% 0.018 94.4)",
+        "tonalRamp": [
+          "oklch(15% 0.018 94.4)",
+          "oklch(26% 0.018 94.4)",
+          "oklch(38% 0.018 94.4)",
+          "oklch(50% 0.018 94.4)",
+          "oklch(62% 0.018 94.4)",
+          "oklch(74% 0.018 94.4)",
+          "oklch(85% 0.018 94.4)",
+          "oklch(95% 0.018 94.4)"
+        ]
+      },
+      "hairline": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "oklch(89.2% 0.028 90.9)",
+        "tonalRamp": [
+          "oklch(15% 0.022 90.9)",
+          "oklch(26% 0.026 90.9)",
+          "oklch(38% 0.028 90.9)",
+          "oklch(50% 0.028 90.9)",
+          "oklch(62% 0.028 90.9)",
+          "oklch(74% 0.028 90.9)",
+          "oklch(85% 0.028 90.9)",
+          "oklch(95% 0.026 90.9)"
+        ]
+      },
+      "field-stroke": {
+        "role": "neutral",
+        "displayName": "Field Stroke",
+        "canonical": "oklch(84.9% 0.035 90.5)",
+        "tonalRamp": [
+          "oklch(15% 0.025 90.5)",
+          "oklch(26% 0.030 90.5)",
+          "oklch(38% 0.035 90.5)",
+          "oklch(50% 0.035 90.5)",
+          "oklch(62% 0.035 90.5)",
+          "oklch(74% 0.035 90.5)",
+          "oklch(85% 0.034 90.5)",
+          "oklch(95% 0.030 90.5)"
+        ]
+      },
+      "destructive": {
+        "role": "neutral",
+        "displayName": "Alarm Red",
+        "canonical": "oklch(54.2% 0.186 30.9)",
+        "tonalRamp": [
+          "oklch(15% 0.091 30.9)",
+          "oklch(26% 0.117 30.9)",
+          "oklch(38% 0.145 30.9)",
+          "oklch(50% 0.172 30.9)",
+          "oklch(62% 0.186 30.9)",
+          "oklch(74% 0.163 30.9)",
+          "oklch(85% 0.138 30.9)",
+          "oklch(95% 0.114 30.9)"
+        ]
+      },
+      "success": {
+        "role": "neutral",
+        "displayName": "Return Green",
+        "canonical": "oklch(51.6% 0.127 144.8)",
+        "tonalRamp": [
+          "oklch(15% 0.066 144.8)",
+          "oklch(26% 0.083 144.8)",
+          "oklch(38% 0.102 144.8)",
+          "oklch(50% 0.121 144.8)",
+          "oklch(62% 0.127 144.8)",
+          "oklch(74% 0.115 144.8)",
+          "oklch(85% 0.097 144.8)",
+          "oklch(95% 0.082 144.8)"
+        ]
+      },
+      "chart-found": {
+        "role": "neutral",
+        "displayName": "Chart Found",
+        "canonical": "oklch(68.9% 0.171 248.6)",
+        "tonalRamp": [
+          "oklch(15% 0.085 248.6)",
+          "oklch(26% 0.109 248.6)",
+          "oklch(38% 0.134 248.6)",
+          "oklch(50% 0.160 248.6)",
+          "oklch(62% 0.171 248.6)",
+          "oklch(74% 0.151 248.6)",
+          "oklch(85% 0.128 248.6)",
+          "oklch(95% 0.106 248.6)"
+        ]
+      },
+      "chart-returned": {
+        "role": "neutral",
+        "displayName": "Chart Returned",
+        "canonical": "oklch(70.2% 0.183 138.0)",
+        "tonalRamp": [
+          "oklch(15% 0.090 138.0)",
+          "oklch(26% 0.115 138.0)",
+          "oklch(38% 0.142 138.0)",
+          "oklch(50% 0.170 138.0)",
+          "oklch(62% 0.183 138.0)",
+          "oklch(74% 0.161 138.0)",
+          "oklch(85% 0.136 138.0)",
+          "oklch(95% 0.113 138.0)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Home hero question only."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Page titles; 2.25rem below 640px, 2.75rem above."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Section headings inside pages."
+      },
+      "map-label": {
+        "displayName": "Map Label",
+        "purpose": "Zone names on the campus map; 0.8125rem on the compact strip."
+      },
+      "item-title": {
+        "displayName": "Item Title",
+        "purpose": "Item and match card headings, two-line clamp."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Running text at weight 450; leads 46-60ch."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Buttons, nav, form labels."
+      }
+    },
+    "shadows": [
+      {
+        "name": "card-rest",
+        "value": "0 1px 2px rgb(44 46 42 / 0.06)",
+        "purpose": "Cards, item cards, language toggle, tab list."
+      },
+      {
+        "name": "control-rest",
+        "value": "0 1px 2px rgb(44 46 42 / 0.08)",
+        "purpose": "Outline capsules and search capsules on cream."
+      },
+      {
+        "name": "capsule-lip",
+        "value": "0 1px 0 rgb(44 46 42 / 0.12)",
+        "purpose": "One-pixel lip under sun and coral capsules."
+      },
+      {
+        "name": "card-lift",
+        "value": "0 8px 24px -12px rgb(44 46 42 / 0.35)",
+        "purpose": "Item card hover, with a 2px rise."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-swell",
+        "value": "cubic-bezier(0.34, 1.3, 0.64, 1)",
+        "purpose": "Map lobe swell/recede (400ms) and hero chip slide (300ms)."
+      },
+      {
+        "name": "ease-out-expo",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Control colour, shadow and transform transitions at 200ms."
+      },
+      {
+        "name": "press",
+        "value": "scale(0.97)",
+        "purpose": "Active state on buttons."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "0.01ms",
+        "purpose": "All animation and transition durations collapse under prefers-reduced-motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      },
+      {
+        "name": "xl",
+        "value": "1280px"
+      },
+      {
+        "name": "container-max",
+        "value": "1280px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Ink Capsule",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Default action: claim, search, sign in.",
+      "html": "<button class=\"ds-btn-ink\">Claim it <svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg></button>",
+      "css": ".ds-btn-ink { display:inline-flex; align-items:center; gap:8px; height:40px; padding:0 16px; border:1px solid transparent; border-radius:9999px; font-family: var(--font-sans, 'Work Sans Variable', 'PingFang SC', 'Microsoft YaHei', sans-serif); font-size:14px; font-weight:600; cursor:pointer; transition: background-color .2s cubic-bezier(0.16,1,0.3,1), box-shadow .2s cubic-bezier(0.16,1,0.3,1), transform .2s cubic-bezier(0.16,1,0.3,1); background:#2c2e2a; color:#fffdf6; } .ds-btn-ink:hover { background:rgb(44 46 42 / 0.85); } .ds-btn-ink:focus-visible { outline:2px solid var(--ink, #2c2e2a); outline-offset:2px; } .ds-btn-ink:active { transform: scale(0.97); }"
+    },
+    {
+      "name": "Sun Capsule",
+      "kind": "button",
+      "refersTo": "button-sun",
+      "description": "Report lost and \"This is mine\"; ink text, one-pixel lip.",
+      "html": "<button class=\"ds-btn-sun\">I lost something</button>",
+      "css": ".ds-btn-sun { display:inline-flex; align-items:center; gap:8px; height:40px; padding:0 16px; border:1px solid transparent; border-radius:9999px; font-family: var(--font-sans, 'Work Sans Variable', 'PingFang SC', 'Microsoft YaHei', sans-serif); font-size:14px; font-weight:600; cursor:pointer; transition: background-color .2s cubic-bezier(0.16,1,0.3,1), box-shadow .2s cubic-bezier(0.16,1,0.3,1), transform .2s cubic-bezier(0.16,1,0.3,1); background:#f5e211; color:#2c2e2a; box-shadow:0 1px 0 rgb(44 46 42 / 0.12); } .ds-btn-sun:hover { background:#ebd800; } .ds-btn-sun:focus-visible { outline:2px solid var(--ink, #2c2e2a); outline-offset:2px; } .ds-btn-sun:active { transform: scale(0.97); }"
+    },
+    {
+      "name": "Coral Capsule",
+      "kind": "button",
+      "refersTo": "button-coral",
+      "description": "Report found; the sun capsule's partner.",
+      "html": "<button class=\"ds-btn-coral\">I found something</button>",
+      "css": ".ds-btn-coral { display:inline-flex; align-items:center; gap:8px; height:40px; padding:0 16px; border:1px solid transparent; border-radius:9999px; font-family: var(--font-sans, 'Work Sans Variable', 'PingFang SC', 'Microsoft YaHei', sans-serif); font-size:14px; font-weight:600; cursor:pointer; transition: background-color .2s cubic-bezier(0.16,1,0.3,1), box-shadow .2s cubic-bezier(0.16,1,0.3,1), transform .2s cubic-bezier(0.16,1,0.3,1); background:#ff705d; color:#2c2e2a; box-shadow:0 1px 0 rgb(44 46 42 / 0.12); } .ds-btn-coral:hover { background:#ff5f49; } .ds-btn-coral:focus-visible { outline:2px solid var(--ink, #2c2e2a); outline-offset:2px; } .ds-btn-coral:active { transform: scale(0.97); }"
+    },
+    {
+      "name": "Outline Capsule",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "White secondary capsule on cream; no visible border.",
+      "html": "<button class=\"ds-btn-outline\">Browse all found <svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg></button>",
+      "css": ".ds-btn-outline { display:inline-flex; align-items:center; gap:8px; height:40px; padding:0 16px; border:1px solid transparent; border-radius:9999px; font-family: var(--font-sans, 'Work Sans Variable', 'PingFang SC', 'Microsoft YaHei', sans-serif); font-size:14px; font-weight:600; cursor:pointer; transition: background-color .2s cubic-bezier(0.16,1,0.3,1), box-shadow .2s cubic-bezier(0.16,1,0.3,1), transform .2s cubic-bezier(0.16,1,0.3,1); background:#fff; color:#2c2e2a; box-shadow:0 1px 2px rgb(44 46 42 / 0.08); } .ds-btn-outline:hover { background:#ebe5d3; } .ds-btn-outline:focus-visible { outline:2px solid var(--ink, #2c2e2a); outline-offset:2px; } .ds-btn-outline:active { transform: scale(0.97); }"
+    },
+    {
+      "name": "Hero Capsule with Ink Chip",
+      "kind": "button",
+      "refersTo": "button-hero",
+      "description": "Home hero action: 56px capsule with a round ink chip on the trailing edge that slides on hover.",
+      "html": "<a href=\"#\" class=\"ds-hero-cta\">I lost something <span class=\"ds-hero-chip\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg></span></a>",
+      "css": ".ds-hero-cta { display:inline-flex; align-items:center; gap:8px; height:56px; padding:0 12px 0 28px; border-radius:9999px; background:#f5e211; color:#2c2e2a; text-decoration:none; font-family: var(--font-sans, 'Work Sans Variable', 'PingFang SC', 'Microsoft YaHei', sans-serif); font-size:17px; font-weight:600; box-shadow:0 1px 0 rgb(44 46 42 / 0.12); transition: background-color .2s cubic-bezier(0.16,1,0.3,1), transform .2s; } .ds-hero-cta:hover { background:#ebd800; } .ds-hero-cta:focus-visible { outline:2px solid #2c2e2a; outline-offset:2px; } .ds-hero-cta:active { transform:scale(0.97); } .ds-hero-chip { margin-left:4px; display:flex; width:28px; height:28px; align-items:center; justify-content:center; border-radius:9999px; background:#2c2e2a; color:#f5f1e4; transition: transform .3s cubic-bezier(0.34,1.3,0.64,1); } .ds-hero-cta:hover .ds-hero-chip { transform: translateX(4px); }"
+    },
+    {
+      "name": "Search Capsule",
+      "kind": "input",
+      "refersTo": "search-capsule",
+      "description": "Describe-search field: white capsule with an ink search capsule docked inside.",
+      "html": "<form class=\"ds-search\"><input class=\"ds-search-input\" placeholder=\"e.g. black water bottle with a dinosaur sticker\" /><button type=\"button\" class=\"ds-search-btn\">Search</button></form>",
+      "css": ".ds-search { display:flex; align-items:center; height:56px; padding-left:20px; border-radius:9999px; background:#fff; box-shadow:0 1px 2px rgb(44 46 42 / 0.08); font-family: var(--font-sans, 'Work Sans Variable', 'PingFang SC', 'Microsoft YaHei', sans-serif); } .ds-search:focus-within { box-shadow:0 0 0 2px rgb(44 46 42 / 0.15); } .ds-search-input { flex:1; min-width:0; border:0; background:transparent; font:inherit; font-size:15px; color:#2c2e2a; outline:none; } .ds-search-input::placeholder { color:#5f5c51; } .ds-search-btn { margin-right:6px; height:40px; padding:0 20px; border:0; border-radius:9999px; background:#2c2e2a; color:#fffdf6; font:inherit; font-size:14px; font-weight:600; cursor:pointer; } .ds-search-btn:hover { background:rgb(44 46 42 / 0.85); } .ds-search-btn:focus-visible { outline:2px solid #2c2e2a; outline-offset:2px; }"
+    },
+    {
+      "name": "Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Form text field.",
+      "html": "<input class=\"ds-input\" placeholder=\"Where did you lose it?\" />",
+      "css": ".ds-input { height:44px; width:280px; padding:4px 14px; border:1px solid #d6cdb4; border-radius:22.4px; background:#fff; color:#2c2e2a; font-family: var(--font-sans, 'Work Sans Variable', 'PingFang SC', 'Microsoft YaHei', sans-serif); font-size:14px; outline:none; transition: border-color .15s, box-shadow .15s; } .ds-input::placeholder { color:#5f5c51; } .ds-input:focus-visible { border-color:#2c2e2a; box-shadow:0 0 0 2px rgb(44 46 42 / 0.15); }"
+    },
+    {
+      "name": "Top Bar Navigation",
+      "kind": "nav",
+      "refersTo": "nav-link-active",
+      "description": "Capsule nav links on cream; ink when active, white on hover.",
+      "html": "<nav class=\"ds-nav\"><a href=\"#\" class=\"ds-nav-link is-active\">Browse</a><a href=\"#\" class=\"ds-nav-link\">How it works</a><a href=\"#\" class=\"ds-nav-link\">My reports</a></nav>",
+      "css": ".ds-nav { display:flex; gap:4px; padding:12px; background:#f5f1e4; font-family: var(--font-sans, 'Work Sans Variable', 'PingFang SC', 'Microsoft YaHei', sans-serif); } .ds-nav-link { display:inline-flex; align-items:center; height:40px; padding:0 16px; border-radius:9999px; color:#2c2e2a; text-decoration:none; font-size:15px; font-weight:600; transition: background-color .2s; } .ds-nav-link:hover { background:#fff; } .ds-nav-link.is-active { background:#2c2e2a; color:#fffdf6; } .ds-nav-link:focus-visible { outline:2px solid #2c2e2a; outline-offset:3px; }"
+    },
+    {
+      "name": "Item Card",
+      "kind": "card",
+      "refersTo": "item-card",
+      "description": "List row for an item: zone-coloured circle thumbnail, two-line title, muted meta; lifts on hover.",
+      "html": "<a href=\"#\" class=\"ds-item\"><span class=\"ds-item-thumb\"><svg width=\"28\" height=\"28\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#2c2e2a\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3\"/></svg></span><span class=\"ds-item-text\"><span class=\"ds-item-title\">White AirPods case, found by the hallway lockers</span><span class=\"ds-item-meta\">Hallway lockers · 3 days ago</span><span class=\"ds-item-sub\"><span class=\"ds-dot\"></span>Earbuds</span></span></a>",
+      "css": ".ds-item { display:flex; align-items:center; gap:16px; max-width:420px; padding:14px 16px 14px 14px; border-radius:20px; background:#fff; color:#2c2e2a; text-decoration:none; font-family: var(--font-sans, 'Work Sans Variable', 'PingFang SC', 'Microsoft YaHei', sans-serif); box-shadow:0 1px 2px rgb(44 46 42 / 0.06); transition: box-shadow .2s cubic-bezier(0.16,1,0.3,1), transform .2s cubic-bezier(0.16,1,0.3,1); } .ds-item:hover { transform:translateY(-2px); box-shadow:0 8px 24px -12px rgb(44 46 42 / 0.35); } .ds-item:focus-visible { outline:2px solid #2c2e2a; outline-offset:2px; } .ds-item-thumb { flex:none; display:flex; width:64px; height:64px; align-items:center; justify-content:center; border-radius:9999px; background:#7cc4ff; } .ds-item-text { display:flex; flex-direction:column; gap:4px; min-width:0; } .ds-item-title { font-size:17px; font-weight:600; line-height:1.375; } .ds-item-meta { font-size:14px; color:#5f5c51; } .ds-item-sub { display:flex; align-items:center; gap:8px; font-size:12px; color:#5f5c51; } .ds-dot { width:10px; height:10px; border-radius:9999px; background:#fff; border:1px solid rgb(0 0 0 / 0.15); }"
+    },
+    {
+      "name": "Match Strength and Reasons",
+      "kind": "custom",
+      "refersTo": "match-card",
+      "description": "Four-dot meter, band word, and the plain reason line with checks and a red minus.",
+      "html": "<div class=\"ds-match\"><div class=\"ds-match-head\"><span class=\"ds-meter\" role=\"meter\" aria-valuenow=\"72\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-label=\"Match strength\"><i class=\"on\"></i><i class=\"on\"></i><i class=\"on\"></i><i></i></span><b>Possible match</b></div><ul class=\"ds-reasons\"><li class=\"pos\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M20 6 9 17l-5-5\"/></svg>Same type: earbuds</li><li class=\"pos\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M20 6 9 17l-5-5\"/></svg>Same colour: white</li><li class=\"neg\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"/></svg>Found far from where you lost it</li></ul></div>",
+      "css": ".ds-match { padding:24px; border-radius:24px; background:#fff; color:#2c2e2a; font-family: var(--font-sans, 'Work Sans Variable', 'PingFang SC', 'Microsoft YaHei', sans-serif); box-shadow:0 1px 2px rgb(44 46 42 / 0.06); max-width:560px; } .ds-match-head { display:flex; align-items:center; gap:12px; font-size:14px; } .ds-meter { display:inline-flex; gap:4px; } .ds-meter i { width:10px; height:10px; border-radius:9999px; background:rgb(44 46 42 / 0.15); } .ds-meter i.on { background:#2c2e2a; } .ds-reasons { display:flex; flex-wrap:wrap; gap:4px 0; margin:12px 0 0; padding:0; list-style:none; font-size:15px; line-height:1.625; } .ds-reasons li { display:inline-flex; align-items:center; gap:4px; } .ds-reasons li + li::before { content:'·'; margin:0 8px; color:rgb(95 92 81 / 0.6); } .ds-reasons .pos svg { color:#2f7a35; } .ds-reasons .neg { color:#c4321f; font-weight:500; }"
+    },
+    {
+      "name": "Zone Lobe with Count",
+      "kind": "custom",
+      "refersTo": "map-count-capsule",
+      "description": "One campus map lobe: flat zone fill, bold tight label, white count capsule; swells on hover with the swell ease.",
+      "html": "<button class=\"ds-lobe\"><svg viewBox=\"0 0 200 160\" aria-hidden=\"true\"><path class=\"ds-lobe-shape\" d=\"M22,88C12,44 60,10 110,14C160,18 192,52 184,94C176,136 130,154 86,148C42,142 30,124 22,88Z\" fill=\"#8ed462\"/></svg><span class=\"ds-lobe-label\"><span class=\"ds-lobe-name\">Sports</span><span class=\"ds-lobe-count\">7 items</span></span></button>",
+      "css": ".ds-lobe { position:relative; width:240px; aspect-ratio:10/8; padding:0; border:0; background:#f5f1e4; cursor:pointer; font-family: var(--font-sans, 'Work Sans Variable', 'PingFang SC', 'Microsoft YaHei', sans-serif); } .ds-lobe svg { position:absolute; inset:0; width:100%; height:100%; overflow:visible; } .ds-lobe-shape { transform-origin:100px 80px; transition: transform .4s cubic-bezier(0.34,1.3,0.64,1); } .ds-lobe:hover .ds-lobe-shape, .ds-lobe:focus-visible .ds-lobe-shape { transform: scale(1.07); } .ds-lobe:focus-visible { outline:2px solid #2c2e2a; outline-offset:2px; border-radius:16px; } .ds-lobe-label { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; color:#2c2e2a; } .ds-lobe-name { font-size:28px; font-weight:700; line-height:0.95; letter-spacing:-0.04em; } .ds-lobe-count { padding:2px 10px; border-radius:9999px; background:rgb(255 255 255 / 0.95); font-size:14px; font-weight:700; font-variant-numeric:tabular-nums; } @media (prefers-reduced-motion: reduce) { .ds-lobe-shape { transition:none; } }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Campus Guide Map",
+    "overview": "The campus is the interface. Lost things belong to a place, so the school's eight zones are drawn as flat, swelling lobes of colour on a cream ground that reads as water, and every item, step marker and avatar borrows its zone's colour. The map is navigation as well as picture: a lobe grows with the number of open items in it, and choosing one swells it while the rest recede.\n\nEverything else stays quiet so the zone colours can speak. Content sits on borderless white cards with a whisper of shadow; text is one warm near-black ink; controls are full capsules. Hierarchy comes from size contrast in a single grotesk (bold, tightly tracked display against a 450-weight body), not from extra colours, outlines or badge stacks. The register is a friendly printed park map, not a SaaS dashboard: warm, legible, bilingual, and plain about evidence.\n\nDensity flexes by audience on the same ground: students get large type, one big call to action per screen and roomy cards; desk staff get dense white panels and tables on the same cream.",
+    "keyCharacteristics": [
+      "Cream ground, white borderless cards, one ink for text and primary controls.",
+      "Eight flat zone colours, used as fills only (lobes, item thumbnails, step discs), never as text.",
+      "Everything you press is a capsule; round shapes (discs, dots, pills) recur everywhere.",
+      "One bundled variable grotesk for Latin, system CJK faces for Chinese; tight negative tracking on Latin display only.",
+      "Match strength is a fixed four-dot ramp; reasons are one plain line of checks and minuses."
+    ],
+    "rules": [
+      {
+        "name": "The Zone Owns The Colour Rule",
+        "body": "A zone colour always means that zone. Item thumbnails, map lobes and filters must agree; never use a zone fill decoratively for something that is not located there (the How-it-works step discs are the one sanctioned exception and use sports, academic, entrance in order).",
+        "section": "colors"
+      },
+      {
+        "name": "The Ink On Colour Rule",
+        "body": "Every coloured surface (sun, coral, all eight zones) carries ink text and ink icons. White text on these fills fails contrast and is not used.",
+        "section": "colors"
+      },
+      {
+        "name": "The Two Capsules Rule",
+        "body": "As control fills, sun and coral are reserved for the two report actions and the \"This is mine\" confirmation. Every other control is ink, white or sand.",
+        "section": "colors"
+      },
+      {
+        "name": "The Latin-Only Tracking Rule",
+        "body": "Negative letter-spacing applies to Latin only. Under `:lang(zh)` all headings and display text reset to 0 tracking; tight tracking crushes CJK.",
+        "section": "typography"
+      },
+      {
+        "name": "The Size Not Colour Rule",
+        "body": "Rank information by size and weight. Do not add colour, caps or rules to signal hierarchy.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tabular Count Rule",
+        "body": "Counts, times and table cells use tabular numerals.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat Until Touched Rule",
+        "body": "Surfaces rest at the card-rest shadow or none; the deeper lift appears only on hover of a link card. Never use borders to separate a card from the cream.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do colour photo-less items by their zone fill behind an ink category icon, so lists stay legible as a map.",
+      "Do keep every pressable thing a full capsule and every marker a circle.",
+      "Do put ink text on sun, coral and all zone fills.",
+      "Do show match strength with the four-dot ramp and explain it with the plain reason line.",
+      "Do reset letter-spacing to 0 for Chinese headings.",
+      "Do keep motion to the two named eases: swell (cubic-bezier(0.34, 1.3, 0.64, 1)) for the map and hero chip, expo-out (cubic-bezier(0.16, 1, 0.3, 1)) at 200ms for controls, and honour reduced motion.",
+      "Do bundle every font and asset from the app's own origin."
+    ],
+    "donts": [
+      "Don't draw percentage bars or print match percentages; a match is evidence, not proof.",
+      "Don't put borders around cards or stack several badges on one item.",
+      "Don't use sun or coral as a button or badge fill for anything except the report actions and \"This is mine\" (sun also appears as text selection, the logo pin and the entrance zone).",
+      "Don't use a zone colour for something that is not in that zone, or as text colour.",
+      "Don't add mascots, sonar or decorative illustration beyond the lobe map and lobe logo.",
+      "Don't add uppercase tracked labels above headings; the heading carries its own weight.",
+      "Don't load web fonts or assets from a CDN."
+    ]
+  }
+}

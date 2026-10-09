@@ -34,7 +34,7 @@ function ReportRow({ item }: { item: Item }) {
   return (
     <Row variant="outline" className="items-start bg-card" asChild>
       <Link to={`/items/${item.id}`}>
-        <ItemMedia variant="image" className="size-18 rounded-lg sm:size-20">
+        <ItemMedia variant="image" className="size-18 rounded-full sm:size-20">
           <ItemThumb item={item} />
         </ItemMedia>
         <ItemContent className="min-w-0">
@@ -69,7 +69,7 @@ function ClaimRow({ claim, onCancel }: { claim: Claim; onCancel: (claim: Claim) 
   const found = claim.found;
   return (
     <Row variant="outline" className="items-start bg-card">
-      <ItemMedia variant="image" className="size-18 rounded-lg sm:size-20">
+      <ItemMedia variant="image" className="size-18 rounded-full sm:size-20">
         {found && <ItemThumb item={found} />}
       </ItemMedia>
       <ItemContent className="min-w-0 gap-1.5">
@@ -91,12 +91,12 @@ function ClaimRow({ claim, onCancel }: { claim: Claim; onCancel: (claim: Claim) 
             {t("me.claimedOn", { time: formatRelative(claim.created_at, lang, now) })}
           </time>
         </p>
-        <p className="rounded-md bg-muted/60 px-3 py-2 text-sm break-words">
+        <p className="rounded-2xl bg-cream px-3 py-2 text-sm break-words">
           <span className="text-muted-foreground">{t("me.proofLabel")}: </span>
           {claim.proof}
         </p>
         {claim.review_note && <p className="text-sm break-words">{t("item.reviewNote", { note: claim.review_note })}</p>}
-        {claim.status === "approved" && <p className="text-sm font-medium text-emerald-700">{t("item.claimApprovedBody")}</p>}
+        {claim.status === "approved" && <p className="text-sm font-medium text-[#285a17]">{t("item.claimApprovedBody")}</p>}
         {claim.status === "pending" && (
           <div className="pt-1">
             <Button variant="outline" size="sm" onClick={() => onCancel(claim)}>

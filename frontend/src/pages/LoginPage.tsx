@@ -155,16 +155,16 @@ export default function LoginPage() {
               </form>
             ) : (
               <form onSubmit={submitCode} noValidate className="space-y-5">
-                <Alert role="status" className="border-primary/20 bg-primary/5">
+                <Alert role="status" className="border-transparent bg-[#d8ecff]">
                   <MailCheck aria-hidden className="text-primary" />
                   <AlertDescription className="text-foreground">
                     {resent ? t("login.codeResent") : t("login.codeSent", { email: address })}
                   </AlertDescription>
                 </Alert>
                 {devCode && (
-                  <Alert role="note" className="border-dashed border-amber-300 bg-amber-50 text-amber-900" data-testid="dev-code-banner">
+                  <Alert role="note" className="border-transparent bg-[#fbf1a6] text-[#4d3f00]" data-testid="dev-code-banner">
                     <Terminal aria-hidden />
-                    <AlertTitle className="text-xs font-semibold tracking-wide uppercase">{t("login.devBanner")}</AlertTitle>
+                    <AlertTitle className="text-sm font-semibold">{t("login.devBanner")}</AlertTitle>
                     <AlertDescription className="text-current/80">{t("login.devBody", { code: devCode })}</AlertDescription>
                   </Alert>
                 )}

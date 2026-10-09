@@ -53,7 +53,7 @@ function Gallery({ item }: { item: Item }) {
   const title = itemTitle(item, 60);
   if (!item.photos.length) {
     return (
-      <div className="aspect-[4/3] overflow-hidden rounded-xl border">
+      <div className="mx-auto aspect-square max-w-[13rem] overflow-hidden lg:max-w-[22rem] rounded-[58%_42%_55%_45%/52%_48%_52%_48%]">
         <ItemThumb item={item} iconClass="size-1/4" alt={t("item.noPhoto")} />
       </div>
     );
@@ -65,7 +65,7 @@ function Gallery({ item }: { item: Item }) {
         href={photo.url}
         target="_blank"
         rel="noopener"
-        className="block aspect-[4/3] overflow-hidden rounded-xl border bg-muted"
+        className="block aspect-[4/3] overflow-hidden rounded-[1.75rem] bg-card"
         title={t("item.openFull")}
       >
         <img src={photo.url} alt={`${t("report.photoN", { n: index + 1 })} · ${title}`} className="size-full object-contain" decoding="async" />
@@ -80,8 +80,8 @@ function Gallery({ item }: { item: Item }) {
               aria-label={t("item.showPhoto", { n: i + 1 })}
               onClick={() => setIndex(i)}
               className={cn(
-                "size-16 overflow-hidden rounded-lg border-2 outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-                i === index ? "border-primary" : "border-transparent hover:border-border",
+                "size-16 overflow-hidden rounded-2xl border-2 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink",
+                i === index ? "border-ink" : "border-transparent hover:border-input",
               )}
             >
               <img src={p.thumb_url} alt="" className="size-full object-cover" />
@@ -259,7 +259,7 @@ function ClaimDialog({ item, open, onClose, preselectLost }: {
               ))}
             </NativeSelect>
           </FormField>
-          <Alert role="note" className="border-primary/20 bg-primary/5">
+          <Alert role="note" className="border-transparent bg-[#d8ecff]">
             <BadgeCheck aria-hidden className="text-primary" />
             <AlertDescription className="text-foreground">{t("claim.pickupNote")}</AlertDescription>
           </Alert>
@@ -294,11 +294,12 @@ function StatusAlert({ tone = "default", icon: Icon, title, children }: {
     <Alert
       role="status"
       className={cn(
-        tone === "success" && "border-emerald-200 bg-emerald-50 text-emerald-900",
-        tone === "error" && "border-red-200 bg-red-50 text-red-900",
+        "border-transparent bg-card",
+        tone === "success" && "bg-[#d9f2c8] text-[#1f4712]",
+        tone === "error" && "bg-[#ffe1dc] text-[#7a1b0e]",
       )}
     >
-      <Icon aria-hidden className={cn(tone === "success" ? "text-emerald-600" : tone === "error" ? "text-red-600" : "text-primary")} />
+      <Icon aria-hidden className="text-current" />
       {title && <AlertTitle>{title}</AlertTitle>}
       {children && <AlertDescription className="text-current/80">{children}</AlertDescription>}
     </Alert>
@@ -307,7 +308,7 @@ function StatusAlert({ tone = "default", icon: Icon, title, children }: {
 
 function ActionCard({ title, description, children }: { title: string; description: string; children: ReactNode }) {
   return (
-    <Card size="sm" className="bg-muted/30">
+    <Card size="sm">
       <CardHeader>
         <CardTitle role="heading" aria-level={2}>
           {title}
@@ -556,7 +557,7 @@ export default function ItemPage() {
     return (
       <div className="container-page py-8 sm:py-10">
         <div className="grid gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-          <Skeleton className="aspect-[4/3] rounded-xl" />
+          <Skeleton className="mx-auto aspect-square max-w-[22rem] rounded-full" />
           <div>
             <Skeleton className="h-5 w-40" />
             <Skeleton className="mt-4 h-8 w-full max-w-md" />
@@ -625,7 +626,7 @@ export default function ItemPage() {
       )}
 
       {item.is_hidden && (
-        <Alert role="note" className="mt-4 border-amber-200 bg-amber-50 text-amber-900">
+        <Alert role="note" className="mt-4 border-transparent bg-[#fbf1a6] text-[#4d3f00]">
           <EyeOff aria-hidden />
           <AlertDescription className="text-current/80">{t("item.hiddenNotice")}</AlertDescription>
         </Alert>
@@ -633,19 +634,34 @@ export default function ItemPage() {
 
       <article
         aria-labelledby="item-title"
-        className={cn("grid gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-10", justPosted ? "mt-10 border-t pt-8" : "mt-4")}
+        className={cn(
+          "grid gap-8 lg:gap-10",
+          item.photos.length && "lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]",
+          justPosted ? "mt-10 border-t pt-8" : "mt-4",
+        )}
       >
-        <div className="min-w-0">
-          <Gallery item={item} />
-        </div>
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <KindBadge kind={item.kind} />
-            <StatusBadge kind={item.kind} status={item.status} />
+        {item.photos.length > 0 && (
+          <div className="min-w-0">
+            <Gallery item={item} />
           </div>
-          <h1 id="item-title" className="mt-3 text-2xl font-semibold tracking-tight break-words sm:text-3xl">
-            {itemTitle(item, 80)}
-          </h1>
+        )}
+        <div className="min-w-0">
+          <div className="flex items-start gap-5">
+            {!item.photos.length && (
+              <div className="size-18 shrink-0 overflow-hidden rounded-full sm:size-20">
+                <ItemThumb item={item} iconClass="size-2/5" alt={t("item.noPhoto")} />
+              </div>
+            )}
+            <div className="min-w-0">
+              <h1 id="item-title" className="text-[1.75rem] leading-tight font-bold tracking-[-0.03em] break-words sm:text-[2.125rem]">
+                {itemTitle(item, 80)}
+              </h1>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <KindBadge kind={item.kind} />
+                <StatusBadge kind={item.kind} status={item.status} />
+              </div>
+            </div>
+          </div>
 
           <Card size="sm" className="mt-6">
             <CardContent>
@@ -668,7 +684,7 @@ export default function ItemPage() {
                 </div>
               )}
               {item.private_detail && (
-                <Alert role="note" className="border-primary/20 bg-primary/5">
+                <Alert role="note" className="border-transparent bg-[#d8ecff]">
                   <Lock aria-hidden className="text-primary" />
                   <AlertTitle>{t("item.privateDetail")}</AlertTitle>
                   <AlertDescription className="text-foreground">{item.private_detail}</AlertDescription>

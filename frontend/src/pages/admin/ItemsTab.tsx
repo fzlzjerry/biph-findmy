@@ -44,7 +44,7 @@ function ItemRow({ item, onReturn }: { item: Item; onReturn: (item: Item) => voi
     <Card size="sm" className="py-3">
       <CardContent className="flex flex-col gap-3 px-3 md:flex-row md:items-center md:gap-4">
         <div className="flex min-w-0 flex-1 gap-3">
-          <Link to={`/items/${item.id}`} tabIndex={-1} aria-hidden className="block size-14 shrink-0 overflow-hidden rounded-lg bg-muted">
+          <Link to={`/items/${item.id}`} tabIndex={-1} aria-hidden className="block size-14 shrink-0 overflow-hidden rounded-full">
             <ItemThumb item={item} />
           </Link>
           <div className="min-w-0 flex-1">

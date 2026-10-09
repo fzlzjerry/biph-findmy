@@ -41,8 +41,8 @@ function Section({ id, step, title, children }: { id: string; step: number; titl
     <section id={id} aria-labelledby={`${id}-title`} className="scroll-mt-20">
       <Card>
         <CardHeader>
-          <CardTitle id={`${id}-title`} role="heading" aria-level={2} className="flex items-center gap-2.5 text-base">
-            <span aria-hidden className="flex size-6 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
+          <CardTitle id={`${id}-title`} role="heading" aria-level={2} className="flex items-center gap-3 text-lg font-bold tracking-[-0.02em]">
+            <span aria-hidden className="flex size-8 items-center justify-center rounded-full bg-secondary text-sm font-bold text-ink">
               {step}
             </span>
             {title}
@@ -299,7 +299,7 @@ export default function ReportPage({ kind }: { kind: ItemKind }) {
                 label={t("report.marks")}
                 hint={t("report.marksHint")}
                 optional
-                labelExtra={<Sticker aria-hidden className="size-4 text-primary" />}
+                labelExtra={<Sticker aria-hidden className="size-4 text-ink" />}
               >
                 <Input
                   id="report-marks"
@@ -311,13 +311,13 @@ export default function ReportPage({ kind }: { kind: ItemKind }) {
                 />
               </FormField>
 
-              <div className="rounded-lg border bg-muted/40 p-4" data-testid="analysis-panel">
+              <div className="rounded-2xl bg-cream p-4" data-testid="analysis-panel">
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
                   <span className="inline-flex items-center gap-1.5 font-medium">
                     {analysing ? (
-                      <LoaderCircle aria-hidden className="size-4 animate-spin text-primary" />
+                      <LoaderCircle aria-hidden className="size-4 animate-spin text-ink" />
                     ) : (
-                      <Sparkles aria-hidden className="size-4 text-primary" />
+                      <Sparkles aria-hidden className="size-4 text-ink" />
                     )}
                     {t("report.analysisLive")}
                   </span>
@@ -366,7 +366,7 @@ export default function ReportPage({ kind }: { kind: ItemKind }) {
                       {noticed.map((label) => (
                         <li key={label}>
                           <Badge variant="secondary" className="h-8 rounded-full px-3 text-sm font-normal">
-                            <Sparkles aria-hidden data-icon="inline-start" className="text-primary" />
+                            <Sparkles aria-hidden data-icon="inline-start" className="text-ink" />
                             {label}
                           </Badge>
                         </li>
@@ -377,7 +377,7 @@ export default function ReportPage({ kind }: { kind: ItemKind }) {
                 {result && autoFilled && detected.length > 0 && <p className="mt-3 text-sm text-muted-foreground">{t("report.prefillNote")}</p>}
                 {result?.sensitive && (
                   <p className="mt-3 flex items-start gap-2 text-sm">
-                    <Lock aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
+                    <Lock aria-hidden className="mt-0.5 size-4 shrink-0 text-ink" />
                     {t("report.sensitiveDetected")}
                   </p>
                 )}
@@ -620,7 +620,8 @@ export default function ReportPage({ kind }: { kind: ItemKind }) {
               <BusyButton
                 type="submit"
                 size="lg"
-                className="h-11 w-full px-6 text-base sm:w-auto"
+                variant={lost ? "sun" : "coral"}
+                className="h-14 w-full px-8 text-[1.0625rem] sm:w-auto"
                 busy={mutation.isPending || photoBusy}
                 busyLabel={photoBusy ? t("report.processingPhoto") : t("report.submitting")}
               >
@@ -635,7 +636,7 @@ export default function ReportPage({ kind }: { kind: ItemKind }) {
           <Card className="sticky top-20 mt-[5.75rem]">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Lightbulb aria-hidden className="size-4 text-amber-500" />
+                <Lightbulb aria-hidden className="size-4 text-ink" />
                 {t("report.marks")}
               </CardTitle>
               <CardDescription>{t("report.marksHint")}</CardDescription>
@@ -644,7 +645,7 @@ export default function ReportPage({ kind }: { kind: ItemKind }) {
               <p className="text-sm">{t("report.marksStat")}</p>
               <Separator />
               <p className="flex gap-2 text-sm text-muted-foreground">
-                <ShieldCheck aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
+                <ShieldCheck aria-hidden className="mt-0.5 size-4 shrink-0 text-ink" />
                 {t("report.privacyNote")}
               </p>
             </CardContent>

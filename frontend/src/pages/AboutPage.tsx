@@ -24,7 +24,7 @@ function Step({ n, icon: Icon, title, body }: { n: number; icon: LucideIcon; tit
     <li>
       <Card size="sm" className="h-full">
         <CardHeader>
-          <span className="mb-2 flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary" aria-hidden>
+          <span className="mb-2 flex size-9 items-center justify-center rounded-lg bg-zone-sports text-ink" aria-hidden>
             <Icon className="size-4.5" />
           </span>
           <CardTitle role="heading" aria-level={3}>
@@ -71,7 +71,7 @@ export default function AboutPage() {
           <Step n={4} icon={Gauge} title={t("about.step4Title")} body={t("about.step4Body", { strong, possible })} />
         </ol>
 
-        <Card className="mt-6 bg-muted/30">
+        <Card className="mt-6">
           <CardHeader>
             <CardTitle role="heading" aria-level={3}>
               {t("about.exampleTitle")}
@@ -79,8 +79,8 @@ export default function AboutPage() {
           </CardHeader>
           <CardContent className="gap-4 text-base">
             <div className="grid gap-3 sm:grid-cols-2">
-              <p className="rounded-lg border bg-background p-3 text-sm break-words">{t("about.exampleLost")}</p>
-              <p className="rounded-lg border bg-background p-3 text-sm break-words">{t("about.exampleFound")}</p>
+              <p className="rounded-2xl bg-card p-3 text-sm break-words">{t("about.exampleLost")}</p>
+              <p className="rounded-2xl bg-card p-3 text-sm break-words">{t("about.exampleFound")}</p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <BandBadge band="strong" />

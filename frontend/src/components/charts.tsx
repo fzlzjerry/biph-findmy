@@ -2,7 +2,7 @@
 // chart itself is exposed to screen readers as one image with a text summary.
 import { useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis, Cell } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -83,6 +83,8 @@ export interface BarDatum {
   label: string;
   value: number;
   display?: string;
+  /** Optional per-bar colour (campus zones use their map colour). */
+  fill?: string;
 }
 
 export function HBarChart({ data, label }: { data: BarDatum[]; label: string }) {
@@ -116,7 +118,10 @@ export function HBarChart({ data, label }: { data: BarDatum[]; label: string }) 
           />
           <XAxis type="number" dataKey="value" hide />
           <ChartTooltip cursor={false} content={<ChartTooltipContent hideIndicator />} />
-          <Bar dataKey="value" fill="var(--color-value)" radius={4} barSize={18}>
+          <Bar dataKey="value" fill="var(--color-value)" radius={9} barSize={18}>
+            {rows.map((d) => (
+              <Cell key={d.key} fill={d.fill ?? "var(--color-value)"} />
+            ))}
             <LabelList dataKey="shown" position="right" offset={8} className="fill-foreground" fontSize={12} fontWeight={500} />
           </Bar>
         </BarChart>
@@ -175,10 +180,10 @@ export function StatTile({ label, value, sub, signal = false, action }: {
   action?: ReactNode;
 }) {
   return (
-    <Card size="sm" className={cn("min-w-0 gap-1", signal && "ring-amber-300 bg-amber-50/50")}>
+    <Card size="sm" className={cn("min-w-0 gap-1", signal && "bg-[#fbf1a6]")}>
       <CardHeader>
         <CardDescription className="flex items-center gap-2">
-          {signal && <span aria-hidden className="size-2 shrink-0 rounded-full bg-amber-500" />}
+          {signal && <span aria-hidden className="size-2 shrink-0 rounded-full bg-ink" />}
           {label}
         </CardDescription>
         <CardTitle className="text-2xl font-semibold tabular-nums group-data-[size=sm]/card:text-2xl">{value}</CardTitle>

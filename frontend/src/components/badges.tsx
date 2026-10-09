@@ -22,12 +22,12 @@ import type { Band, ClaimStatus, ItemKind, ItemStatus } from "@/lib/types";
 export type Tone = "blue" | "amber" | "violet" | "green" | "gray" | "red";
 
 const TONES: Record<Tone, string> = {
-  blue: "border-blue-200 bg-blue-50 text-blue-700",
-  amber: "border-amber-200 bg-amber-50 text-amber-800",
-  violet: "border-violet-200 bg-violet-50 text-violet-700",
-  green: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  gray: "border-border bg-muted text-muted-foreground",
-  red: "border-red-200 bg-red-50 text-red-700",
+  blue: "border-transparent bg-[#d8ecff] text-[#0d4677]",
+  amber: "border-transparent bg-[#fbf1a6] text-[#5c4b00]",
+  violet: "border-transparent bg-[#f1ddff] text-[#5a2780]",
+  green: "border-transparent bg-[#d9f2c8] text-[#285a17]",
+  gray: "border-transparent bg-secondary text-muted-foreground",
+  red: "border-transparent bg-[#ffe1dc] text-[#8a1f10]",
 };
 
 export function ToneBadge({ tone, icon: Icon, children, className }: {
@@ -95,7 +95,7 @@ export function BandBadge({ band }: { band: Band }) {
   const { t } = useTranslation();
   if (band === "strong")
     return (
-      <Badge>
+      <Badge className="bg-ink text-cream">
         <Zap aria-hidden data-icon="inline-start" />
         {t("band.strong")}
       </Badge>

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useSearchParams } from "react-router";
 import { BusyButton } from "@/components/BusyButton";
+import { CampusMap } from "@/components/CampusMap";
 import { ItemCard } from "@/components/ItemBits";
 import { focusSheet } from "@/components/Layout";
 import { PageHeader } from "@/components/page";
@@ -30,11 +31,14 @@ const PAGE_SIZE = 24;
 const FILTER_KEYS = ["category", "color", "zone", "place"] as const;
 type Patch = Record<string, string | null>;
 
-function Filters({ idPrefix, params, update, onClear }: {
+function Filters({ idPrefix, params, update, onClear, counts, showMap = true }: {
   idPrefix: string;
   params: URLSearchParams;
   update: (patch: Patch) => void;
   onClear?: () => void;
+  counts?: Record<string, number>;
+  /** The phone/iPad sheet leaves the zone to the map strip above the results. */
+  showMap?: boolean;
 }) {
   const { t } = useTranslation();
   const labels = useLabels();
@@ -46,6 +50,31 @@ function Filters({ idPrefix, params, update, onClear }: {
 
   return (
     <div className="space-y-6">
+      <fieldset className="grid gap-1">
+        <legend className="mb-1 text-sm font-semibold">{t("browse.zone")}</legend>
+        {showMap && <CampusMap size="sm" counts={counts} selected={zone || null} onSelect={(id) => update({ zone: id, place: null })} className="-mx-1" />}
+        {zoneObj && (
+          <div className="grid gap-2">
+            <Label htmlFor={`${idPrefix}-place`} className="sr-only">
+              {t("browse.place")}
+            </Label>
+            <NativeSelect
+              id={`${idPrefix}-place`}
+              className="w-full"
+              value={place}
+              onChange={(event) => update({ place: event.target.value || null })}
+            >
+              <NativeSelectOption value="">{t("browse.allPlaces")}</NativeSelectOption>
+              {zoneObj.places.map((p) => (
+                <NativeSelectOption key={p.id} value={p.id}>
+                  {labels.text(p.label)}
+                </NativeSelectOption>
+              ))}
+            </NativeSelect>
+          </div>
+        )}
+      </fieldset>
+
       <div className="grid gap-2">
         <Label htmlFor={`${idPrefix}-category`}>{t("browse.category")}</Label>
         <CategorySelect
@@ -58,7 +87,7 @@ function Filters({ idPrefix, params, update, onClear }: {
       </div>
 
       <fieldset className="grid gap-2">
-        <legend className="mb-2 text-sm font-medium">{t("browse.color")}</legend>
+        <legend className="mb-2 text-sm font-semibold">{t("browse.color")}</legend>
         <div className="grid grid-cols-[repeat(auto-fill,minmax(2.25rem,1fr))] gap-1.5">
           {labels.meta.colors.map((c) => {
             const on = color === c.id;
@@ -70,7 +99,7 @@ function Filters({ idPrefix, params, update, onClear }: {
                 onPressedChange={() => update({ color: on ? null : c.id })}
                 aria-label={label}
                 title={label}
-                className="relative size-9 rounded-full p-0 hover:bg-muted aria-pressed:bg-transparent aria-pressed:ring-2 aria-pressed:ring-primary"
+                className="relative size-9 rounded-full p-0 hover:bg-secondary aria-pressed:bg-transparent aria-pressed:ring-2 aria-pressed:ring-ink"
               >
                 <span className="size-7 rounded-full border border-black/15" style={{ background: c.hex }} />
                 {on && (
@@ -88,40 +117,6 @@ function Filters({ idPrefix, params, update, onClear }: {
           {color ? t("browse.colorSelected", { color: labels.color(color) }) : t("browse.anyColor")}
         </p>
       </fieldset>
-
-      <div className="grid gap-2">
-        <Label htmlFor={`${idPrefix}-zone`}>{t("browse.zone")}</Label>
-        <NativeSelect
-          id={`${idPrefix}-zone`}
-          className="w-full"
-          value={zone}
-          onChange={(event) => update({ zone: event.target.value || null, place: null })}
-        >
-          <NativeSelectOption value="">{t("browse.allZones")}</NativeSelectOption>
-          {labels.meta.zones.map((z) => (
-            <NativeSelectOption key={z.id} value={z.id}>
-              {labels.text(z.label)}
-            </NativeSelectOption>
-          ))}
-        </NativeSelect>
-      </div>
-      <div className="grid gap-2">
-        <Label htmlFor={`${idPrefix}-place`}>{t("browse.place")}</Label>
-        <NativeSelect
-          id={`${idPrefix}-place`}
-          className="w-full"
-          value={place}
-          disabled={!zoneObj}
-          onChange={(event) => update({ place: event.target.value || null })}
-        >
-          <NativeSelectOption value="">{t("browse.allPlaces")}</NativeSelectOption>
-          {zoneObj?.places.map((p) => (
-            <NativeSelectOption key={p.id} value={p.id}>
-              {labels.text(p.label)}
-            </NativeSelectOption>
-          ))}
-        </NativeSelect>
-      </div>
 
       {onClear && (
         <Button variant="outline" className="w-full" onClick={onClear}>
@@ -198,6 +193,7 @@ export default function BrowsePage() {
 
   const items = query.data?.pages.flatMap((page) => page.items) ?? [];
   const total = query.data?.pages[0]?.total ?? 0;
+  const zoneCounts = query.data?.pages[0]?.zones;
   const countText = q ? t("browse.countFor", { count: total, q }) : t("browse.count", { count: total });
 
   const clearAll = () => {
@@ -213,7 +209,7 @@ export default function BrowsePage() {
 
       <Tabs value={kind} onValueChange={(id) => update({ kind: id === "found" ? null : id }, false)} className="mt-6 gap-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-center">
-          <TabsList aria-label={t("browse.tabsLabel")} className="h-9 w-full md:w-auto">
+          <TabsList aria-label={t("browse.tabsLabel")} className="h-12 w-full md:w-auto">
             <TabsTrigger value="found" className="px-4">
               {t("browse.foundTab")}
             </TabsTrigger>
@@ -226,7 +222,7 @@ export default function BrowsePage() {
               <label htmlFor="browse-search" className="sr-only">
                 {t("browse.searchLabel")}
               </label>
-              <InputGroup className="h-9">
+              <InputGroup className="h-12 rounded-full border-transparent pl-1.5 shadow-[0_1px_2px_rgb(44_46_42/0.08)]">
                 <InputGroupAddon>
                   <Search aria-hidden />
                 </InputGroupAddon>
@@ -262,7 +258,7 @@ export default function BrowsePage() {
             </form>
             <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
               <SheetTrigger asChild>
-                <Button variant="outline" className="lg:hidden">
+                <Button variant="outline" className="h-12 lg:hidden">
                   <SlidersHorizontal aria-hidden data-icon="inline-start" />
                   {t("browse.filters")}
                   {activeFilters > 0 && <Badge className="ml-0.5 h-5 min-w-5 px-1.5 tabular-nums">{activeFilters}</Badge>}
@@ -270,7 +266,7 @@ export default function BrowsePage() {
               </SheetTrigger>
               <SheetContent
                 side="bottom"
-                className="max-h-[85dvh] gap-0 rounded-t-xl outline-none"
+                className="max-h-[85dvh] gap-0 rounded-t-[1.5rem] outline-none"
                 closeLabel={t("common.close")}
                 onOpenAutoFocus={focusSheet}
               >
@@ -279,7 +275,7 @@ export default function BrowsePage() {
                   <SheetDescription className="sr-only">{t("browse.filters")}</SheetDescription>
                 </SheetHeader>
                 <div className="overflow-y-auto p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-                  <Filters idPrefix="sheet-filter" params={params} update={update} onClear={canClear ? clearAll : undefined} />
+                  <Filters idPrefix="sheet-filter" params={params} update={update} onClear={canClear ? clearAll : undefined} counts={zoneCounts} showMap={false} />
                 </div>
               </SheetContent>
             </Sheet>
@@ -287,15 +283,24 @@ export default function BrowsePage() {
         </div>
 
         <TabsContent value={kind} className="flex flex-col gap-6 text-base lg:flex-row lg:items-start">
-          <aside className="hidden lg:sticky lg:top-20 lg:block lg:w-64 lg:shrink-0" aria-label={t("browse.filters")}>
-            <Card size="sm">
+          <aside className="hidden lg:sticky lg:top-24 lg:block lg:w-80 lg:shrink-0" aria-label={t("browse.filters")}>
+            <Card size="sm" className="rounded-[1.75rem]">
               <CardContent>
-                <Filters idPrefix="filter" params={params} update={update} onClear={canClear ? clearAll : undefined} />
+                <Filters idPrefix="filter" params={params} update={update} onClear={canClear ? clearAll : undefined} counts={zoneCounts} />
               </CardContent>
             </Card>
           </aside>
 
           <section aria-labelledby="results-heading" className="min-w-0 flex-1">
+            <div className="mb-5 rounded-[1.75rem] bg-card px-3 py-2 lg:hidden">
+              <CampusMap
+                size="sm"
+                counts={zoneCounts}
+                selected={zone || null}
+                onSelect={(id) => update({ zone: id, place: null })}
+                className="mx-auto max-w-lg"
+              />
+            </div>
             <h2 id="results-heading" className="sr-only">
               {t("browse.resultsLabel")}
             </h2>
@@ -305,7 +310,7 @@ export default function BrowsePage() {
                 <AlertDescription className="text-foreground">
                   <p>
                     {t("browse.lostTabNote")}{" "}
-                    <Link to="/report/found" className="font-medium text-primary">
+                    <Link to="/report/found" className="font-semibold underline">
                       {t("item.reportFoundCta")}
                     </Link>
                   </p>
@@ -344,7 +349,7 @@ export default function BrowsePage() {
               </EmptyState>
             ) : (
               <div className={cn("transition-opacity duration-200", query.isPlaceholderData && "opacity-60")} aria-busy={query.isFetching}>
-                <ul className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
+                <ul className="grid gap-3 md:grid-cols-2">
                   {items.map((item) => (
                     <li key={item.id} className="flex min-w-0">
                       <ItemCard item={item} />

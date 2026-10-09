@@ -221,7 +221,7 @@ export default function QuickAddPage() {
                         variant="outline"
                         pressed={on}
                         onPressedChange={() => pickCategory(id)}
-                        className="relative h-auto min-h-20 flex-col gap-1.5 rounded-lg px-2 py-3 text-center leading-tight whitespace-normal aria-pressed:border-primary aria-pressed:bg-primary/10 aria-pressed:text-primary [&_svg:not([class*='size-'])]:size-6"
+                        className="relative h-auto min-h-20 flex-col gap-1.5 rounded-2xl px-2 py-3 text-center leading-tight whitespace-normal aria-pressed:border-ink aria-pressed:bg-primary/10 aria-pressed:text-primary [&_svg:not([class*='size-'])]:size-6"
                       >
                         <Icon aria-hidden strokeWidth={1.75} />
                         <span className="break-words">{labels.category(id)}</span>

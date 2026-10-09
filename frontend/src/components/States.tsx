@@ -2,7 +2,6 @@ import { CircleAlert, RefreshCw, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useErrorText } from "@/lib/errors";
@@ -17,7 +16,7 @@ export function EmptyState({ icon: Icon, title, children, actions, compact = fal
   className?: string;
 }) {
   return (
-    <Empty className={cn("border bg-muted/30", compact ? "p-6 md:p-8" : "p-8 md:p-12", className)}>
+    <Empty className={cn("border-2 border-dashed border-input bg-transparent", compact ? "p-6 md:p-8" : "p-8 md:p-12", className)}>
       <EmptyHeader>
         <EmptyMedia variant="icon">
           <Icon aria-hidden />
@@ -76,16 +75,15 @@ function Busy({ children, className }: { children: ReactNode; className?: string
 
 export function CardGridSkeleton({ count = 8 }: { count?: number }) {
   return (
-    <Busy className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+    <Busy className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
       {Array.from({ length: count }, (_, i) => (
-        <Card key={i} className="gap-0 py-0">
-          <Skeleton className="aspect-[4/3] rounded-none" />
-          <CardContent className="gap-2 p-3">
-            <Skeleton className="h-4 w-1/3" />
+        <div key={i} className="flex items-center gap-4 rounded-[1.25rem] bg-card p-3.5">
+          <Skeleton className="size-16 shrink-0 rounded-full" />
+          <div className="flex flex-1 flex-col gap-2">
             <Skeleton className="h-4 w-11/12" />
             <Skeleton className="h-3.5 w-1/2" />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       ))}
     </Busy>
   );
@@ -115,7 +113,7 @@ export function RowsSkeleton({ rows = 4 }: { rows?: number }) {
   return (
     <Busy className="space-y-3">
       {Array.from({ length: rows }, (_, i) => (
-        <div key={i} className="flex gap-3 rounded-lg border p-3">
+        <div key={i} className="flex gap-3 rounded-2xl bg-cream p-3">
           <Skeleton className="size-16 shrink-0 sm:size-20" />
           <div className="flex-1 space-y-2 py-1">
             <Skeleton className="h-4 w-1/4" />

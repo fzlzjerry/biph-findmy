@@ -1,4 +1,4 @@
-import { ChevronDown, Lock, LogIn, LogOut, Menu, PackageSearch, Smartphone, X } from "lucide-react";
+import { ChevronDown, Lock, LogIn, LogOut, Menu, Smartphone, X } from "lucide-react";
 import { Component, useEffect, useRef, useState, type ErrorInfo, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, Navigate, NavLink, Outlet, useLocation, useNavigationType } from "react-router";
@@ -25,22 +25,25 @@ import { LabelsProvider, useMetaQuery } from "@/lib/meta";
 import { cn } from "@/lib/utils";
 
 // --------------------------------------------------------------------------- brand
+/** Two campus lobes meeting at a coastline, with a pin where something turned up. */
 export function LogoMark({ className }: { className?: string }) {
   return (
-    <span aria-hidden className={cn("flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground", className)}>
-      <PackageSearch className="size-[60%]" strokeWidth={2} />
-    </span>
+    <svg aria-hidden viewBox="0 0 32 32" className={cn("size-8 shrink-0", className)}>
+      <path d="M3.5 15.2C2.6 8.4 8 3 14.6 3.6c5 .5 6.6 4.6 5.6 8.4-1 3.9-4.9 5-6.6 8.8-1.6 3.6-3.6 6.6-6.4 5.4C4.5 25 4.2 20.6 3.5 15.2Z" fill="var(--color-zone-sports)" />
+      <path d="M17.4 27.6c-3.6-1.2-3.4-5.6-.8-8.4 2.4-2.6 5.6-3.2 7.6-6.4 1.4-2.2 4.6-2 5.4.8 1.2 4.2-.2 9.6-4 12.6-2.4 1.8-5.4 2.2-8.2 1.4Z" fill="var(--color-zone-academic)" />
+      <circle cx="16.6" cy="15.6" r="4.2" fill="var(--sun)" stroke="var(--ink)" strokeWidth="2" />
+    </svg>
   );
 }
 
 function Wordmark() {
   const { t } = useTranslation();
   return (
-    <Link to="/" className="flex min-w-0 items-center gap-2.5 rounded-md" aria-label={t("app.homeLabel")}>
-      <LogoMark />
+    <Link to="/" className="flex min-w-0 items-center gap-2 rounded-full" aria-label={t("app.homeLabel")}>
+      <LogoMark className="size-9" />
       <span className="flex min-w-0 items-baseline gap-2">
-        <span className="font-semibold tracking-tight whitespace-nowrap">BIPH FindMy</span>
-        <span className="hidden text-sm whitespace-nowrap text-muted-foreground sm:inline">失物招领</span>
+        <span className="text-[1.375rem] leading-none font-bold tracking-[-0.045em] whitespace-nowrap">FindMy</span>
+        <span className="hidden text-sm font-medium whitespace-nowrap text-muted-foreground xl:inline">BIPH 失物招领</span>
       </span>
     </Link>
   );
@@ -55,7 +58,7 @@ export function LanguageToggle({ className }: { className?: string }) {
     { id: "en" as const, label: "EN", htmlLang: "en" },
   ];
   return (
-    <div role="group" aria-label={t("nav.language")} className={cn("inline-flex shrink-0 items-center gap-0.5 rounded-lg border p-0.5", className)}>
+    <div role="group" aria-label={t("nav.language")} className={cn("inline-flex shrink-0 items-center gap-0.5 rounded-full bg-card p-1 shadow-[0_1px_2px_rgb(44_46_42/0.06)]", className)}>
       {options.map((option) => (
         <Toggle
           key={option.id}
@@ -63,7 +66,7 @@ export function LanguageToggle({ className }: { className?: string }) {
           lang={option.htmlLang}
           pressed={lang === option.id}
           onPressedChange={() => setLang(option.id)}
-          className="h-7 min-w-9 rounded-md px-2 text-xs text-muted-foreground aria-pressed:bg-muted aria-pressed:text-foreground"
+          className="h-7 min-w-9 rounded-full px-2.5 text-xs font-semibold text-muted-foreground hover:bg-secondary aria-pressed:bg-ink aria-pressed:text-primary-foreground"
         >
           {option.label}
         </Toggle>
@@ -108,9 +111,9 @@ function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="max-w-52 gap-2 px-1.5" aria-label={t("nav.account", { name: user.display_name })}>
+        <Button variant="outline" className="max-w-52 gap-2 pr-3 pl-1.5" aria-label={t("nav.account", { name: user.display_name })}>
           <Avatar className="size-7">
-            <AvatarFallback className="bg-primary/10 text-xs font-medium text-primary">{initials(user.display_name)}</AvatarFallback>
+            <AvatarFallback className="bg-zone-sports text-xs font-bold text-ink">{initials(user.display_name)}</AvatarFallback>
           </Avatar>
           <span className="truncate">{user.display_name}</span>
           <ChevronDown aria-hidden className="text-muted-foreground" />
@@ -170,8 +173,8 @@ function MobileMenu() {
 
   const link = ({ isActive }: { isActive: boolean }) =>
     cn(
-      "flex h-10 items-center rounded-md px-3 text-sm font-medium transition-colors",
-      isActive ? "bg-muted text-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground",
+      "flex h-11 items-center rounded-full px-4 text-[0.9375rem] font-semibold transition-colors",
+      isActive ? "bg-ink text-primary-foreground" : "text-foreground hover:bg-secondary",
     );
 
   return (
@@ -187,7 +190,7 @@ function MobileMenu() {
         closeLabel={t("nav.closeMenu")}
         onOpenAutoFocus={focusSheet}
       >
-        <SheetHeader className="border-b">
+        <SheetHeader className="border-b border-border">
           <SheetTitle className="flex items-center gap-2">
             <LogoMark className="size-7" />
             BIPH FindMy
@@ -239,17 +242,19 @@ function Header() {
   const { user } = useUser();
   const me = useMe();
   const loginHref = useLoginHref();
-  const items = isAdmin ? [...main, { to: "/admin", label: t("nav.admin") }] : main;
+  const pages = main.filter((item) => !item.to.startsWith("/report"));
+  const items = [...pages, ...(user ? [{ to: "/me", label: t("nav.myItems") }] : []), ...(isAdmin ? [{ to: "/admin", label: t("nav.admin") }] : [])];
 
   const link = ({ isActive }: { isActive: boolean }) =>
     cn(
-      "inline-flex h-8 items-center rounded-md px-3 text-sm font-medium whitespace-nowrap transition-colors",
-      isActive ? "bg-muted text-foreground" : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+      "inline-flex h-10 items-center rounded-full px-4 text-[0.9375rem] font-semibold whitespace-nowrap transition-colors duration-200",
+      isActive ? "bg-ink text-primary-foreground" : "text-foreground hover:bg-card",
     );
+  const action = ({ isActive }: { isActive: boolean }) => cn(isActive && "ring-2 ring-ink ring-offset-2 ring-offset-cream");
 
   return (
-    <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur supports-backdrop-filter:bg-background/75">
-      <div className="container-page flex h-14 items-center gap-4">
+    <header className="sticky top-0 z-40 bg-background/92 backdrop-blur-md supports-backdrop-filter:bg-background/80">
+      <div className="container-page flex h-[4.5rem] items-center gap-6">
         <Wordmark />
         <nav aria-label={t("nav.main")} className="hidden min-w-0 items-center gap-1 lg:flex">
           {items.map((item) => (
@@ -259,6 +264,18 @@ function Header() {
           ))}
         </nav>
         <div className="ml-auto flex shrink-0 items-center gap-2">
+          <div className="hidden items-center gap-2 md:flex">
+            <Button asChild variant="sun">
+              <NavLink to="/report/lost" className={action}>
+                {t("nav.reportLost")}
+              </NavLink>
+            </Button>
+            <Button asChild variant="coral">
+              <NavLink to="/report/found" className={action}>
+                {t("nav.reportFound")}
+              </NavLink>
+            </Button>
+          </div>
           <LanguageToggle />
           <div className="hidden lg:block">
             {me.isPending ? (
@@ -266,7 +283,7 @@ function Header() {
             ) : user ? (
               <UserMenu />
             ) : (
-              <Button asChild size="sm">
+              <Button asChild variant="outline">
                 <Link to={loginHref}>
                   <LogIn aria-hidden data-icon="inline-start" />
                   {t("nav.login")}
@@ -323,20 +340,20 @@ function WeChatBanner() {
 function Footer() {
   const { t } = useTranslation();
   return (
-    <footer className="mt-16 border-t bg-muted/30">
-      <div className="container-page flex flex-col gap-4 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+    <footer className="mt-20 bg-ink text-[#d9d4c4]">
+      <div className="container-page flex flex-col gap-4 py-10 text-sm sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <LogoMark className="size-7" />
           <div>
-            <p className="font-medium text-foreground">{t("footer.clubs")}</p>
+            <p className="font-semibold text-cream">{t("footer.clubs")}</p>
             <p className="mt-0.5">{t("footer.noTracking")}</p>
           </div>
         </div>
         <nav aria-label={t("footer.about")} className="flex flex-wrap gap-x-5 gap-y-1">
-          <Link to="/about" className="inline-flex min-h-9 items-center underline-offset-4 hover:text-foreground hover:underline">
+          <Link to="/about" className="inline-flex min-h-9 items-center hover:text-cream hover:underline">
             {t("footer.about")}
           </Link>
-          <Link to="/about#privacy" className="inline-flex min-h-9 items-center underline-offset-4 hover:text-foreground hover:underline">
+          <Link to="/about#privacy" className="inline-flex min-h-9 items-center hover:text-cream hover:underline">
             {t("footer.privacy")}
           </Link>
         </nav>
@@ -452,7 +469,7 @@ export function Layout() {
     <>
       <a
         href="#main"
-        className="sr-only rounded-md bg-primary px-4 py-3 font-medium text-primary-foreground focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[70]"
+        className="sr-only rounded-full bg-primary px-4 py-3 font-medium text-primary-foreground focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[70]"
       >
         {t("app.skip")}
       </a>

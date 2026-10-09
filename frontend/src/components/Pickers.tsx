@@ -1,6 +1,7 @@
 import { Camera, Check, ImagePlus, LoaderCircle, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
+import { CampusMap } from "@/components/CampusMap";
 import { Swatch } from "@/components/ItemBits";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -12,7 +13,7 @@ import { cn } from "@/lib/utils";
 
 /** Pill-shaped toggle used for colours, places and quick picks (pressed = primary tint). */
 export const chipClass =
-  "h-9 rounded-full px-3 font-normal aria-pressed:border-primary aria-pressed:bg-primary/10 aria-pressed:text-primary aria-pressed:hover:bg-primary/15";
+  "h-10 rounded-full border-input bg-card px-3.5 font-medium aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-cream aria-pressed:hover:bg-ink/90";
 
 // --------------------------------------------------------------------------- colours
 export function ColorPicker({ value, onChange, max = 3, describedById }: {
@@ -137,7 +138,7 @@ export function PlacePicker({ idPrefix, mode, value, onChange, max = 5, describe
   return (
     <div className="space-y-3">
       {mode === "multi" && (
-        <div aria-live="polite" className="rounded-lg border border-dashed p-3">
+        <div aria-live="polite" className="rounded-2xl bg-cream p-3">
           <p className="text-xs font-medium text-muted-foreground">{t("report.selectedPlaces")}</p>
           {value.length === 0 ? (
             <p className="mt-1 text-sm text-muted-foreground">{t("report.noPlaces")}</p>
@@ -162,6 +163,7 @@ export function PlacePicker({ idPrefix, mode, value, onChange, max = 5, describe
           )}
         </div>
       )}
+      <CampusMap size="sm" selected={zone || null} onSelect={(id) => chooseZone(id ?? "")} className="mx-auto max-w-md" />
       <div className="grid gap-2">
         <Label htmlFor={`${idPrefix}-zone`}>{t("report.zone")}</Label>
         <NativeSelect
@@ -264,7 +266,7 @@ export function PhotoPicker({ files, onChange, max = 3, capture = false, idPrefi
       />
       <div className={cn("grid grid-cols-3 gap-2 sm:gap-3", !large && "max-w-md")}>
         {previews.map((src, index) => (
-          <div key={src} className="relative aspect-square overflow-hidden rounded-lg border bg-muted">
+          <div key={src} className="relative aspect-square overflow-hidden rounded-2xl bg-cream">
             <img src={src} alt={t("report.photoN", { n: index + 1 })} className="size-full object-cover" />
             <Button
               type="button"
@@ -281,7 +283,7 @@ export function PhotoPicker({ files, onChange, max = 3, capture = false, idPrefi
         {Array.from({ length: processing }, (_, i) => (
           <div
             key={`processing-${i}`}
-            className="flex aspect-square flex-col items-center justify-center gap-2 rounded-lg border bg-muted p-2 text-center text-xs text-muted-foreground"
+            className="flex aspect-square flex-col items-center justify-center gap-2 rounded-2xl bg-cream p-2 text-center text-xs text-muted-foreground"
           >
             <LoaderCircle aria-hidden className="size-5 animate-spin" />
             {t("report.processingPhoto")}
@@ -293,7 +295,7 @@ export function PhotoPicker({ files, onChange, max = 3, capture = false, idPrefi
             onClick={() => inputRef.current?.click()}
             aria-describedby={describedById}
             className={cn(
-              "flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-input p-3 text-center text-sm font-medium text-muted-foreground transition-colors outline-none hover:border-primary/50 hover:bg-primary/5 hover:text-primary focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+              "flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-input p-3 text-center text-sm font-medium text-muted-foreground transition-colors outline-none hover:border-primary/50 hover:bg-primary/5 hover:text-primary focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
               big ? "col-span-3 min-h-36" : "aspect-square",
             )}
           >

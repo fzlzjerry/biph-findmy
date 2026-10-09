@@ -32,3 +32,6 @@ frontend/playwright-report/
 ._*
 .idea/
 .vscode/
+.impeccable/review/
+.impeccable/decision/
+.impeccable/questions/

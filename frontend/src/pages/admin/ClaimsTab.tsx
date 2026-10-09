@@ -38,7 +38,7 @@ function ItemSummary({ item, showPrivate }: { item: Item; showPrivate?: boolean 
   const lang = useLang();
   return (
     <div className="flex gap-3">
-      <Link to={`/items/${item.id}`} tabIndex={-1} aria-hidden className="block size-16 shrink-0 overflow-hidden rounded-lg bg-muted sm:size-20">
+      <Link to={`/items/${item.id}`} tabIndex={-1} aria-hidden className="block size-16 shrink-0 overflow-hidden rounded-full sm:size-20">
         <ItemThumb item={item} />
       </Link>
       <div className="min-w-0 flex-1 text-sm">
@@ -59,7 +59,7 @@ function ItemSummary({ item, showPrivate }: { item: Item; showPrivate?: boolean 
           </p>
         )}
         {showPrivate && (
-          <p className="mt-2 flex items-start gap-2 rounded-md border border-primary/20 bg-primary/5 px-2.5 py-2">
+          <p className="mt-2 flex items-start gap-2 rounded-md bg-[#d8ecff] px-2.5 py-2">
             <Lock aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
             <span>
               <span className="font-medium">{t("admin.finderPrivate")}: </span>
@@ -73,7 +73,7 @@ function ItemSummary({ item, showPrivate }: { item: Item; showPrivate?: boolean 
 }
 
 function SubHeading({ children }: { children: string }) {
-  return <h4 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{children}</h4>;
+  return <h4 className="text-sm font-semibold text-foreground">{children}</h4>;
 }
 
 function ClaimReview({ claim }: { claim: Claim }) {
@@ -122,7 +122,7 @@ function ClaimReview({ claim }: { claim: Claim }) {
           </div>
           <div className="space-y-1.5">
             <SubHeading>{t("admin.proof")}</SubHeading>
-            <blockquote className="flex gap-2 rounded-md bg-muted/60 p-3 text-sm leading-relaxed break-words">
+            <blockquote className="flex gap-2 rounded-2xl bg-cream p-3 text-sm leading-relaxed break-words">
               <Quote aria-hidden className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
               <span>{claim.proof}</span>
             </blockquote>

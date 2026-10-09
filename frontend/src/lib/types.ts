@@ -104,6 +104,8 @@ export interface ItemPage {
   total: number;
   page: number;
   page_size: number;
+  /** Open items per campus zone, under every filter except zone/place (feeds the campus map). */
+  zones: Record<string, number>;
 }
 
 export interface MetaCategory {

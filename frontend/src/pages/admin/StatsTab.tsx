@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { BusyButton } from "@/components/BusyButton";
+import { zoneFill } from "@/components/CampusMap";
 import { ChartFigure, DataTable, HBarChart, Meter, StatTile, WeeklyChart, type BarDatum } from "@/components/charts";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { ErrorState } from "@/components/States";
@@ -85,7 +86,7 @@ export default function StatsTab() {
   const categoryData = s.by_category.map(([id, value]) => ({ key: id, label: labels.category(id), value }));
   const zoneData = Object.entries(s.by_zone)
     .sort((a, b) => b[1] - a[1])
-    .map(([id, value]) => ({ key: id, label: id === "unknown" ? t("admin.unknownZone") : labels.zone(id), value }));
+    .map(([id, value]) => ({ key: id, label: id === "unknown" ? t("admin.unknownZone") : labels.zone(id), value, fill: zoneFill(id) }));
   const langTotal = Object.values(s.by_language).reduce((a, b) => a + b, 0) || 1;
   const langData: BarDatum[] = LANG_KEYS.filter((k) => s.by_language[k])
     .map((k): BarDatum => ({ key: k, label: t(`admin.lang_${k}`), value: s.by_language[k], display: `${Math.round((s.by_language[k] / langTotal) * 100)}%` }))
@@ -184,11 +185,11 @@ export default function StatsTab() {
             ) : (
               <>
                 <dl className="grid grid-cols-2 gap-3">
-                  <div className="rounded-lg border p-3">
+                  <div className="rounded-2xl bg-cream p-3">
                     <dt className="text-xs text-muted-foreground">{t("admin.confirmed")}</dt>
                     <dd className="mt-1 text-2xl font-semibold tabular-nums">{fb.confirmed}</dd>
                   </div>
-                  <div className="rounded-lg border p-3">
+                  <div className="rounded-2xl bg-cream p-3">
                     <dt className="text-xs text-muted-foreground">{t("admin.rejectedFb")}</dt>
                     <dd className="mt-1 text-2xl font-semibold tabular-nums">{fb.rejected}</dd>
                   </div>
