@@ -1,25 +1,34 @@
 import { CircleAlert, RefreshCw, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { useErrorText } from "../lib/errors";
-import { Button } from "./ui";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useErrorText } from "@/lib/errors";
+import { cn } from "@/lib/utils";
 
-export function EmptyState({ icon: Icon, title, children, actions, compact = false }: {
+export function EmptyState({ icon: Icon, title, children, actions, compact = false, className }: {
   icon: LucideIcon;
   title: ReactNode;
   children?: ReactNode;
   actions?: ReactNode;
   compact?: boolean;
+  className?: string;
 }) {
   return (
-    <div className={`flex flex-col items-center rounded-md bg-surface text-center ${compact ? "px-5 py-8" : "px-6 py-12"}`}>
-      <span className="flex size-12 items-center justify-center rounded-full bg-water text-brand">
-        <Icon aria-hidden className="size-6" />
-      </span>
-      <h2 className="mt-4 text-lg font-semibold text-ink">{title}</h2>
-      {children && <div className="mt-1.5 max-w-[52ch] text-[0.9375rem] leading-relaxed text-muted">{children}</div>}
-      {actions && <div className="mt-5 flex flex-wrap justify-center gap-2">{actions}</div>}
-    </div>
+    <Empty className={cn("border bg-muted/30", compact ? "p-6 md:p-8" : "p-8 md:p-12", className)}>
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <Icon aria-hidden />
+        </EmptyMedia>
+        <EmptyTitle role="heading" aria-level={2}>
+          {title}
+        </EmptyTitle>
+        {children && <EmptyDescription>{children}</EmptyDescription>}
+      </EmptyHeader>
+      {actions && <EmptyContent className="flex-row flex-wrap justify-center gap-2">{actions}</EmptyContent>}
+    </Empty>
   );
 }
 
@@ -33,78 +42,88 @@ export function ErrorState({ error, onRetry, title, compact = false }: {
   const { t } = useTranslation();
   const errorText = useErrorText();
   return (
-    <div
-      role="alert"
-      className={`flex flex-col items-center rounded-md border border-line text-center ${compact ? "px-5 py-6" : "px-6 py-10"}`}
-    >
-      <CircleAlert aria-hidden className="size-7 text-alert" />
-      <h2 className="mt-3 text-lg font-semibold text-ink">{title ?? t("common.errorTitle")}</h2>
-      <p className="mt-1 max-w-[52ch] text-[0.9375rem] text-muted">{errorText(error)}</p>
+    <Empty role="alert" className={cn("border border-destructive/30", compact ? "p-6 md:p-8" : "p-8 md:p-12")}>
+      <EmptyHeader>
+        <EmptyMedia variant="icon" className="bg-destructive/10 text-destructive">
+          <CircleAlert aria-hidden />
+        </EmptyMedia>
+        <EmptyTitle role="heading" aria-level={2}>
+          {title ?? t("common.errorTitle")}
+        </EmptyTitle>
+        <EmptyDescription>{errorText(error)}</EmptyDescription>
+      </EmptyHeader>
       {onRetry && (
-        <Button variant="secondary" icon={RefreshCw} className="mt-4" onClick={onRetry}>
-          {t("common.retry")}
-        </Button>
+        <EmptyContent>
+          <Button variant="outline" onClick={onRetry}>
+            <RefreshCw aria-hidden data-icon="inline-start" />
+            {t("common.retry")}
+          </Button>
+        </EmptyContent>
       )}
+    </Empty>
+  );
+}
+
+function Busy({ children, className }: { children: ReactNode; className?: string }) {
+  const { t } = useTranslation();
+  return (
+    <div aria-busy="true" className={className}>
+      <span className="sr-only">{t("common.loading")}</span>
+      {children}
     </div>
   );
 }
 
 export function CardGridSkeleton({ count = 8 }: { count?: number }) {
-  const { t } = useTranslation();
   return (
-    <div aria-busy="true" className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
-      <span className="sr-only">{t("common.loading")}</span>
+    <Busy className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
       {Array.from({ length: count }, (_, i) => (
-        <div key={i} className="overflow-hidden rounded-md border border-line">
-          <div className="skeleton aspect-[4/3] rounded-none" />
-          <div className="space-y-2 p-3">
-            <div className="skeleton h-4 w-11/12" />
-            <div className="skeleton h-4 w-2/3" />
-            <div className="skeleton h-3.5 w-1/2" />
-          </div>
-        </div>
+        <Card key={i} className="gap-0 py-0">
+          <Skeleton className="aspect-[4/3] rounded-none" />
+          <CardContent className="gap-2 p-3">
+            <Skeleton className="h-4 w-1/3" />
+            <Skeleton className="h-4 w-11/12" />
+            <Skeleton className="h-3.5 w-1/2" />
+          </CardContent>
+        </Card>
       ))}
-    </div>
+    </Busy>
   );
 }
 
 export function LinesSkeleton({ lines = 3, className = "" }: { lines?: number; className?: string }) {
-  const { t } = useTranslation();
   return (
-    <div aria-busy="true" className={`space-y-3 ${className}`}>
-      <span className="sr-only">{t("common.loading")}</span>
+    <Busy className={cn("space-y-3", className)}>
       {Array.from({ length: lines }, (_, i) => (
-        <div key={i} className="skeleton h-4" style={{ width: `${92 - ((i * 17) % 40)}%` }} />
+        <Skeleton key={i} className="h-4" style={{ width: `${92 - ((i * 17) % 40)}%` }} />
       ))}
-    </div>
+    </Busy>
   );
 }
 
 export function PageSkeleton() {
   return (
     <div className="container-page py-8 sm:py-10">
-      <div className="skeleton h-9 w-64 max-w-full" />
-      <div className="skeleton mt-3 h-5 w-96 max-w-full" />
+      <Skeleton className="h-8 w-64 max-w-full" />
+      <Skeleton className="mt-3 h-5 w-96 max-w-full" />
       <LinesSkeleton lines={5} className="mt-8 max-w-2xl" />
     </div>
   );
 }
 
 export function RowsSkeleton({ rows = 4 }: { rows?: number }) {
-  const { t } = useTranslation();
   return (
-    <div aria-busy="true" className="space-y-3">
-      <span className="sr-only">{t("common.loading")}</span>
+    <Busy className="space-y-3">
       {Array.from({ length: rows }, (_, i) => (
-        <div key={i} className="flex gap-3 rounded-md border border-line p-3">
-          <div className="skeleton size-20 shrink-0" />
+        <div key={i} className="flex gap-3 rounded-lg border p-3">
+          <Skeleton className="size-16 shrink-0 sm:size-20" />
           <div className="flex-1 space-y-2 py-1">
-            <div className="skeleton h-4 w-3/4" />
-            <div className="skeleton h-4 w-1/2" />
-            <div className="skeleton h-3.5 w-1/3" />
+            <Skeleton className="h-4 w-1/4" />
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-3.5 w-1/3" />
           </div>
         </div>
       ))}
-    </div>
+    </Busy>
   );
 }

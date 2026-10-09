@@ -83,7 +83,7 @@ flowchart LR
 matcher/           DS Club: normalize, extract, features, scoring, explain, embed (ONNX), eval/, data/
 matcher/notebooks/ 01 data exploration · 02 text models compared · 03 weight fitting
 backend/app/       FastAPI: routers (auth, items, claims, admin, cron, media), services, models, seed
-frontend/          React 19 + Vite + Tailwind, zh/en, Playwright e2e (tests/e2e)
+frontend/          React 19 + Vite + Tailwind 4 + shadcn/ui (Radix, vendored in src/components/ui), zh/en, Playwright e2e
 supabase/          generated Postgres migration
 scripts/           fetch_model.py (pinned, checksummed), gen_schema.py, vercel_build.py, run_notebooks.py
 docs/              evaluation report, data collection, Supabase setup, self-hosting, screenshots

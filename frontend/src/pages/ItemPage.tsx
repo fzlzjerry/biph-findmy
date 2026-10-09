@@ -2,34 +2,49 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
   BadgeCheck,
+  CircleAlert,
   CircleCheck,
   CircleX,
   EyeOff,
   Hourglass,
+  Info,
   Lock,
   LogIn,
   PackageSearch,
   PartyPopper,
   SearchX,
+  type LucideIcon,
 } from "lucide-react";
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useParams, useSearchParams } from "react-router";
-import { ConfirmDialog, Dialog } from "../components/Dialog";
-import { ItemThumb, itemTitle, RelativeTime, Swatch } from "../components/ItemBits";
-import { MatchCard } from "../components/MatchCard";
-import { EmptyState, ErrorState, LinesSkeleton } from "../components/States";
-import { useToast } from "../components/Toast";
-import { Button, buttonClass, describedBy, Field, KindBadge, Notice, StatusBadge } from "../components/ui";
-import { useLang } from "../i18n";
-import { ApiError, api } from "../lib/api";
-import { useUser } from "../lib/auth";
-import { categoryIcon } from "../lib/categoryIcon";
-import { useErrorText } from "../lib/errors";
-import { useDocumentTitle } from "../lib/hooks";
-import { useLabels } from "../lib/meta";
-import { formatDateTime, formatWindow } from "../lib/time";
-import type { Claim, Item, ItemDetail, Match, Verdict } from "../lib/types";
+import { KindBadge, StatusBadge } from "@/components/badges";
+import { BusyButton } from "@/components/BusyButton";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { describedBy, FormField } from "@/components/form";
+import { ItemThumb, itemTitle, RelativeTime, Swatch } from "@/components/ItemBits";
+import { MatchCard } from "@/components/MatchCard";
+import { SectionHeader } from "@/components/page";
+import { EmptyState, ErrorState, LinesSkeleton } from "@/components/States";
+import { useToast } from "@/components/Toast";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
+import { useLang } from "@/i18n";
+import { ApiError, api } from "@/lib/api";
+import { useUser } from "@/lib/auth";
+import { categoryIcon } from "@/lib/categoryIcon";
+import { useErrorText } from "@/lib/errors";
+import { useDocumentTitle } from "@/lib/hooks";
+import { useLabels } from "@/lib/meta";
+import { formatDateTime, formatWindow } from "@/lib/time";
+import type { Claim, Item, ItemDetail, Match, Verdict } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 // --------------------------------------------------------------------------- gallery
 function Gallery({ item }: { item: Item }) {
@@ -38,7 +53,7 @@ function Gallery({ item }: { item: Item }) {
   const title = itemTitle(item, 60);
   if (!item.photos.length) {
     return (
-      <div className="aspect-[4/3] overflow-hidden rounded-md border border-line">
+      <div className="aspect-[4/3] overflow-hidden rounded-xl border">
         <ItemThumb item={item} iconClass="size-1/4" alt={t("item.noPhoto")} />
       </div>
     );
@@ -50,15 +65,10 @@ function Gallery({ item }: { item: Item }) {
         href={photo.url}
         target="_blank"
         rel="noopener"
-        className="block aspect-[4/3] overflow-hidden rounded-md border border-line bg-surface"
+        className="block aspect-[4/3] overflow-hidden rounded-xl border bg-muted"
         title={t("item.openFull")}
       >
-        <img
-          src={photo.url}
-          alt={`${t("report.photoN", { n: index + 1 })} · ${title}`}
-          className="h-full w-full object-contain"
-          decoding="async"
-        />
+        <img src={photo.url} alt={`${t("report.photoN", { n: index + 1 })} · ${title}`} className="size-full object-contain" decoding="async" />
       </a>
       {item.photos.length > 1 && (
         <div className="mt-3 flex gap-2" role="group" aria-label={t("item.photos")}>
@@ -69,9 +79,12 @@ function Gallery({ item }: { item: Item }) {
               aria-pressed={i === index}
               aria-label={t("item.showPhoto", { n: i + 1 })}
               onClick={() => setIndex(i)}
-              className={`size-16 overflow-hidden rounded-sm border-2 ${i === index ? "border-brand" : "border-transparent hover:border-line-strong"}`}
+              className={cn(
+                "size-16 overflow-hidden rounded-lg border-2 outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                i === index ? "border-primary" : "border-transparent hover:border-border",
+              )}
             >
-              <img src={p.thumb_url} alt="" className="h-full w-full object-cover" />
+              <img src={p.thumb_url} alt="" className="size-full object-cover" />
             </button>
           ))}
         </div>
@@ -84,8 +97,8 @@ function Gallery({ item }: { item: Item }) {
 function Attr({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="min-w-0">
-      <dt className="text-sm font-medium text-muted">{label}</dt>
-      <dd className="mt-0.5 break-words text-[0.9375rem] text-ink">{children}</dd>
+      <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
+      <dd className="mt-1 text-sm break-words">{children}</dd>
     </div>
   );
 }
@@ -99,7 +112,7 @@ function Attributes({ item }: { item: Item }) {
     <dl className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
       <Attr label={t("item.category")}>
         <span className="inline-flex items-center gap-1.5">
-          <Icon aria-hidden className="size-4 text-brand" />
+          <Icon aria-hidden className="size-4 text-muted-foreground" />
           {labels.category(item.category)}
         </span>
       </Attr>
@@ -128,15 +141,13 @@ function Attributes({ item }: { item: Item }) {
       {item.kind === "found" && item.holding && (
         <Attr label={t("item.holding")}>
           {t(`holding.${item.holding}`)}
-          {item.holding_note && <span className="block text-sm text-muted">{item.holding_note}</span>}
+          {item.holding_note && <span className="block text-muted-foreground">{item.holding_note}</span>}
         </Attr>
       )}
       <Attr label={t("item.reported")}>
-        <RelativeTime iso={item.created_at} /> <span className="text-sm text-muted">· {formatDateTime(item.created_at, lang)}</span>
+        <RelativeTime iso={item.created_at} /> <span className="text-muted-foreground">· {formatDateTime(item.created_at, lang)}</span>
       </Attr>
-      {item.returned_at && (
-        <Attr label={t("status.found.returned")}>{t("item.returnedOn", { time: formatDateTime(item.returned_at, lang) })}</Attr>
-      )}
+      {item.returned_at && <Attr label={t("status.found.returned")}>{t("item.returnedOn", { time: formatDateTime(item.returned_at, lang) })}</Attr>}
     </dl>
   );
 }
@@ -200,66 +211,114 @@ function ClaimDialog({ item, open, onClose, preselectLost }: {
   };
 
   return (
-    <Dialog open={open} onClose={onClose} title={t("claim.dialogTitle")} description={t("item.claimLead")} busy={mutation.isPending}>
-      <form onSubmit={submit} noValidate className="space-y-5">
-        <Field id="claim-proof" label={t("claim.proof")} hint={t("claim.proofHint")} error={proofError}>
-          <textarea
-            id="claim-proof"
-            data-autofocus
-            className="field-control"
-            rows={4}
-            maxLength={1000}
-            value={proof}
-            onChange={(event) => {
-              setProof(event.target.value);
-              if (proofError) setProofError("");
-            }}
-            placeholder={t("claim.proofPlaceholder")}
-            aria-invalid={Boolean(proofError) || undefined}
-            aria-describedby={describedBy("claim-proof", { hint: true, error: proofError })}
-            aria-required
-          />
-        </Field>
-        <Field id="claim-lost" label={t("claim.linkLost")} hint={t("claim.linkHint")} optional>
-          <select
-            id="claim-lost"
-            className="field-control"
-            value={lostId}
-            onChange={(event) => setLostId(event.target.value)}
-            disabled={mine.isPending}
-            aria-describedby="claim-lost-hint"
-          >
-            <option value="">{t("claim.linkNone")}</option>
-            {lostReports.map((report) => (
-              <option key={report.id} value={report.id}>
-                {labels.category(report.category)} — {itemTitle(report, 60)}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <p className="flex items-start gap-2 rounded-sm bg-mist px-3 py-2.5 text-sm text-ink">
-          <BadgeCheck aria-hidden className="mt-0.5 size-4 shrink-0 text-brand" />
-          {t("claim.pickupNote")}
-        </p>
-        {mutation.isError && (
-          <Notice tone="error" role="alert">
-            {errorText(mutation.error)}
-          </Notice>
-        )}
-        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Button variant="secondary" onClick={onClose} disabled={mutation.isPending}>
+    <Dialog open={open} onOpenChange={(next) => !next && !mutation.isPending && onClose()}>
+      <DialogContent
+        className="max-h-[92dvh] overflow-y-auto sm:max-w-lg"
+        closeLabel={t("common.close")}
+        onOpenAutoFocus={(event) => {
+          event.preventDefault();
+          document.getElementById("claim-proof")?.focus();
+        }}
+      >
+        <DialogHeader>
+          <DialogTitle className="text-lg">{t("claim.dialogTitle")}</DialogTitle>
+          <DialogDescription>{t("item.claimLead")}</DialogDescription>
+        </DialogHeader>
+        <form id="claim-form" onSubmit={submit} noValidate className="space-y-5">
+          <FormField id="claim-proof" label={t("claim.proof")} hint={t("claim.proofHint")} error={proofError}>
+            <Textarea
+              id="claim-proof"
+              className="min-h-24"
+              rows={4}
+              maxLength={1000}
+              value={proof}
+              onChange={(event) => {
+                setProof(event.target.value);
+                if (proofError) setProofError("");
+              }}
+              placeholder={t("claim.proofPlaceholder")}
+              aria-invalid={Boolean(proofError) || undefined}
+              aria-describedby={describedBy("claim-proof", { hint: true, error: proofError })}
+              aria-required
+            />
+          </FormField>
+          <FormField id="claim-lost" label={t("claim.linkLost")} hint={t("claim.linkHint")} optional>
+            <NativeSelect
+              id="claim-lost"
+              className="w-full"
+              value={lostId}
+              onChange={(event) => setLostId(event.target.value)}
+              disabled={mine.isPending}
+              aria-describedby="claim-lost-hint"
+            >
+              <NativeSelectOption value="">{t("claim.linkNone")}</NativeSelectOption>
+              {lostReports.map((report) => (
+                <NativeSelectOption key={report.id} value={report.id}>
+                  {labels.category(report.category)} — {itemTitle(report, 60)}
+                </NativeSelectOption>
+              ))}
+            </NativeSelect>
+          </FormField>
+          <Alert role="note" className="border-primary/20 bg-primary/5">
+            <BadgeCheck aria-hidden className="text-primary" />
+            <AlertDescription className="text-foreground">{t("claim.pickupNote")}</AlertDescription>
+          </Alert>
+          {mutation.isError && (
+            <Alert variant="destructive">
+              <CircleAlert aria-hidden />
+              <AlertDescription>{errorText(mutation.error)}</AlertDescription>
+            </Alert>
+          )}
+        </form>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} disabled={mutation.isPending}>
             {t("common.cancel")}
           </Button>
-          <Button type="submit" busy={mutation.isPending} busyLabel={t("claim.submitting")}>
+          <BusyButton type="submit" form="claim-form" busy={mutation.isPending} busyLabel={t("claim.submitting")}>
             {t("claim.submit")}
-          </Button>
-        </div>
-      </form>
+          </BusyButton>
+        </DialogFooter>
+      </DialogContent>
     </Dialog>
   );
 }
 
 // --------------------------------------------------------------------------- claim status panel
+function StatusAlert({ tone = "default", icon: Icon, title, children }: {
+  tone?: "default" | "success" | "error";
+  icon: LucideIcon;
+  title?: ReactNode;
+  children?: ReactNode;
+}) {
+  return (
+    <Alert
+      role="status"
+      className={cn(
+        tone === "success" && "border-emerald-200 bg-emerald-50 text-emerald-900",
+        tone === "error" && "border-red-200 bg-red-50 text-red-900",
+      )}
+    >
+      <Icon aria-hidden className={cn(tone === "success" ? "text-emerald-600" : tone === "error" ? "text-red-600" : "text-primary")} />
+      {title && <AlertTitle>{title}</AlertTitle>}
+      {children && <AlertDescription className="text-current/80">{children}</AlertDescription>}
+    </Alert>
+  );
+}
+
+function ActionCard({ title, description, children }: { title: string; description: string; children: ReactNode }) {
+  return (
+    <Card size="sm" className="bg-muted/30">
+      <CardHeader>
+        <CardTitle role="heading" aria-level={2}>
+          {title}
+        </CardTitle>
+        <CardDescription>{description}</CardDescription>
+      </CardHeader>
+      <CardFooter>{children}</CardFooter>
+    </Card>
+  );
+}
+
 function ClaimPanel({ item, claim, onClaim }: { item: Item; claim: Claim | null | undefined; onClaim: () => void }) {
   const { t } = useTranslation();
   const { user } = useUser();
@@ -268,67 +327,63 @@ function ClaimPanel({ item, claim, onClaim }: { item: Item; claim: Claim | null 
 
   if (!user) {
     return (
-      <div className="rounded-md bg-surface p-5">
-        <h2 className="text-lg font-semibold text-ink">{t("item.claimTitle")}</h2>
-        <p className="mt-1 text-[0.9375rem] text-muted">{t("item.loginToClaimLead")}</p>
-        <Link
-          to={`/login?next=${encodeURIComponent(location.pathname)}`}
-          className={buttonClass("primary", "md", "mt-4 w-full sm:w-auto")}
-        >
-          <LogIn aria-hidden />
-          {t("item.loginToClaim")}
-        </Link>
-      </div>
+      <ActionCard title={t("item.claimTitle")} description={t("item.loginToClaimLead")}>
+        <Button asChild className="w-full sm:w-auto">
+          <Link to={`/login?next=${encodeURIComponent(location.pathname)}`}>
+            <LogIn aria-hidden data-icon="inline-start" />
+            {t("item.loginToClaim")}
+          </Link>
+        </Button>
+      </ActionCard>
     );
   }
 
   const status = claim?.status;
   if (status === "pending")
     return (
-      <Notice icon={Hourglass} title={t("item.claimPending")} role="status">
-        {t("item.claimPendingBody")}
-        <span className="mt-1 block">{t("claim.pickupNote")}</span>
-      </Notice>
+      <StatusAlert icon={Hourglass} title={t("item.claimPending")}>
+        <p>{t("item.claimPendingBody")}</p>
+        <p>{t("claim.pickupNote")}</p>
+      </StatusAlert>
     );
   if (status === "approved")
     return (
-      <Notice tone="success" icon={BadgeCheck} title={t("item.claimApproved")} role="status">
-        {t("item.claimApprovedBody")}
-        {claim?.review_note && <span className="mt-1 block">{t("item.reviewNote", { note: claim.review_note })}</span>}
-      </Notice>
+      <StatusAlert tone="success" icon={BadgeCheck} title={t("item.claimApproved")}>
+        <p>{t("item.claimApprovedBody")}</p>
+        {claim?.review_note && <p>{t("item.reviewNote", { note: claim.review_note })}</p>}
+      </StatusAlert>
     );
   if (status === "completed")
     return (
-      <Notice tone="success" icon={PartyPopper} title={t("item.claimCompleted")} role="status">
+      <StatusAlert tone="success" icon={PartyPopper} title={t("item.claimCompleted")}>
         {t("item.claimCompletedBody")}
-      </Notice>
+      </StatusAlert>
     );
 
   return (
     <div className="space-y-3">
       {status === "rejected" && (
-        <Notice tone="error" icon={CircleX} title={t("item.claimRejected")}>
+        <StatusAlert tone="error" icon={CircleX} title={t("item.claimRejected")}>
           {claim?.review_note ? t("item.reviewNote", { note: claim.review_note }) : t("item.claimRejectedBody")}
-        </Notice>
+        </StatusAlert>
       )}
-      {status === "cancelled" && <Notice>{t("item.claimCancelled")}</Notice>}
+      {status === "cancelled" && <StatusAlert icon={Info}>{t("item.claimCancelled")}</StatusAlert>}
       {claimable ? (
-        <div className="rounded-md bg-surface p-5">
-          <h2 className="text-lg font-semibold text-ink">{t("item.claimTitle")}</h2>
-          <p className="mt-1 text-[0.9375rem] text-muted">{t("item.claimLead")}</p>
-          <Button className="mt-4 w-full sm:w-auto" icon={CircleCheck} onClick={onClaim}>
+        <ActionCard title={t("item.claimTitle")} description={t("item.claimLead")}>
+          <Button className="w-full sm:w-auto" onClick={onClaim}>
+            <CircleCheck aria-hidden data-icon="inline-start" />
             {status === "rejected" || status === "cancelled" ? t("item.claimAgain") : t("item.claimButton")}
           </Button>
-        </div>
+        </ActionCard>
       ) : (
-        <Notice>{t("item.notClaimable")}</Notice>
+        <StatusAlert icon={Info}>{t("item.notClaimable")}</StatusAlert>
       )}
     </div>
   );
 }
 
 // --------------------------------------------------------------------------- matches
-function MatchesSection({ item, matches, isNew }: { item: Item; matches: Match[]; isNew: boolean }) {
+function MatchesSection({ item, matches }: { item: Item; matches: Match[] }) {
   const { t } = useTranslation();
   const labels = useLabels();
   const queryClient = useQueryClient();
@@ -353,13 +408,12 @@ function MatchesSection({ item, matches, isNew }: { item: Item; matches: Match[]
   const ordered = [...matches].sort((a, b) => Number(a.feedback === "rejected") - Number(b.feedback === "rejected"));
 
   return (
-    <section aria-labelledby="matches-title" className={isNew ? "" : "border-t border-line pt-8"}>
-      <h2 id="matches-title" className="text-2xl font-semibold text-ink">
-        {item.kind === "lost" ? t("item.matchesTitleLost") : t("item.matchesTitleFound")}
-      </h2>
-      <p className="mt-1 max-w-[68ch] text-[0.9375rem] text-muted">
-        {item.kind === "lost" ? t("item.matchesLeadLost") : t("item.matchesLeadFound")}
-      </p>
+    <section aria-labelledby="matches-title">
+      <SectionHeader
+        id="matches-title"
+        title={item.kind === "lost" ? t("item.matchesTitleLost") : t("item.matchesTitleFound")}
+        description={item.kind === "lost" ? t("item.matchesLeadLost") : t("item.matchesLeadFound")}
+      />
       <div className="mt-5" aria-live="polite">
         {ordered.length === 0 ? (
           <EmptyState
@@ -368,12 +422,11 @@ function MatchesSection({ item, matches, isNew }: { item: Item; matches: Match[]
             title={item.kind === "lost" ? t("item.noMatchesLost") : t("item.noMatchesFound")}
             actions={
               item.kind === "lost" && item.category ? (
-                <Link
-                  to={`/browse?category=${encodeURIComponent(item.category)}`}
-                  className={buttonClass("secondary")}
-                >
-                  {t("item.browseCategory", { category: labels.category(item.category) })}
-                </Link>
+                <Button asChild variant="outline">
+                  <Link to={`/browse?category=${encodeURIComponent(item.category)}`}>
+                    {t("item.browseCategory", { category: labels.category(item.category) })}
+                  </Link>
+                </Button>
               ) : undefined
             }
           />
@@ -417,31 +470,31 @@ function OwnerTools({ item }: { item: Item }) {
   });
   if (!closable && item.status !== "closed") return null;
   return (
-    <div className="rounded-md border border-line p-4">
-      <h2 className="text-base font-semibold text-ink">{t("item.ownerTools")}</h2>
-      {item.kind === "found" && <p className="mt-1 text-sm text-muted">{t("item.ownFoundNote")}</p>}
-      <div className="mt-3">
-        {closable ? (
-          <Button variant="danger-outline" size="sm" onClick={() => setConfirming(true)}>
-            {t("item.closeReport")}
-          </Button>
-        ) : (
-          <Button
-            variant="secondary"
-            size="sm"
-            busy={mutation.isPending}
-            busyLabel={t("item.reopening")}
-            onClick={() => mutation.mutate("open")}
-          >
-            {t("item.reopen")}
-          </Button>
+    <Card size="sm">
+      <CardHeader>
+        <CardTitle role="heading" aria-level={2}>
+          {t("item.ownerTools")}
+        </CardTitle>
+        {item.kind === "found" && <CardDescription>{t("item.ownFoundNote")}</CardDescription>}
+      </CardHeader>
+      <CardContent>
+        <div>
+          {closable ? (
+            <Button variant="destructive" onClick={() => setConfirming(true)}>
+              {t("item.closeReport")}
+            </Button>
+          ) : (
+            <BusyButton variant="outline" busy={mutation.isPending} busyLabel={t("item.reopening")} onClick={() => mutation.mutate("open")}>
+              {t("item.reopen")}
+            </BusyButton>
+          )}
+        </div>
+        {mutation.isError && !confirming && (
+          <p role="alert" className="text-sm text-destructive">
+            {errorText(mutation.error)}
+          </p>
         )}
-      </div>
-      {mutation.isError && !confirming && (
-        <p role="alert" className="mt-2 text-sm text-alert-deep">
-          {errorText(mutation.error)}
-        </p>
-      )}
+      </CardContent>
       <ConfirmDialog
         open={confirming}
         onClose={() => setConfirming(false)}
@@ -451,10 +504,10 @@ function OwnerTools({ item }: { item: Item }) {
         confirmLabel={t("item.closeConfirm")}
         busyLabel={t("item.closing")}
         busy={mutation.isPending}
-        variant="danger"
+        destructive
         error={mutation.isError ? errorText(mutation.error) : undefined}
       />
-    </div>
+    </Card>
   );
 }
 
@@ -503,10 +556,10 @@ export default function ItemPage() {
     return (
       <div className="container-page py-8 sm:py-10">
         <div className="grid gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-          <div className="skeleton aspect-[4/3] rounded-md" />
+          <Skeleton className="aspect-[4/3] rounded-xl" />
           <div>
-            <div className="skeleton h-6 w-40" />
-            <div className="skeleton mt-4 h-9 w-full max-w-md" />
+            <Skeleton className="h-5 w-40" />
+            <Skeleton className="mt-4 h-8 w-full max-w-md" />
             <LinesSkeleton lines={6} className="mt-6" />
           </div>
         </div>
@@ -522,9 +575,9 @@ export default function ItemPage() {
             icon={SearchX}
             title={t("item.notFoundTitle")}
             actions={
-              <Link to="/browse" className={buttonClass("primary")}>
-                {t("notFound.browse")}
-              </Link>
+              <Button asChild>
+                <Link to="/browse">{t("notFound.browse")}</Link>
+              </Button>
             }
           >
             {t("item.notFoundBody")}
@@ -541,26 +594,24 @@ export default function ItemPage() {
   const from = (location.state as { from?: string } | null)?.from;
   const backTo = from?.startsWith("/browse") ? from : item.kind === "lost" ? "/browse?kind=lost" : "/browse";
   const showMatches = matches !== undefined && (item.is_mine || isAdmin);
-  const matchesSection = showMatches ? <MatchesSection item={item} matches={matches} isNew={isNew} /> : null;
+  const matchesSection = showMatches ? <MatchesSection item={item} matches={matches} /> : null;
   const matchCount = matches?.length ?? 0;
+  const justPosted = isNew && item.is_mine;
   // Without a title the heading already shows the (short) description — don't print it twice.
   const descriptionIsTitle = !item.title?.trim() && itemTitle(item, 80) === item.description.replace(/\s+/g, " ").trim();
 
   return (
     <div className="container-page py-6 sm:py-8">
-      <Link to={backTo} className={buttonClass("quiet", "sm", "-ml-3")}>
-        <ArrowLeft aria-hidden />
-        {t("item.back")}
-      </Link>
+      <Button asChild variant="ghost" size="sm" className="-ml-2.5 text-muted-foreground">
+        <Link to={backTo}>
+          <ArrowLeft aria-hidden data-icon="inline-start" />
+          {t("item.back")}
+        </Link>
+      </Button>
 
-      {isNew && item.is_mine && (
+      {justPosted && (
         <div className="mt-4 space-y-8">
-          <Notice
-            tone="success"
-            role="status"
-            title={t("item.postedTitle")}
-            className="py-4"
-          >
+          <StatusAlert tone="success" icon={CircleCheck} title={t("item.postedTitle")}>
             {item.kind === "found"
               ? matchCount > 0
                 ? t("item.postedMatches", { count: matchCount })
@@ -568,20 +619,21 @@ export default function ItemPage() {
               : matchCount > 0
                 ? t("item.postedMatches", { count: matchCount })
                 : t("item.postedNoMatches")}
-          </Notice>
+          </StatusAlert>
           {matchesSection}
         </div>
       )}
 
       {item.is_hidden && (
-        <Notice tone="warning" icon={EyeOff} className="mt-4">
-          {t("item.hiddenNotice")}
-        </Notice>
+        <Alert role="note" className="mt-4 border-amber-200 bg-amber-50 text-amber-900">
+          <EyeOff aria-hidden />
+          <AlertDescription className="text-current/80">{t("item.hiddenNotice")}</AlertDescription>
+        </Alert>
       )}
 
       <article
         aria-labelledby="item-title"
-        className={`grid gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-10 ${isNew && item.is_mine ? "mt-10 border-t border-line pt-8" : "mt-4"}`}
+        className={cn("grid gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-10", justPosted ? "mt-10 border-t pt-8" : "mt-4")}
       >
         <div className="min-w-0">
           <Gallery item={item} />
@@ -591,63 +643,64 @@ export default function ItemPage() {
             <KindBadge kind={item.kind} />
             <StatusBadge kind={item.kind} status={item.status} />
           </div>
-          <h1 id="item-title" className="mt-3 break-words text-[1.625rem] font-bold leading-tight text-ink sm:text-[2rem]">
+          <h1 id="item-title" className="mt-3 text-2xl font-semibold tracking-tight break-words sm:text-3xl">
             {itemTitle(item, 80)}
           </h1>
 
-          <div className="mt-6">
-            <Attributes item={item} />
-          </div>
+          <Card size="sm" className="mt-6">
+            <CardContent>
+              <Attributes item={item} />
+            </CardContent>
+          </Card>
 
-          <div className="mt-7 space-y-4 border-t border-line pt-6">
-            {!descriptionIsTitle && (
-              <div>
-                <h2 className="text-base font-semibold text-ink">{t("item.description")}</h2>
-                <p className="mt-1.5 whitespace-pre-line break-words leading-relaxed text-ink">{item.description}</p>
-              </div>
-            )}
-            {item.marks_text && (
-              <div>
-                <h2 className="text-base font-semibold text-ink">{t("item.marks")}</h2>
-                <p className="mt-1.5 whitespace-pre-line break-words leading-relaxed text-ink">{item.marks_text}</p>
-              </div>
-            )}
-            {item.private_detail && (
-              <p className="flex items-start gap-2 rounded-sm bg-mist px-3 py-2.5 text-[0.9375rem] text-ink">
-                <Lock aria-hidden className="mt-0.5 size-4 shrink-0 text-brand" />
-                <span>
-                  <span className="font-semibold">{t("item.privateDetail")}: </span>
-                  {item.private_detail}
-                </span>
-              </p>
-            )}
-            {isAdmin && item.reporter && (
-              <p className="text-sm text-muted">
-                {t("admin.reporter")}: <span className="font-medium text-ink">{item.reporter.display_name}</span> ·{" "}
-                {item.reporter.email}
-              </p>
-            )}
-          </div>
+          {(!descriptionIsTitle || item.marks_text || item.private_detail || (isAdmin && item.reporter)) && (
+            <div className="mt-6 space-y-4">
+              {!descriptionIsTitle && (
+                <div>
+                  <h2 className="text-sm font-medium">{t("item.description")}</h2>
+                  <p className="mt-1.5 leading-relaxed break-words whitespace-pre-line">{item.description}</p>
+                </div>
+              )}
+              {item.marks_text && (
+                <div>
+                  <h2 className="text-sm font-medium">{t("item.marks")}</h2>
+                  <p className="mt-1.5 leading-relaxed break-words whitespace-pre-line">{item.marks_text}</p>
+                </div>
+              )}
+              {item.private_detail && (
+                <Alert role="note" className="border-primary/20 bg-primary/5">
+                  <Lock aria-hidden className="text-primary" />
+                  <AlertTitle>{t("item.privateDetail")}</AlertTitle>
+                  <AlertDescription className="text-foreground">{item.private_detail}</AlertDescription>
+                </Alert>
+              )}
+              {isAdmin && item.reporter && (
+                <p className="text-sm text-muted-foreground">
+                  {t("admin.reporter")}: <span className="font-medium text-foreground">{item.reporter.display_name}</span> · {item.reporter.email}
+                </p>
+              )}
+            </div>
+          )}
 
-          <div className="mt-7 space-y-4">
+          <Separator className="my-6" />
+
+          <div className="space-y-4">
             {item.is_mine ? (
               <OwnerTools item={item} />
             ) : item.kind === "found" ? (
               <ClaimPanel item={item} claim={my_claim} onClaim={() => setClaimOpen(true)} />
             ) : (
-              <div className="rounded-md bg-surface p-5">
-                <h2 className="text-lg font-semibold text-ink">{t("item.lostByOtherTitle")}</h2>
-                <p className="mt-1 text-[0.9375rem] text-muted">{t("item.lostByOtherBody")}</p>
-                <Link to="/report/found" className={buttonClass("secondary", "md", "mt-4")}>
-                  {t("item.reportFoundCta")}
-                </Link>
-              </div>
+              <ActionCard title={t("item.lostByOtherTitle")} description={t("item.lostByOtherBody")}>
+                <Button asChild variant="outline">
+                  <Link to="/report/found">{t("item.reportFoundCta")}</Link>
+                </Button>
+              </ActionCard>
             )}
           </div>
         </div>
       </article>
 
-      {!(isNew && item.is_mine) && matchesSection && <div className="mt-10">{matchesSection}</div>}
+      {!justPosted && matchesSection && <div className="mt-12 border-t pt-8">{matchesSection}</div>}
 
       {item.kind === "found" && !item.is_mine && user && (
         <ClaimDialog item={item} open={claimOpen} onClose={() => setClaimOpen(false)} preselectLost={params.get("lost")} />

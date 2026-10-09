@@ -1,4 +1,4 @@
-// Rasterise the Sea Dragon mark into the PNG icons used by the web manifest and iOS.
+// Rasterise the logo (public/brand/logo.svg) into the PNG icons used by the web manifest and iOS.
 // Uses the Playwright Chromium that is already installed for the e2e tests (no extra deps).
 //   npm run icons
 import { readFile, mkdir } from "node:fs/promises";
@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { chromium } from "@playwright/test";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const svg = await readFile(resolve(root, "public/brand/sea-dragon-mark.svg"), "utf8");
+const svg = await readFile(resolve(root, "public/brand/logo.svg"), "utf8");
 const dataUrl = `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
 const outDir = resolve(root, "public/icons");
 await mkdir(outDir, { recursive: true });
@@ -16,8 +16,8 @@ await mkdir(outDir, { recursive: true });
 const targets = [
   ["icon-192.png", 192, null, 1],
   ["icon-512.png", 512, null, 1],
-  ["maskable-512.png", 512, "#3245b7", 0.72], // keep the mark inside the maskable safe zone
-  ["apple-touch-icon.png", 180, "#ffffff", 0.86], // iOS does not support transparency
+  ["maskable-512.png", 512, "#2563eb", 0.8], // the rounded square bleeds into the brand blue; mark stays in the safe zone
+  ["apple-touch-icon.png", 180, "#2563eb", 1], // iOS does not support transparency and rounds the corners itself
 ];
 
 const browser = await chromium.launch();

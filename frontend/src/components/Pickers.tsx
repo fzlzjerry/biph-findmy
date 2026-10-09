@@ -1,27 +1,25 @@
 import { Camera, Check, ImagePlus, LoaderCircle, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { compressImage } from "../lib/image";
-import { useLabels } from "../lib/meta";
-import { Swatch } from "./ItemBits";
+import { Swatch } from "@/components/ItemBits";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { NativeSelect, NativeSelectOptGroup, NativeSelectOption } from "@/components/ui/native-select";
+import { Toggle } from "@/components/ui/toggle";
+import { compressImage } from "@/lib/image";
+import { useLabels } from "@/lib/meta";
+import { cn } from "@/lib/utils";
 
-export function chipClass(selected: boolean, extra = "", size: "md" | "sm" = "md") {
-  return [
-    "inline-flex max-w-full items-center gap-2 rounded-full border font-medium leading-tight transition-colors duration-200",
-    size === "sm" ? "min-h-11 px-3 text-sm" : "min-h-11 px-3.5 text-[0.9375rem]",
-    "disabled:cursor-not-allowed disabled:border-line disabled:bg-surface disabled:text-muted",
-    selected ? "border-brand bg-mist text-brand-deep" : "border-line-strong bg-water text-ink hover:bg-surface",
-    extra,
-  ].join(" ");
-}
+/** Pill-shaped toggle used for colours, places and quick picks (pressed = primary tint). */
+export const chipClass =
+  "h-9 rounded-full px-3 font-normal aria-pressed:border-primary aria-pressed:bg-primary/10 aria-pressed:text-primary aria-pressed:hover:bg-primary/15";
 
 // --------------------------------------------------------------------------- colours
-export function ColorPicker({ value, onChange, max = 3, describedById, compact = false }: {
+export function ColorPicker({ value, onChange, max = 3, describedById }: {
   value: string[];
   onChange: (next: string[]) => void;
   max?: number;
   describedById?: string;
-  compact?: boolean;
 }) {
   const labels = useLabels();
   const atMax = value.length >= max;
@@ -30,18 +28,18 @@ export function ColorPicker({ value, onChange, max = 3, describedById, compact =
       {labels.meta.colors.map((color) => {
         const on = value.includes(color.id);
         return (
-          <button
+          <Toggle
             key={color.id}
-            type="button"
-            aria-pressed={on}
+            variant="outline"
+            pressed={on}
             disabled={!on && atMax}
-            onClick={() => onChange(on ? value.filter((c) => c !== color.id) : [...value, color.id])}
-            className={chipClass(on, compact ? "pl-2 pr-3" : "pl-2 pr-3.5")}
+            onPressedChange={(pressed) => onChange(pressed ? [...value, color.id] : value.filter((c) => c !== color.id))}
+            className={cn(chipClass, "pl-2")}
           >
             <Swatch hex={color.hex} size="lg" />
-            <span>{labels.text(color.label)}</span>
-            {on && <Check aria-hidden className="size-4 shrink-0" strokeWidth={2.5} />}
-          </button>
+            {labels.text(color.label)}
+            {on && <Check aria-hidden strokeWidth={2.5} />}
+          </Toggle>
         );
       })}
     </div>
@@ -62,29 +60,29 @@ export function CategorySelect({ id, value, onChange, placeholder, includeGroups
   const { t } = useTranslation();
   const labels = useLabels();
   return (
-    <select
+    <NativeSelect
       id={id}
-      className="field-control"
+      className="w-full"
       value={value}
       onChange={(event) => onChange(event.target.value)}
       aria-invalid={invalid || undefined}
       aria-describedby={describedById}
       aria-required={required || undefined}
     >
-      <option value="">{placeholder}</option>
+      <NativeSelectOption value="">{placeholder}</NativeSelectOption>
       {labels.meta.categories.map((group) => (
-        <optgroup key={group.id} label={labels.text(group.label)}>
+        <NativeSelectOptGroup key={group.id} label={labels.text(group.label)}>
           {includeGroups && group.children.length > 1 && (
-            <option value={group.id}>{t("browse.allInGroup", { group: labels.text(group.label) })}</option>
+            <NativeSelectOption value={group.id}>{t("browse.allInGroup", { group: labels.text(group.label) })}</NativeSelectOption>
           )}
           {group.children.map((child) => (
-            <option key={child.id} value={child.id}>
+            <NativeSelectOption key={child.id} value={child.id}>
               {labels.text(child.label)}
-            </option>
+            </NativeSelectOption>
           ))}
-        </optgroup>
+        </NativeSelectOptGroup>
       ))}
-    </select>
+    </NativeSelect>
   );
 }
 
@@ -139,65 +137,65 @@ export function PlacePicker({ idPrefix, mode, value, onChange, max = 5, describe
   return (
     <div className="space-y-3">
       {mode === "multi" && (
-        <div aria-live="polite">
-          <p className="text-sm font-medium text-muted">{t("report.selectedPlaces")}</p>
+        <div aria-live="polite" className="rounded-lg border border-dashed p-3">
+          <p className="text-xs font-medium text-muted-foreground">{t("report.selectedPlaces")}</p>
           {value.length === 0 ? (
-            <p className="mt-1 text-sm text-muted">{t("report.noPlaces")}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{t("report.noPlaces")}</p>
           ) : (
-            <ul className="mt-1.5 flex flex-wrap gap-2">
+            <ul className="mt-2 flex flex-wrap gap-1.5">
               {value.map((id) => (
                 <li key={id}>
-                  <button
+                  <Button
                     type="button"
+                    variant="secondary"
+                    size="sm"
                     onClick={() => onChange(value.filter((p) => p !== id))}
                     aria-label={t("common.remove", { name: labels.place(id) })}
-                    className={chipClass(true, "pr-2.5")}
+                    className="rounded-full"
                   >
-                    <span>{labels.place(id)}</span>
-                    <X aria-hidden className="size-4 shrink-0" />
-                  </button>
+                    {labels.place(id)}
+                    <X aria-hidden data-icon="inline-end" />
+                  </Button>
                 </li>
               ))}
             </ul>
           )}
         </div>
       )}
-      <div>
-        <label htmlFor={`${idPrefix}-zone`} className="text-sm font-semibold text-ink">
-          {t("report.zone")}
-        </label>
-        <select
+      <div className="grid gap-2">
+        <Label htmlFor={`${idPrefix}-zone`}>{t("report.zone")}</Label>
+        <NativeSelect
           id={`${idPrefix}-zone`}
-          className="field-control mt-1.5"
+          className="w-full"
           value={zone}
           onChange={(event) => chooseZone(event.target.value)}
           aria-describedby={describedById}
           aria-invalid={invalid || undefined}
         >
-          <option value="">{t("report.zonePlaceholder")}</option>
+          <NativeSelectOption value="">{t("report.zonePlaceholder")}</NativeSelectOption>
           {zones.map((z) => (
-            <option key={z.id} value={z.id}>
+            <NativeSelectOption key={z.id} value={z.id}>
               {labels.text(z.label)}
-            </option>
+            </NativeSelectOption>
           ))}
-        </select>
+        </NativeSelect>
       </div>
       {zoneObj && (
         <div role="group" aria-label={t("report.placesIn", { zone: labels.text(zoneObj.label) })} className="flex flex-wrap gap-2">
           {zoneObj.places.map((place) => {
             const on = value.includes(place.id);
             return (
-              <button
+              <Toggle
                 key={place.id}
-                type="button"
-                aria-pressed={on}
+                variant="outline"
+                pressed={on}
                 disabled={!on && atMax}
-                onClick={() => toggle(place.id)}
-                className={chipClass(on)}
+                onPressedChange={() => toggle(place.id)}
+                className={chipClass}
               >
-                {on && <Check aria-hidden className="size-4 shrink-0" strokeWidth={2.5} />}
-                <span>{labels.text(place.label)}</span>
-              </button>
+                {on && <Check aria-hidden strokeWidth={2.5} />}
+                {labels.text(place.label)}
+              </Toggle>
             );
           })}
         </div>
@@ -248,6 +246,7 @@ export function PhotoPicker({ files, onChange, max = 3, capture = false, idPrefi
       ? t("report.addMorePhotos")
       : t("report.addPhotos");
   const AddIcon = capture ? Camera : ImagePlus;
+  const big = large && files.length === 0 && processing === 0;
 
   return (
     <div>
@@ -263,24 +262,26 @@ export function PhotoPicker({ files, onChange, max = 3, capture = false, idPrefi
         aria-hidden="true"
         onChange={onPick}
       />
-      <div className={`grid gap-2 sm:gap-3 ${large ? "grid-cols-3" : "max-w-md grid-cols-3"}`}>
+      <div className={cn("grid grid-cols-3 gap-2 sm:gap-3", !large && "max-w-md")}>
         {previews.map((src, index) => (
-          <div key={src} className="relative aspect-square overflow-hidden rounded-sm border border-line bg-surface">
-            <img src={src} alt={t("report.photoN", { n: index + 1 })} className="h-full w-full object-cover" />
-            <button
+          <div key={src} className="relative aspect-square overflow-hidden rounded-lg border bg-muted">
+            <img src={src} alt={t("report.photoN", { n: index + 1 })} className="size-full object-cover" />
+            <Button
               type="button"
+              variant="secondary"
+              size="icon-sm"
               onClick={() => onChange(files.filter((_, i) => i !== index))}
               aria-label={t("report.removePhoto", { n: index + 1 })}
-              className="absolute right-1 top-1 inline-flex size-11 items-center justify-center rounded-xs bg-ink/80 text-water hover:bg-ink"
+              className="absolute top-1.5 right-1.5 rounded-full bg-background/90 shadow-sm backdrop-blur"
             >
-              <X aria-hidden className="size-5" />
-            </button>
+              <X aria-hidden />
+            </Button>
           </div>
         ))}
         {Array.from({ length: processing }, (_, i) => (
           <div
             key={`processing-${i}`}
-            className="flex aspect-square flex-col items-center justify-center gap-2 rounded-sm bg-surface p-2 text-center text-xs text-muted"
+            className="flex aspect-square flex-col items-center justify-center gap-2 rounded-lg border bg-muted p-2 text-center text-xs text-muted-foreground"
           >
             <LoaderCircle aria-hidden className="size-5 animate-spin" />
             {t("report.processingPhoto")}
@@ -291,17 +292,20 @@ export function PhotoPicker({ files, onChange, max = 3, capture = false, idPrefi
             type="button"
             onClick={() => inputRef.current?.click()}
             aria-describedby={describedById}
-            className={`flex flex-col items-center justify-center gap-2 rounded-sm border border-line-strong bg-surface p-2 text-center font-semibold text-brand-deep transition-colors hover:bg-mist ${
-              large && files.length === 0 ? "col-span-3 min-h-36 text-base" : "aspect-square text-sm"
-            }`}
+            className={cn(
+              "flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-input p-3 text-center text-sm font-medium text-muted-foreground transition-colors outline-none hover:border-primary/50 hover:bg-primary/5 hover:text-primary focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+              big ? "col-span-3 min-h-36" : "aspect-square",
+            )}
           >
-            <AddIcon aria-hidden className={large && files.length === 0 ? "size-8" : "size-6"} />
+            <span className={cn("flex items-center justify-center rounded-full bg-muted", big ? "size-12" : "size-9")}>
+              <AddIcon aria-hidden className={big ? "size-6" : "size-4.5"} />
+            </span>
             <span>{addLabel}</span>
           </button>
         )}
       </div>
       {notice && (
-        <p role="status" className="mt-2 text-sm text-muted">
+        <p role="status" className="mt-2 text-sm text-muted-foreground">
           {notice}
         </p>
       )}

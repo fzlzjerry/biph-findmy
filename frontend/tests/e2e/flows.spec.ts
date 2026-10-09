@@ -77,7 +77,7 @@ test("claim → front desk approves → item handed back and marked returned", a
 
   // Log out through the account menu.
   await page.getByRole("button", { name: /Account menu/ }).click();
-  await page.getByRole("button", { name: "Log out" }).click();
+  await page.getByRole("menuitem", { name: "Log out" }).click();
   await expect(page.getByRole("link", { name: "Log in" }).first()).toBeVisible();
 
   // The front desk approves the claim, then hands the item over.
@@ -94,7 +94,7 @@ test("claim → front desk approves → item handed back and marked returned", a
 
   const pickup = page.getByTestId("pickup-row").filter({ hasText: "green dinosaur sticker" });
   await pickup.getByRole("button", { name: "Mark returned" }).click();
-  await page.getByRole("dialog", { name: "Mark as returned?" }).getByRole("button", { name: "Yes, mark returned" }).click();
+  await page.getByRole("alertdialog", { name: "Mark as returned?" }).getByRole("button", { name: "Yes, mark returned" }).click();
   await expect(page.getByText("Marked as returned.")).toBeVisible();
   await expect(pickup).toHaveCount(0);
 

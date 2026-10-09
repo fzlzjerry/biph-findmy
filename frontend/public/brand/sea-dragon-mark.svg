@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
-  <title id="title">Sea Dragon Mind Current mark</title>
-  <circle cx="32" cy="32" r="30" fill="oklch(0.25 0.12 270)"/>
-  <path d="M17 24.5c4.8-8.2 15.4-10.8 23.5-5.9 5.6 3.4 8.4 9.8 7.4 16.1-1.2 7.5-7.6 13.2-15.2 13.6-6.5.3-12.6-3.1-15.7-8.8" fill="none" stroke="white" stroke-width="5" stroke-linecap="round"/>
-  <path d="M20.5 27.5c4-4.2 10.6-4.4 14.8-.4 3 2.8 4.1 7.2 2.7 11" fill="none" stroke="oklch(0.76 0.13 195)" stroke-width="5" stroke-linecap="round"/>
-  <circle cx="17" cy="24.5" r="3.5" fill="oklch(0.86 0.16 88)"/>
-</svg>

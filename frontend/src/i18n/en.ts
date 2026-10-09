@@ -112,9 +112,7 @@ const en = {
     promise:
       "Describe it once, in English or 中文. Our matching engine compares it with every report from the other side — and tells you why it thinks it’s yours.",
     lost: "I lost something",
-    lostHint: "Post a report and get matches",
     found: "I found something",
-    foundHint: "Help it get back to its owner",
     waiting_one: "{{count}} found item waiting for its owner",
     waiting_other: "{{count}} found items waiting for their owners",
     returned_one: "{{count}} returned so far",
@@ -130,8 +128,6 @@ const en = {
     step2: "Every new report is compared with yours. Matches come with reasons you can check.",
     step3Title: "Pick it up",
     step3: "Claim it here, then collect it at the front desk with your student ID.",
-    mascotAlt: "The Sea Dragon Coding Club mascot working on a laptop",
-    clubLine: "Built by students of the Data Science Club and the Sea Dragon Coding Club.",
   },
   browse: {
     title: "Browse",
@@ -429,7 +425,6 @@ const en = {
     devBody: "Emails are not sent locally. Your code is {{code}} — we’ve filled it in for you.",
     welcome: "Welcome, {{name}}!",
     privacy: "We only use your email to log you in and so staff can reach you about a claim.",
-    mascotAlt: "Sea Dragon Coding Club mascot",
   },
   auth: {
     loginRequiredTitle: "Please log in",

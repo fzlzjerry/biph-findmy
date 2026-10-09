@@ -1,19 +1,27 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CircleCheck, CircleX, Inbox, Lock, PackageCheck, Quote } from "lucide-react";
+import { CircleAlert, CircleCheck, CircleX, Inbox, Lock, PackageCheck, Quote } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
-import { ConfirmDialog } from "../../components/Dialog";
-import { ItemThumb, itemTitle, ProbabilityMeter, ReasonChips } from "../../components/ItemBits";
-import { EmptyState, ErrorState, RowsSkeleton } from "../../components/States";
-import { useToast } from "../../components/Toast";
-import { BandBadge, Button, Notice } from "../../components/ui";
-import { useLang } from "../../i18n";
-import { api } from "../../lib/api";
-import { useErrorText } from "../../lib/errors";
-import { useLabels } from "../../lib/meta";
-import { formatDateTime, formatRelative, formatWindow, useNow } from "../../lib/time";
-import type { Claim, Item } from "../../lib/types";
+import { BandBadge } from "@/components/badges";
+import { BusyButton } from "@/components/BusyButton";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { FormField } from "@/components/form";
+import { ItemThumb, itemTitle, ProbabilityMeter, ReasonChips } from "@/components/ItemBits";
+import { SectionHeader } from "@/components/page";
+import { EmptyState, ErrorState, RowsSkeleton } from "@/components/States";
+import { useToast } from "@/components/Toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { useLang } from "@/i18n";
+import { api } from "@/lib/api";
+import { useErrorText } from "@/lib/errors";
+import { useLabels } from "@/lib/meta";
+import { formatDateTime, formatRelative, formatWindow, useNow } from "@/lib/time";
+import type { Claim, Item } from "@/lib/types";
 
 function useInvalidateAdmin() {
   const queryClient = useQueryClient();
@@ -30,38 +38,42 @@ function ItemSummary({ item, showPrivate }: { item: Item; showPrivate?: boolean 
   const lang = useLang();
   return (
     <div className="flex gap-3">
-      <Link to={`/items/${item.id}`} tabIndex={-1} aria-hidden className="block size-16 shrink-0 overflow-hidden rounded-sm bg-surface sm:size-20">
+      <Link to={`/items/${item.id}`} tabIndex={-1} aria-hidden className="block size-16 shrink-0 overflow-hidden rounded-lg bg-muted sm:size-20">
         <ItemThumb item={item} />
       </Link>
-      <div className="min-w-0 flex-1">
-        <Link to={`/items/${item.id}`} className="break-words font-semibold leading-snug text-ink hover:text-brand-deep hover:underline">
+      <div className="min-w-0 flex-1 text-sm">
+        <Link to={`/items/${item.id}`} className="text-base font-medium leading-snug break-words underline-offset-4 hover:underline">
           {itemTitle(item, 110)}
         </Link>
-        <p className="mt-0.5 text-sm text-muted">
+        <p className="mt-1 text-muted-foreground">
           {labels.category(item.category)}
           {item.locations.length > 0 && <> · {item.locations.map((p) => labels.place(p)).join(", ")}</>}
         </p>
-        <p className="text-sm text-muted">
+        <p className="text-muted-foreground">
           {item.kind === "lost" ? formatWindow(item.time_from, item.time_to, lang) : formatDateTime(item.time_from, lang)}
         </p>
         {item.marks_text && (
-          <p className="mt-1 break-words text-sm text-ink">
-            <span className="text-muted">{t("item.marks")}: </span>
+          <p className="mt-1 break-words">
+            <span className="text-muted-foreground">{t("item.marks")}: </span>
             {item.marks_text}
           </p>
         )}
         {showPrivate && (
-          <p className="mt-2 flex items-start gap-2 rounded-xs bg-mist px-2.5 py-2 text-sm text-ink">
-            <Lock aria-hidden className="mt-0.5 size-4 shrink-0 text-brand" />
+          <p className="mt-2 flex items-start gap-2 rounded-md border border-primary/20 bg-primary/5 px-2.5 py-2">
+            <Lock aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
             <span>
-              <span className="font-semibold">{t("admin.finderPrivate")}: </span>
-              {item.private_detail ? item.private_detail : <span className="text-muted">{t("admin.noPrivate")}</span>}
+              <span className="font-medium">{t("admin.finderPrivate")}: </span>
+              {item.private_detail ? item.private_detail : <span className="text-muted-foreground">{t("admin.noPrivate")}</span>}
             </span>
           </p>
         )}
       </div>
     </div>
   );
+}
+
+function SubHeading({ children }: { children: string }) {
+  return <h4 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{children}</h4>;
 }
 
 function ClaimReview({ claim }: { claim: Claim }) {
@@ -83,42 +95,42 @@ function ClaimReview({ claim }: { claim: Claim }) {
   const titleId = `claim-${claim.id}`;
 
   return (
-    <article aria-labelledby={titleId} className="rounded-md border border-line" data-testid="claim-review">
-      <header className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-b border-line px-4 py-3">
-        <h3 id={titleId} className="min-w-0 break-words font-semibold text-ink">
+    <Card role="article" aria-labelledby={titleId} data-testid="claim-review">
+      <CardHeader className="border-b">
+        <CardTitle id={titleId} role="heading" aria-level={3} className="break-words">
           {t("admin.claimFor", { item: found ? itemTitle(found, 60) : "—" })}
-        </h3>
-        <p className="text-sm text-muted" title={formatDateTime(claim.created_at, lang)}>
+        </CardTitle>
+        <CardDescription title={formatDateTime(claim.created_at, lang)}>
           {t("admin.submitted", { time: formatRelative(claim.created_at, lang, now) })}
-        </p>
-      </header>
-      <div className="grid gap-6 p-4 md:grid-cols-2">
-        <section aria-label={t("admin.foundItem")} className="min-w-0 space-y-2">
-          <h4 className="text-sm font-semibold text-muted">{t("admin.foundItem")}</h4>
-          {found ? <ItemSummary item={found} showPrivate /> : <p className="text-sm text-muted">{t("me.itemRemoved")}</p>}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-6 md:grid-cols-2">
+        <section aria-label={t("admin.foundItem")} className="min-w-0 space-y-3">
+          <SubHeading>{t("admin.foundItem")}</SubHeading>
+          {found ? <ItemSummary item={found} showPrivate /> : <p className="text-sm text-muted-foreground">{t("me.itemRemoved")}</p>}
           {found?.reporter && (
-            <p className="text-sm text-muted">
-              {t("admin.reporter")}: <span className="text-ink">{found.reporter.display_name}</span> · {found.reporter.email}
+            <p className="text-sm text-muted-foreground">
+              {t("admin.reporter")}: <span className="text-foreground">{found.reporter.display_name}</span> · {found.reporter.email}
             </p>
           )}
         </section>
-        <section aria-label={t("admin.claimant")} className="min-w-0 space-y-4">
-          <div>
-            <h4 className="text-sm font-semibold text-muted">{t("admin.claimant")}</h4>
-            <p className="mt-1 font-semibold text-ink">{claim.claimant?.display_name}</p>
-            <p className="break-all text-sm text-muted">{claim.claimant?.email}</p>
+        <section aria-label={t("admin.claimant")} className="min-w-0 space-y-5">
+          <div className="space-y-1">
+            <SubHeading>{t("admin.claimant")}</SubHeading>
+            <p className="font-medium">{claim.claimant?.display_name}</p>
+            <p className="text-sm break-all text-muted-foreground">{claim.claimant?.email}</p>
           </div>
-          <div>
-            <h4 className="text-sm font-semibold text-muted">{t("admin.proof")}</h4>
-            <blockquote className="mt-1 flex gap-2 break-words text-[0.9375rem] leading-relaxed text-ink">
-              <Quote aria-hidden className="mt-1 size-4 shrink-0 text-brand" />
+          <div className="space-y-1.5">
+            <SubHeading>{t("admin.proof")}</SubHeading>
+            <blockquote className="flex gap-2 rounded-md bg-muted/60 p-3 text-sm leading-relaxed break-words">
+              <Quote aria-hidden className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
               <span>{claim.proof}</span>
             </blockquote>
           </div>
-          <div>
-            <h4 className="text-sm font-semibold text-muted">{t("admin.linkedLost")}</h4>
+          <div className="space-y-2">
+            <SubHeading>{t("admin.linkedLost")}</SubHeading>
             {claim.lost ? (
-              <div className="mt-2 space-y-3">
+              <div className="space-y-3">
                 <ItemSummary item={claim.lost} />
                 {claim.match ? (
                   <div className="space-y-2">
@@ -129,58 +141,56 @@ function ClaimReview({ claim }: { claim: Claim }) {
                     <ReasonChips reasons={claim.match.reasons} />
                   </div>
                 ) : (
-                  <p className="text-sm text-muted">{t("admin.noMatchInfo")}</p>
+                  <p className="text-sm text-muted-foreground">{t("admin.noMatchInfo")}</p>
                 )}
               </div>
             ) : (
-              <p className="mt-1 text-sm text-muted">{t("admin.noLinkedLost")}</p>
+              <p className="text-sm text-muted-foreground">{t("admin.noLinkedLost")}</p>
             )}
           </div>
         </section>
-      </div>
-      <footer className="space-y-3 border-t border-line p-4">
-        <div>
-          <label htmlFor={`note-${claim.id}`} className="text-sm font-semibold text-ink">
-            {t("admin.note")} <span className="font-normal text-muted">({t("common.optional")})</span>
-          </label>
-          <textarea
+      </CardContent>
+      <CardFooter className="flex-col items-stretch gap-3 border-t">
+        <FormField id={`note-${claim.id}`} label={t("admin.note")} optional>
+          <Textarea
             id={`note-${claim.id}`}
-            className="field-control mt-1.5 min-h-20"
+            className="min-h-16 bg-background"
             rows={2}
             maxLength={500}
             value={note}
             onChange={(event) => setNote(event.target.value)}
             placeholder={t("admin.notePlaceholder")}
           />
-        </div>
+        </FormField>
         {decide.isError && (
-          <Notice tone="error" role="alert">
-            {errorText(decide.error)}
-          </Notice>
+          <Alert variant="destructive">
+            <CircleAlert aria-hidden />
+            <AlertDescription>{errorText(decide.error)}</AlertDescription>
+          </Alert>
         )}
         <div className="flex flex-wrap gap-2">
-          <Button
-            icon={CircleCheck}
+          <BusyButton
+            icon={<CircleCheck aria-hidden data-icon="inline-start" />}
             busy={decide.isPending && decide.variables === "approve"}
             busyLabel={t("admin.approving")}
             disabled={decide.isPending}
             onClick={() => decide.mutate("approve")}
           >
             {t("admin.approve")}
-          </Button>
-          <Button
-            variant="danger-outline"
-            icon={CircleX}
+          </BusyButton>
+          <BusyButton
+            variant="destructive"
+            icon={<CircleX aria-hidden data-icon="inline-start" />}
             busy={decide.isPending && decide.variables === "reject"}
             busyLabel={t("admin.rejecting")}
             disabled={decide.isPending}
             onClick={() => decide.mutate("reject")}
           >
             {t("admin.reject")}
-          </Button>
+          </BusyButton>
         </div>
-      </footer>
-    </article>
+      </CardFooter>
+    </Card>
   );
 }
 
@@ -190,19 +200,20 @@ function PickupRow({ claim, onReturn }: { claim: Claim; onReturn: (claim: Claim)
   const now = useNow();
   const found = claim.found;
   return (
-    <div className="flex flex-col gap-3 rounded-md border border-line p-3 sm:flex-row sm:items-center sm:p-4" data-testid="pickup-row">
-      <div className="min-w-0 flex-1">{found && <ItemSummary item={found} />}</div>
-      <div className="min-w-0 text-sm sm:w-56">
-        <p className="font-semibold text-ink">{claim.claimant?.display_name}</p>
-        <p className="break-all text-muted">{claim.claimant?.email}</p>
-        {claim.decided_at && (
-          <p className="text-muted">{t("admin.approvedOn", { time: formatRelative(claim.decided_at, lang, now) })}</p>
-        )}
-      </div>
-      <Button icon={PackageCheck} onClick={() => onReturn(claim)} className="sm:shrink-0">
-        {t("admin.markReturned")}
-      </Button>
-    </div>
+    <Card size="sm" data-testid="pickup-row">
+      <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center">
+        <div className="min-w-0 flex-1">{found && <ItemSummary item={found} />}</div>
+        <div className="min-w-0 text-sm sm:w-56">
+          <p className="font-medium">{claim.claimant?.display_name}</p>
+          <p className="break-all text-muted-foreground">{claim.claimant?.email}</p>
+          {claim.decided_at && <p className="text-muted-foreground">{t("admin.approvedOn", { time: formatRelative(claim.decided_at, lang, now) })}</p>}
+        </div>
+        <Button onClick={() => onReturn(claim)} className="sm:shrink-0">
+          <PackageCheck aria-hidden data-icon="inline-start" />
+          {t("admin.markReturned")}
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -226,12 +237,19 @@ export default function ClaimsTab() {
   return (
     <div className="space-y-10">
       <section aria-labelledby="pending-title">
-        <h2 id="pending-title" className="text-xl font-semibold text-ink">
-          {t("admin.pendingTitle")}
-          {pending.data && pending.data.claims.length > 0 && (
-            <span className="ml-2 text-base font-medium text-muted">({pending.data.claims.length})</span>
-          )}
-        </h2>
+        <SectionHeader
+          id="pending-title"
+          title={
+            <span className="inline-flex items-center gap-2">
+              {t("admin.pendingTitle")}
+              {pending.data && pending.data.claims.length > 0 && (
+                <Badge variant="secondary" className="tabular-nums">
+                  {pending.data.claims.length}
+                </Badge>
+              )}
+            </span>
+          }
+        />
         <div className="mt-4">
           {pending.isPending ? (
             <RowsSkeleton rows={2} />
@@ -252,9 +270,7 @@ export default function ClaimsTab() {
       </section>
 
       <section aria-labelledby="pickup-title">
-        <h2 id="pickup-title" className="text-xl font-semibold text-ink">
-          {t("admin.pickupTitle")}
-        </h2>
+        <SectionHeader id="pickup-title" title={t("admin.pickupTitle")} />
         <div className="mt-4">
           {approved.isPending ? (
             <RowsSkeleton rows={1} />

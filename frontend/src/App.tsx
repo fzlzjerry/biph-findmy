@@ -1,19 +1,19 @@
 import { lazy, Suspense, type ReactNode } from "react";
 import { BrowserRouter, Route, Routes } from "react-router";
-import { Layout, RequireAuth } from "./components/Layout";
-import { PageSkeleton } from "./components/States";
-import BrowsePage from "./pages/BrowsePage";
-import HomePage from "./pages/HomePage";
-import ItemPage from "./pages/ItemPage";
-import NotFoundPage from "./pages/NotFoundPage";
+import { Layout, RequireAuth } from "@/components/Layout";
+import { PageSkeleton } from "@/components/States";
+import BrowsePage from "@/pages/BrowsePage";
+import HomePage from "@/pages/HomePage";
+import ItemPage from "@/pages/ItemPage";
+import NotFoundPage from "@/pages/NotFoundPage";
 
 // Less-visited pages are split into their own chunks to keep the first load small on school Wi-Fi.
-const ReportPage = lazy(() => import("./pages/ReportPage"));
-const MyItemsPage = lazy(() => import("./pages/MyItemsPage"));
-const LoginPage = lazy(() => import("./pages/LoginPage"));
-const AdminPage = lazy(() => import("./pages/admin/AdminPage"));
-const QuickAddPage = lazy(() => import("./pages/QuickAddPage"));
-const AboutPage = lazy(() => import("./pages/AboutPage"));
+const ReportPage = lazy(() => import("@/pages/ReportPage"));
+const MyItemsPage = lazy(() => import("@/pages/MyItemsPage"));
+const LoginPage = lazy(() => import("@/pages/LoginPage"));
+const AdminPage = lazy(() => import("@/pages/admin/AdminPage"));
+const QuickAddPage = lazy(() => import("@/pages/QuickAddPage"));
+const AboutPage = lazy(() => import("@/pages/AboutPage"));
 
 function Lazy({ children }: { children: ReactNode }) {
   return <Suspense fallback={<PageSkeleton />}>{children}</Suspense>;

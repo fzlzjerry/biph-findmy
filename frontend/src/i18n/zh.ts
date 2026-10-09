@@ -116,9 +116,7 @@ const zh: Translation = {
     eyebrow: "BIPH 校园失物招领",
     promise: "用中文或英文描述一次就好。匹配引擎会把它和另一方的每一条登记逐一比对，并告诉你为什么觉得那是你的。",
     lost: "我丢了东西",
-    lostHint: "登记失物，查看匹配结果",
     found: "我捡到东西",
-    foundHint: "帮它回到主人身边",
     waiting_one: "{{count}} 件拾物正在等待主人",
     waiting_other: "{{count}} 件拾物正在等待主人",
     returned_one: "已归还 {{count}} 件",
@@ -134,8 +132,6 @@ const zh: Translation = {
     step2: "每一条新登记都会和你的描述比对，匹配结果附带可以核对的理由。",
     step3Title: "前台领取",
     step3: "在这里提交认领，然后带上学生卡到前台领取。",
-    mascotAlt: "海龙编程社吉祥物正在用笔记本电脑",
-    clubLine: "由数据科学社和海龙编程社的同学共同打造。",
   },
   browse: {
     title: "浏览",
@@ -426,7 +422,6 @@ const zh: Translation = {
     devBody: "本地环境不会发送邮件。你的验证码是 {{code}}，已自动填好。",
     welcome: "欢迎，{{name}}！",
     privacy: "你的邮箱只用于登录，以及在认领时方便工作人员联系你。",
-    mascotAlt: "海龙编程社吉祥物",
   },
   auth: {
     loginRequiredTitle: "请先登录",

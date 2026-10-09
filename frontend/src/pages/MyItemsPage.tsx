@@ -1,57 +1,63 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Inbox, PackageSearch } from "lucide-react";
+import { CircleAlert, Inbox, PackageSearch } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useSearchParams } from "react-router";
-import { ConfirmDialog } from "../components/Dialog";
-import { ItemThumb, itemTitle, RelativeTime } from "../components/ItemBits";
-import { EmptyState, ErrorState, RowsSkeleton } from "../components/States";
-import { TabPanel, Tabs } from "../components/Tabs";
-import { useToast } from "../components/Toast";
-import { Badge, Button, buttonClass, ClaimBadge, KindBadge, PageHeader, StatusBadge } from "../components/ui";
-import { api } from "../lib/api";
-import { ME_KEY, useUser } from "../lib/auth";
-import { useErrorText } from "../lib/errors";
-import { useDocumentTitle } from "../lib/hooks";
-import { useLabels } from "../lib/meta";
-import { formatDateTime, formatRelative, useNow } from "../lib/time";
-import { useLang } from "../i18n";
-import type { Claim, Item } from "../lib/types";
+import { ClaimBadge, KindBadge, StatusBadge, ToneBadge } from "@/components/badges";
+import { BusyButton } from "@/components/BusyButton";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { FormField } from "@/components/form";
+import { ItemThumb, itemTitle, RelativeTime } from "@/components/ItemBits";
+import { PageHeader } from "@/components/page";
+import { EmptyState, ErrorState, RowsSkeleton } from "@/components/States";
+import { useToast } from "@/components/Toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Item as Row, ItemContent, ItemDescription, ItemMedia } from "@/components/ui/item";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useLang } from "@/i18n";
+import { api } from "@/lib/api";
+import { ME_KEY, useUser } from "@/lib/auth";
+import { useErrorText } from "@/lib/errors";
+import { useDocumentTitle } from "@/lib/hooks";
+import { useLabels } from "@/lib/meta";
+import { formatDateTime, formatRelative, useNow } from "@/lib/time";
+import type { Claim, Item } from "@/lib/types";
 
 function ReportRow({ item }: { item: Item }) {
   const { t } = useTranslation();
   const labels = useLabels();
   const count = item.match_count ?? 0;
   return (
-    <Link
-      to={`/items/${item.id}`}
-      className="group flex gap-3 rounded-md border border-line p-3 transition-colors hover:border-line-strong sm:gap-4"
-    >
-      <div className="size-20 shrink-0 overflow-hidden rounded-sm bg-surface sm:size-24">
-        <ItemThumb item={item} />
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-1.5">
-          <KindBadge kind={item.kind} />
-          <StatusBadge kind={item.kind} status={item.status} />
-          {item.is_hidden && <Badge tone="neutral">{t("admin.hiddenBadge")}</Badge>}
-        </div>
-        <h3 className="mt-1.5 line-clamp-2 break-words font-semibold leading-snug text-ink group-hover:text-brand-deep group-hover:underline">
-          {itemTitle(item, 100)}
-        </h3>
-        <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-sm text-muted">
-          <span>{labels.category(item.category)}</span>
-          <span aria-hidden>·</span>
-          <RelativeTime iso={item.created_at} />
-          {count > 0 && (
-            <>
-              <span aria-hidden>·</span>
-              <span className="font-semibold text-brand-deep">{t("card.matches", { count })}</span>
-            </>
-          )}
-        </p>
-      </div>
-    </Link>
+    <Row variant="outline" className="items-start bg-card" asChild>
+      <Link to={`/items/${item.id}`}>
+        <ItemMedia variant="image" className="size-18 rounded-lg sm:size-20">
+          <ItemThumb item={item} />
+        </ItemMedia>
+        <ItemContent className="min-w-0">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <KindBadge kind={item.kind} />
+            <StatusBadge kind={item.kind} status={item.status} />
+            {item.is_hidden && <ToneBadge tone="gray">{t("admin.hiddenBadge")}</ToneBadge>}
+          </div>
+          <h3 className="line-clamp-2 text-base font-medium leading-snug break-words">{itemTitle(item, 100)}</h3>
+          <ItemDescription className="flex flex-wrap items-center gap-x-1.5">
+            <span>{labels.category(item.category)}</span>
+            <span aria-hidden>·</span>
+            <RelativeTime iso={item.created_at} />
+            {count > 0 && (
+              <>
+                <span aria-hidden>·</span>
+                <span className="font-medium text-primary">{t("card.matches", { count })}</span>
+              </>
+            )}
+          </ItemDescription>
+        </ItemContent>
+      </Link>
+    </Row>
   );
 }
 
@@ -62,42 +68,44 @@ function ClaimRow({ claim, onCancel }: { claim: Claim; onCancel: (claim: Claim) 
   const now = useNow();
   const found = claim.found;
   return (
-    <div className="flex gap-3 rounded-md border border-line p-3 sm:gap-4">
-      <div className="size-20 shrink-0 overflow-hidden rounded-sm bg-surface sm:size-24">{found && <ItemThumb item={found} />}</div>
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-1.5">
+    <Row variant="outline" className="items-start bg-card">
+      <ItemMedia variant="image" className="size-18 rounded-lg sm:size-20">
+        {found && <ItemThumb item={found} />}
+      </ItemMedia>
+      <ItemContent className="min-w-0 gap-1.5">
+        <div>
           <ClaimBadge status={claim.status} />
         </div>
         {found ? (
-          <h3 className="mt-1.5 break-words font-semibold leading-snug text-ink">
-            <Link to={`/items/${found.id}`} className="hover:text-brand-deep hover:underline">
+          <h3 className="text-base font-medium leading-snug break-words">
+            <Link to={`/items/${found.id}`} className="underline-offset-4 hover:underline">
               {itemTitle(found, 100)}
             </Link>
           </h3>
         ) : (
-          <p className="mt-1.5 text-sm text-muted">{t("me.itemRemoved")}</p>
+          <p className="text-sm text-muted-foreground">{t("me.itemRemoved")}</p>
         )}
-        <p className="mt-0.5 text-sm text-muted">
+        <p className="text-sm text-muted-foreground">
           {found && <>{labels.category(found.category)} · </>}
           <time dateTime={claim.created_at} title={formatDateTime(claim.created_at, lang)}>
             {t("me.claimedOn", { time: formatRelative(claim.created_at, lang, now) })}
           </time>
         </p>
-        <p className="mt-2 break-words text-sm text-ink">
-          <span className="font-medium text-muted">{t("me.proofLabel")}: </span>
+        <p className="rounded-md bg-muted/60 px-3 py-2 text-sm break-words">
+          <span className="text-muted-foreground">{t("me.proofLabel")}: </span>
           {claim.proof}
         </p>
-        {claim.review_note && (
-          <p className="mt-1 break-words text-sm text-ink">{t("item.reviewNote", { note: claim.review_note })}</p>
-        )}
-        {claim.status === "approved" && <p className="mt-2 text-sm font-semibold text-success">{t("item.claimApprovedBody")}</p>}
+        {claim.review_note && <p className="text-sm break-words">{t("item.reviewNote", { note: claim.review_note })}</p>}
+        {claim.status === "approved" && <p className="text-sm font-medium text-emerald-700">{t("item.claimApprovedBody")}</p>}
         {claim.status === "pending" && (
-          <Button variant="secondary" size="sm" className="mt-3" onClick={() => onCancel(claim)}>
-            {t("me.cancelClaim")}
-          </Button>
+          <div className="pt-1">
+            <Button variant="outline" size="sm" onClick={() => onCancel(claim)}>
+              {t("me.cancelClaim")}
+            </Button>
+          </div>
         )}
-      </div>
-    </div>
+      </ItemContent>
+    </Row>
   );
 }
 
@@ -122,41 +130,52 @@ function ProfileForm() {
   };
   if (!user) return null;
   return (
-    <form onSubmit={submit} className="rounded-md bg-surface p-4 sm:p-5">
-      <h2 className="text-base font-semibold text-ink">{t("me.profile")}</h2>
-      <p className="mt-0.5 break-all text-sm text-muted">{t("me.signedInAs", { email: user.email })}</p>
-      <label htmlFor="me-name" className="mt-4 block text-sm font-semibold text-ink">
-        {t("me.name")}
-      </label>
-      <p id="me-name-hint" className="mt-0.5 text-sm text-muted">
-        {t("me.nameHint")}
-      </p>
-      <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-        <input
-          id="me-name"
-          className="field-control sm:max-w-xs"
-          value={name}
-          maxLength={60}
-          onChange={(event) => setName(event.target.value)}
-          aria-describedby="me-name-hint"
-          autoComplete="nickname"
-        />
-        <Button
-          type="submit"
-          variant="secondary"
-          busy={mutation.isPending}
-          busyLabel={t("common.saving")}
-          disabled={!name.trim() || name.trim() === user.display_name}
-        >
-          {t("common.save")}
-        </Button>
-      </div>
-      {mutation.isError && (
-        <p role="alert" className="mt-2 text-sm text-alert-deep">
-          {errorText(mutation.error)}
-        </p>
-      )}
-    </form>
+    <Card>
+      <CardHeader>
+        <CardTitle role="heading" aria-level={2}>
+          {t("me.profile")}
+        </CardTitle>
+        <CardDescription className="break-all">{t("me.signedInAs", { email: user.email })}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={submit} className="space-y-3">
+          <FormField id="me-name" label={t("me.name")} hint={t("me.nameHint")}>
+            <Input
+              id="me-name"
+              value={name}
+              maxLength={60}
+              onChange={(event) => setName(event.target.value)}
+              aria-describedby="me-name-hint"
+              autoComplete="nickname"
+            />
+          </FormField>
+          <BusyButton
+            type="submit"
+            variant="outline"
+            busy={mutation.isPending}
+            busyLabel={t("common.saving")}
+            disabled={!name.trim() || name.trim() === user.display_name}
+          >
+            {t("common.save")}
+          </BusyButton>
+          {mutation.isError && (
+            <Alert variant="destructive">
+              <CircleAlert aria-hidden />
+              <AlertDescription>{errorText(mutation.error)}</AlertDescription>
+            </Alert>
+          )}
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
+function Count({ value }: { value?: number }) {
+  if (value === undefined) return null;
+  return (
+    <Badge variant="secondary" className="h-5 min-w-5 px-1.5 tabular-nums">
+      {value}
+    </Badge>
   );
 }
 
@@ -185,50 +204,51 @@ export default function MyItemsPage() {
 
   return (
     <div className="container-page py-8 sm:py-10">
-      <PageHeader title={t("me.title")} lead={t("me.lead")} />
+      <PageHeader title={t("me.title")} description={t("me.lead")} />
       <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
-        <div className="min-w-0">
-          <Tabs
-            idPrefix="me"
-            label={t("me.tabsLabel")}
-            value={tab}
-            onChange={(id) => setParams(id === "claims" ? { tab: "claims" } : {}, { replace: true })}
-            items={[
-              { id: "reports", label: t("me.reportsTab"), extra: items.data ? <span className="text-sm opacity-80">{items.data.items.length}</span> : null },
-              { id: "claims", label: t("me.claimsTab"), extra: claims.data ? <span className="text-sm opacity-80">{claims.data.claims.length}</span> : null },
-            ]}
-          />
-          <TabPanel idPrefix="me" activeId={tab} className="mt-5">
-            {tab === "reports" ? (
-              items.isPending ? (
-                <RowsSkeleton />
-              ) : items.isError ? (
-                <ErrorState error={items.error} onRetry={() => void items.refetch()} />
-              ) : items.data.items.length === 0 ? (
-                <EmptyState
-                  icon={Inbox}
-                  title={t("me.noReports")}
-                  actions={
-                    <>
-                      <Link to="/report/lost" className={buttonClass("primary")}>
-                        {t("home.lost")}
-                      </Link>
-                      <Link to="/report/found" className={buttonClass("secondary")}>
-                        {t("home.found")}
-                      </Link>
-                    </>
-                  }
-                />
-              ) : (
-                <ul className="space-y-3">
-                  {items.data.items.map((item) => (
-                    <li key={item.id}>
-                      <ReportRow item={item} />
-                    </li>
-                  ))}
-                </ul>
-              )
-            ) : claims.isPending ? (
+        <Tabs value={tab} onValueChange={(id) => setParams(id === "claims" ? { tab: "claims" } : {}, { replace: true })} className="min-w-0 gap-5">
+          <TabsList aria-label={t("me.tabsLabel")}>
+            <TabsTrigger value="reports" className="px-3">
+              {t("me.reportsTab")}
+              <Count value={items.data?.items.length} />
+            </TabsTrigger>
+            <TabsTrigger value="claims" className="px-3">
+              {t("me.claimsTab")}
+              <Count value={claims.data?.claims.length} />
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="reports" className="text-base">
+            {items.isPending ? (
+              <RowsSkeleton />
+            ) : items.isError ? (
+              <ErrorState error={items.error} onRetry={() => void items.refetch()} />
+            ) : items.data.items.length === 0 ? (
+              <EmptyState
+                icon={Inbox}
+                title={t("me.noReports")}
+                actions={
+                  <>
+                    <Button asChild>
+                      <Link to="/report/lost">{t("home.lost")}</Link>
+                    </Button>
+                    <Button asChild variant="outline">
+                      <Link to="/report/found">{t("home.found")}</Link>
+                    </Button>
+                  </>
+                }
+              />
+            ) : (
+              <ul className="space-y-3">
+                {items.data.items.map((item) => (
+                  <li key={item.id}>
+                    <ReportRow item={item} />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </TabsContent>
+          <TabsContent value="claims" className="text-base">
+            {claims.isPending ? (
               <RowsSkeleton />
             ) : claims.isError ? (
               <ErrorState error={claims.error} onRetry={() => void claims.refetch()} />
@@ -237,9 +257,9 @@ export default function MyItemsPage() {
                 icon={PackageSearch}
                 title={t("me.noClaims")}
                 actions={
-                  <Link to="/browse" className={buttonClass("primary")}>
-                    {t("notFound.browse")}
-                  </Link>
+                  <Button asChild>
+                    <Link to="/browse">{t("notFound.browse")}</Link>
+                  </Button>
                 }
               >
                 {t("me.noClaimsHint")}
@@ -253,8 +273,8 @@ export default function MyItemsPage() {
                 ))}
               </ul>
             )}
-          </TabPanel>
-        </div>
+          </TabsContent>
+        </Tabs>
         <aside>
           <ProfileForm />
         </aside>
@@ -271,7 +291,7 @@ export default function MyItemsPage() {
         confirmLabel={t("me.cancelClaim")}
         busyLabel={t("me.cancelling")}
         busy={cancel.isPending}
-        variant="danger"
+        destructive
         error={cancel.isError ? errorText(cancel.error) : undefined}
       />
     </div>

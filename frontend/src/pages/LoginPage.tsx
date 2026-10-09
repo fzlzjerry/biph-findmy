@@ -1,19 +1,35 @@
 import { useMutation } from "@tanstack/react-query";
-import { ArrowLeft, Mail, Terminal } from "lucide-react";
+import { ArrowLeft, CircleAlert, Mail, MailCheck, Terminal } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { Navigate, useNavigate, useSearchParams } from "react-router";
-import { Mascot } from "../components/Layout";
-import { useToast } from "../components/Toast";
-import { Button, describedBy, Field, Notice } from "../components/ui";
-import { api } from "../lib/api";
-import { useResetUserData, useUser } from "../lib/auth";
-import { useErrorText } from "../lib/errors";
-import { safeNext, useCountdown, useDocumentTitle } from "../lib/hooks";
-import { useLabels } from "../lib/meta";
+import { BusyButton } from "@/components/BusyButton";
+import { describedBy, FormField } from "@/components/form";
+import { LogoMark } from "@/components/Layout";
+import { useToast } from "@/components/Toast";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { api } from "@/lib/api";
+import { useResetUserData, useUser } from "@/lib/auth";
+import { useErrorText } from "@/lib/errors";
+import { safeNext, useCountdown, useDocumentTitle } from "@/lib/hooks";
+import { useLabels } from "@/lib/meta";
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 const RESEND_SECONDS = 60;
+const CODE_LENGTH = 6;
+
+function ErrorAlert({ children }: { children: string }) {
+  return (
+    <Alert variant="destructive">
+      <CircleAlert aria-hidden />
+      <AlertDescription>{children}</AlertDescription>
+    </Alert>
+  );
+}
 
 export default function LoginPage() {
   const { t } = useTranslation();
@@ -70,6 +86,7 @@ export default function LoginPage() {
 
   const domains = labels.meta.auth.domains;
   const domainHint = domains.length ? t("login.domainHint", { domains: domains.map((d) => `@${d}`).join(" / ") }) : t("login.domainHintAny");
+  const address = email.trim().toLowerCase();
 
   const submitEmail = (event: FormEvent) => {
     event.preventDefault();
@@ -78,12 +95,12 @@ export default function LoginPage() {
       return;
     }
     setEmailError("");
-    requestCode.mutate({ address: email.trim().toLowerCase(), resend: false });
+    requestCode.mutate({ address, resend: false });
   };
 
-  const submitCode = (event: FormEvent) => {
-    event.preventDefault();
-    if (!/^\d{6,10}$/.test(code)) {
+  const submitCode = (event?: FormEvent) => {
+    event?.preventDefault();
+    if (!new RegExp(`^\\d{${CODE_LENGTH}}$`).test(code)) {
       setCodeError(t("login.codeInvalidFormat"));
       codeRef.current?.focus();
       return;
@@ -93,130 +110,137 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="container-page py-10 sm:py-14">
-      <div className="mx-auto max-w-md">
-        <div className="mx-auto mb-6 size-28 sm:size-32">
-          <Mascot alt={t("login.mascotAlt")} sizes="128px" />
-        </div>
-        <h1 className="text-center text-[1.75rem] font-bold leading-tight text-ink">{t("login.title")}</h1>
-        <p className="mt-2 text-center text-muted">{t("login.lead")}</p>
-
-        {step === "email" ? (
-          <form onSubmit={submitEmail} noValidate className="mt-8 space-y-5">
-            <Field id="login-email" label={t("login.email")} hint={domainHint} error={emailError}>
-              <input
-                id="login-email"
-                type="email"
-                inputMode="email"
-                autoComplete="email"
-                autoCapitalize="none"
-                spellCheck={false}
-                className="field-control"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder={domains.length ? `name@${domains[0]}` : t("login.emailPlaceholder")}
-                aria-invalid={Boolean(emailError) || undefined}
-                aria-describedby={describedBy("login-email", { hint: true, error: emailError })}
-                required
-                autoFocus
-              />
-            </Field>
-            {requestCode.isError && (
-              <Notice tone="error" role="alert">
-                {errorText(requestCode.error)}
-              </Notice>
+    <div className="container-page flex justify-center py-10 sm:py-16">
+      <div className="w-full max-w-sm">
+        <Card>
+          <CardHeader className="text-center">
+            <LogoMark className="mx-auto mb-2 size-10" />
+            <CardTitle role="heading" aria-level={1} className="text-xl font-semibold">
+              {t("login.title")}
+            </CardTitle>
+            <CardDescription>{t("login.lead")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {step === "email" ? (
+              <form onSubmit={submitEmail} noValidate className="space-y-5">
+                <FormField id="login-email" label={t("login.email")} hint={domainHint} error={emailError}>
+                  <Input
+                    id="login-email"
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    className="h-10"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    placeholder={domains.length ? `name@${domains[0]}` : t("login.emailPlaceholder")}
+                    aria-invalid={Boolean(emailError) || undefined}
+                    aria-describedby={describedBy("login-email", { hint: true, error: emailError })}
+                    required
+                    autoFocus
+                  />
+                </FormField>
+                {requestCode.isError && <ErrorAlert>{errorText(requestCode.error)}</ErrorAlert>}
+                <BusyButton
+                  type="submit"
+                  size="lg"
+                  className="w-full"
+                  icon={<Mail aria-hidden data-icon="inline-start" />}
+                  busy={requestCode.isPending}
+                  busyLabel={t("login.sending")}
+                >
+                  {t("login.sendCode")}
+                </BusyButton>
+              </form>
+            ) : (
+              <form onSubmit={submitCode} noValidate className="space-y-5">
+                <Alert role="status" className="border-primary/20 bg-primary/5">
+                  <MailCheck aria-hidden className="text-primary" />
+                  <AlertDescription className="text-foreground">
+                    {resent ? t("login.codeResent") : t("login.codeSent", { email: address })}
+                  </AlertDescription>
+                </Alert>
+                {devCode && (
+                  <Alert role="note" className="border-dashed border-amber-300 bg-amber-50 text-amber-900" data-testid="dev-code-banner">
+                    <Terminal aria-hidden />
+                    <AlertTitle className="text-xs font-semibold tracking-wide uppercase">{t("login.devBanner")}</AlertTitle>
+                    <AlertDescription className="text-current/80">{t("login.devBody", { code: devCode })}</AlertDescription>
+                  </Alert>
+                )}
+                <FormField id="login-code" label={t("login.code")} hint={t("login.codeHint")} error={codeError}>
+                  <InputOTP
+                    ref={codeRef}
+                    id="login-code"
+                    maxLength={CODE_LENGTH}
+                    pattern="^[0-9]+$"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    value={code}
+                    onChange={(value) => {
+                      setCode(value.replace(/\D/g, ""));
+                      if (codeError) setCodeError("");
+                    }}
+                    containerClassName="justify-center"
+                    aria-invalid={Boolean(codeError) || undefined}
+                    aria-describedby={describedBy("login-code", { hint: true, error: codeError })}
+                    required
+                  >
+                    <InputOTPGroup>
+                      {Array.from({ length: CODE_LENGTH }, (_, i) => (
+                        <InputOTPSlot key={i} index={i} className="size-11 text-lg font-medium" aria-invalid={Boolean(codeError) || undefined} />
+                      ))}
+                    </InputOTPGroup>
+                  </InputOTP>
+                </FormField>
+                <FormField id="login-name" label={t("login.displayName")} hint={t("login.displayNameHint")} optional>
+                  <Input
+                    id="login-name"
+                    autoComplete="nickname"
+                    maxLength={60}
+                    value={name}
+                    onChange={(event) => setName(event.target.value)}
+                    aria-describedby="login-name-hint"
+                  />
+                </FormField>
+                {verify.isError && <ErrorAlert>{errorText(verify.error)}</ErrorAlert>}
+                {requestCode.isError && <ErrorAlert>{errorText(requestCode.error)}</ErrorAlert>}
+                <BusyButton type="submit" size="lg" className="w-full" busy={verify.isPending} busyLabel={t("login.verifying")}>
+                  {t("login.verify")}
+                </BusyButton>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="-ml-2.5"
+                    onClick={() => {
+                      setStep("email");
+                      setResent(false);
+                      setDevCode(null);
+                      setCode("");
+                      verify.reset();
+                    }}
+                  >
+                    <ArrowLeft aria-hidden data-icon="inline-start" />
+                    {t("login.changeEmail")}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="-mr-2.5"
+                    disabled={secondsLeft > 0 || requestCode.isPending}
+                    onClick={() => requestCode.mutate({ address, resend: true })}
+                  >
+                    {secondsLeft > 0 ? t("login.resendIn", { s: secondsLeft }) : requestCode.isPending ? t("login.sending") : t("login.resend")}
+                  </Button>
+                </div>
+              </form>
             )}
-            <Button type="submit" size="lg" icon={Mail} className="w-full" busy={requestCode.isPending} busyLabel={t("login.sending")}>
-              {t("login.sendCode")}
-            </Button>
-          </form>
-        ) : (
-          <form onSubmit={submitCode} noValidate className="mt-8 space-y-5">
-            <p className="rounded-sm bg-mist px-4 py-3 text-[0.9375rem] text-ink" role="status">
-              {resent ? t("login.codeResent") : t("login.codeSent", { email: email.trim().toLowerCase() })}
-            </p>
-            {devCode && (
-              <div className="rounded-sm border-2 border-dashed border-brand px-4 py-3" role="note" data-testid="dev-code-banner">
-                <p className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-brand-deep">
-                  <Terminal aria-hidden className="size-4" />
-                  {t("login.devBanner")}
-                </p>
-                <p className="mt-1 text-[0.9375rem] text-ink">{t("login.devBody", { code: devCode })}</p>
-              </div>
-            )}
-            <Field id="login-code" label={t("login.code")} hint={t("login.codeHint")} error={codeError}>
-              <input
-                ref={codeRef}
-                id="login-code"
-                type="text"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                pattern="[0-9]*"
-                maxLength={10}
-                className="field-control text-center text-2xl font-semibold tracking-[0.5em] tabular"
-                value={code}
-                onChange={(event) => {
-                  setCode(event.target.value.replace(/\D/g, "").slice(0, 10));
-                  if (codeError) setCodeError("");
-                }}
-                aria-invalid={Boolean(codeError) || undefined}
-                aria-describedby={describedBy("login-code", { hint: true, error: codeError })}
-                required
-              />
-            </Field>
-            <Field id="login-name" label={t("login.displayName")} hint={t("login.displayNameHint")} optional>
-              <input
-                id="login-name"
-                className="field-control"
-                autoComplete="nickname"
-                maxLength={60}
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                aria-describedby="login-name-hint"
-              />
-            </Field>
-            {verify.isError && (
-              <Notice tone="error" role="alert">
-                {errorText(verify.error)}
-              </Notice>
-            )}
-            {requestCode.isError && (
-              <Notice tone="error" role="alert">
-                {errorText(requestCode.error)}
-              </Notice>
-            )}
-            <Button type="submit" size="lg" className="w-full" busy={verify.isPending} busyLabel={t("login.verifying")}>
-              {t("login.verify")}
-            </Button>
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <Button
-                variant="quiet"
-                size="sm"
-                icon={ArrowLeft}
-                className="-ml-3"
-                onClick={() => {
-                  setStep("email");
-                  setResent(false);
-                  setDevCode(null);
-                  setCode("");
-                  verify.reset();
-                }}
-              >
-                {t("login.changeEmail")}
-              </Button>
-              <Button
-                variant="quiet"
-                size="sm"
-                className="-mr-3"
-                disabled={secondsLeft > 0 || requestCode.isPending}
-                onClick={() => requestCode.mutate({ address: email.trim().toLowerCase(), resend: true })}
-              >
-                {secondsLeft > 0 ? t("login.resendIn", { s: secondsLeft }) : requestCode.isPending ? t("login.sending") : t("login.resend")}
-              </Button>
-            </div>
-          </form>
-        )}
-        <p className="mt-8 text-center text-sm text-muted">{t("login.privacy")}</p>
+          </CardContent>
+        </Card>
+        <p className="mt-6 px-4 text-center text-sm text-muted-foreground">{t("login.privacy")}</p>
       </div>
     </div>
   );

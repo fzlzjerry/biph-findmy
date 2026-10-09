@@ -1,18 +1,21 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Download, RefreshCw, Trash2 } from "lucide-react";
+import { ArrowRight, Download, RefreshCw, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
-import { ChartFigure, DataTable, HBarChart, Meter, StatTile, WeeklyChart, type BarDatum } from "../../components/charts";
-import { ConfirmDialog } from "../../components/Dialog";
-import { ErrorState } from "../../components/States";
-import { useToast } from "../../components/Toast";
-import { Button, buttonClass } from "../../components/ui";
-import { useLang } from "../../i18n";
-import { api } from "../../lib/api";
-import { useErrorText } from "../../lib/errors";
-import { useLabels } from "../../lib/meta";
-import { formatDate } from "../../lib/time";
+import { BusyButton } from "@/components/BusyButton";
+import { ChartFigure, DataTable, HBarChart, Meter, StatTile, WeeklyChart, type BarDatum } from "@/components/charts";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { ErrorState } from "@/components/States";
+import { useToast } from "@/components/Toast";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useLang } from "@/i18n";
+import { api } from "@/lib/api";
+import { useErrorText } from "@/lib/errors";
+import { useLabels } from "@/lib/meta";
+import { formatDate } from "@/lib/time";
 
 const LANG_KEYS = ["en", "zh", "mixed", "unknown"] as const;
 
@@ -21,12 +24,12 @@ function StatsSkeleton() {
     <div aria-busy="true" className="space-y-6">
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         {Array.from({ length: 5 }, (_, i) => (
-          <div key={i} className="skeleton h-28 rounded-md" />
+          <Skeleton key={i} className="h-24 rounded-xl" />
         ))}
       </div>
       <div className="grid gap-4 lg:grid-cols-2">
-        <div className="skeleton h-80 rounded-md" />
-        <div className="skeleton h-80 rounded-md" />
+        <Skeleton className="h-80 rounded-xl" />
+        <Skeleton className="h-80 rounded-xl" />
       </div>
     </div>
   );
@@ -101,13 +104,9 @@ export default function StatsTab() {
   const fb = s.feedback;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <section aria-label={t("admin.statsTab")} className="grid grid-cols-2 gap-3 lg:grid-cols-5">
-        <StatTile
-          label={t("admin.kpiActive")}
-          value={String(s.totals.active)}
-          sub={t("admin.kpiLostFound", { lost: s.totals.lost, found: s.totals.found })}
-        />
+        <StatTile label={t("admin.kpiActive")} value={String(s.totals.active)} sub={t("admin.kpiLostFound", { lost: s.totals.lost, found: s.totals.found })} />
         <StatTile label={t("admin.kpiReturned")} value={String(s.totals.returned)} />
         <StatTile label={t("admin.kpiReturnRate")} value={pct(s.return_rate)} sub={t("admin.kpiReturnRateHint")} />
         <StatTile label={t("admin.kpiMedianDays")} value={medianText} />
@@ -117,9 +116,12 @@ export default function StatsTab() {
           signal={s.totals.pending_claims > 0}
           action={
             s.totals.pending_claims > 0 ? (
-              <Link to="/admin" className="text-sm font-semibold text-brand underline-offset-4 hover:underline">
-                {t("admin.claimsTab")} →
-              </Link>
+              <Button asChild variant="link" size="sm" className="h-auto justify-start px-0">
+                <Link to="/admin">
+                  {t("admin.claimsTab")}
+                  <ArrowRight aria-hidden data-icon="inline-end" />
+                </Link>
+              </Button>
             ) : undefined
           }
         />
@@ -169,72 +171,81 @@ export default function StatsTab() {
           <HBarChart data={langData} label={t("admin.languages")} />
         </ChartFigure>
 
-        <section aria-labelledby="feedback-title" className="rounded-md border border-line p-4 sm:p-5">
-          <h3 id="feedback-title" className="text-base font-semibold text-ink">
-            {t("admin.feedback")}
-          </h3>
-          <p className="mt-0.5 text-sm text-muted">{t("admin.feedbackLead")}</p>
-          {fb.confirmed + fb.rejected === 0 ? (
-            <p className="mt-6 text-sm text-muted">{t("admin.noFeedback")}</p>
-          ) : (
-            <div className="mt-4 space-y-4">
-              <dl className="grid grid-cols-2 gap-3">
-                <div>
-                  <dt className="text-sm font-medium text-muted">{t("admin.confirmed")}</dt>
-                  <dd className="mt-0.5 text-[1.75rem] font-semibold leading-tight text-ink">{fb.confirmed}</dd>
-                </div>
-                <div>
-                  <dt className="text-sm font-medium text-muted">{t("admin.rejectedFb")}</dt>
-                  <dd className="mt-0.5 text-[1.75rem] font-semibold leading-tight text-ink">{fb.rejected}</dd>
-                </div>
-              </dl>
-              <div>
-                <p className="flex items-baseline justify-between gap-2 text-sm">
-                  <span className="font-medium text-muted">{t("admin.precision")}</span>
-                  <span className="text-lg font-semibold text-ink">{pct(fb.strong_precision)}</span>
-                </p>
-                {fb.strong_precision !== null && (
-                  <div className="mt-2">
-                    <Meter value={fb.strong_precision} label={t("admin.precision")} />
+        <Card>
+          <CardHeader>
+            <CardTitle role="heading" aria-level={3}>
+              {t("admin.feedback")}
+            </CardTitle>
+            <CardDescription>{t("admin.feedbackLead")}</CardDescription>
+          </CardHeader>
+          <CardContent className="gap-5">
+            {fb.confirmed + fb.rejected === 0 ? (
+              <p className="text-sm text-muted-foreground">{t("admin.noFeedback")}</p>
+            ) : (
+              <>
+                <dl className="grid grid-cols-2 gap-3">
+                  <div className="rounded-lg border p-3">
+                    <dt className="text-xs text-muted-foreground">{t("admin.confirmed")}</dt>
+                    <dd className="mt-1 text-2xl font-semibold tabular-nums">{fb.confirmed}</dd>
                   </div>
-                )}
-                <p className="mt-2 text-sm text-muted">{t("admin.precisionHint")}</p>
-              </div>
-            </div>
-          )}
-        </section>
+                  <div className="rounded-lg border p-3">
+                    <dt className="text-xs text-muted-foreground">{t("admin.rejectedFb")}</dt>
+                    <dd className="mt-1 text-2xl font-semibold tabular-nums">{fb.rejected}</dd>
+                  </div>
+                </dl>
+                <div className="space-y-2">
+                  <p className="flex items-baseline justify-between gap-2 text-sm">
+                    <span className="text-muted-foreground">{t("admin.precision")}</span>
+                    <span className="text-lg font-semibold tabular-nums">{pct(fb.strong_precision)}</span>
+                  </p>
+                  {fb.strong_precision !== null && <Meter value={fb.strong_precision} label={t("admin.precision")} />}
+                  <p className="text-sm text-muted-foreground">{t("admin.precisionHint")}</p>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
-      <section aria-labelledby="tools-title" className="border-t border-line pt-6">
-        <h3 id="tools-title" className="text-lg font-semibold text-ink">
-          {t("admin.tools")}
-        </h3>
-        <p className="mt-1 max-w-[68ch] text-sm text-muted">{t("admin.toolsLead")}</p>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <a href="/api/admin/export/items.csv" download className={buttonClass("secondary", "sm")}>
-            <Download aria-hidden />
-            {t("admin.exportItems")}
-          </a>
-          <a href="/api/admin/export/feedback.csv" download className={buttonClass("secondary", "sm")}>
-            <Download aria-hidden />
-            {t("admin.exportFeedback")}
-          </a>
-          <Button
-            variant="secondary"
+      <Card>
+        <CardHeader>
+          <CardTitle role="heading" aria-level={3}>
+            {t("admin.tools")}
+          </CardTitle>
+          <CardDescription>{t("admin.toolsLead")}</CardDescription>
+        </CardHeader>
+        <CardContent className="flex-row flex-wrap gap-2">
+          <Button asChild variant="outline" size="sm">
+            <a href="/api/admin/export/items.csv" download>
+              <Download aria-hidden data-icon="inline-start" />
+              {t("admin.exportItems")}
+            </a>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <a href="/api/admin/export/feedback.csv" download>
+              <Download aria-hidden data-icon="inline-start" />
+              {t("admin.exportFeedback")}
+            </a>
+          </Button>
+          <BusyButton
+            variant="outline"
             size="sm"
-            icon={RefreshCw}
+            icon={<RefreshCw aria-hidden data-icon="inline-start" />}
             busy={rematch.isPending}
             busyLabel={t("admin.rematching")}
             onClick={() => rematch.mutate()}
           >
             {t("admin.rematch")}
-          </Button>
-          <Button variant="danger-outline" size="sm" icon={Trash2} onClick={() => setPurging(true)}>
+          </BusyButton>
+          <Button variant="destructive" size="sm" onClick={() => setPurging(true)}>
+            <Trash2 aria-hidden data-icon="inline-start" />
             {t("admin.purge")}
           </Button>
-        </div>
-        <p className="mt-4 text-xs text-muted">{t("admin.matcherVersion", { version: s.matcher })}</p>
-      </section>
+        </CardContent>
+        <CardFooter>
+          <p className="text-xs text-muted-foreground">{t("admin.matcherVersion", { version: s.matcher })}</p>
+        </CardFooter>
+      </Card>
 
       <ConfirmDialog
         open={purging}
@@ -248,7 +259,7 @@ export default function StatsTab() {
         confirmLabel={t("admin.purgeConfirm")}
         busyLabel={t("admin.purging")}
         busy={purge.isPending}
-        variant="danger"
+        destructive
         error={purge.isError ? errorText(purge.error) : undefined}
       />
     </div>

@@ -1,57 +1,53 @@
-import { ChevronDown, Lock, LogIn, LogOut, Menu, Smartphone, UserRound, X } from "lucide-react";
+import { ChevronDown, Lock, LogIn, LogOut, Menu, PackageSearch, Smartphone, X } from "lucide-react";
 import { Component, useEffect, useRef, useState, type ErrorInfo, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, Navigate, NavLink, Outlet, useLocation, useNavigationType } from "react-router";
-import i18n, { setLang, useLang } from "../i18n";
-import { useLogout, useMe, useUser } from "../lib/auth";
-import { readStorage, useOutsideClick, writeStorage } from "../lib/hooks";
-import { LabelsProvider, useMetaQuery } from "../lib/meta";
-import { EmptyState, ErrorState, PageSkeleton } from "./States";
-import { ToastProvider } from "./Toast";
-import { Button, buttonClass } from "./ui";
+import { EmptyState, ErrorState, PageSkeleton } from "@/components/States";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Separator } from "@/components/ui/separator";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Toaster } from "@/components/ui/sonner";
+import { Toggle } from "@/components/ui/toggle";
+import i18n, { setLang, useLang } from "@/i18n";
+import { useLogout, useMe, useUser } from "@/lib/auth";
+import { readStorage, writeStorage } from "@/lib/hooks";
+import { LabelsProvider, useMetaQuery } from "@/lib/meta";
+import { cn } from "@/lib/utils";
 
 // --------------------------------------------------------------------------- brand
-export function BrandMark({ className = "size-9" }: { className?: string }) {
-  return <img src="/brand/sea-dragon-mark.svg" alt="" width={36} height={36} className={`shrink-0 ${className}`} />;
-}
-
-export function Mascot({ alt = "", className = "", sizes = "(min-width: 1024px) 420px, 60vw" }: {
-  alt?: string;
-  className?: string;
-  sizes?: string;
-}) {
+export function LogoMark({ className }: { className?: string }) {
   return (
-    <picture className={className}>
-      <source srcSet="/brand/sea-dragon-mascot.avif" type="image/avif" />
-      <source srcSet="/brand/sea-dragon-mascot.webp" type="image/webp" />
-      <img
-        src="/brand/sea-dragon-mascot.png"
-        alt={alt}
-        width={1213}
-        height={1183}
-        sizes={sizes}
-        decoding="async"
-        className="h-full w-full object-contain"
-      />
-    </picture>
+    <span aria-hidden className={cn("flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground", className)}>
+      <PackageSearch className="size-[60%]" strokeWidth={2} />
+    </span>
   );
 }
 
 function Wordmark() {
   const { t } = useTranslation();
   return (
-    <Link to="/" className="flex min-w-0 items-center gap-2.5 rounded-sm no-underline" aria-label={t("app.homeLabel")}>
-      <BrandMark className="size-9" />
-      <span className="flex min-w-0 flex-col leading-none">
-        <span className="whitespace-nowrap text-[1.0625rem] font-bold tracking-[-0.02em] text-ink">BIPH FindMy</span>
-        <span className="mt-1 whitespace-nowrap text-xs font-medium text-muted">失物招领 · Lost &amp; found</span>
+    <Link to="/" className="flex min-w-0 items-center gap-2.5 rounded-md" aria-label={t("app.homeLabel")}>
+      <LogoMark />
+      <span className="flex min-w-0 items-baseline gap-2">
+        <span className="font-semibold tracking-tight whitespace-nowrap">BIPH FindMy</span>
+        <span className="hidden text-sm whitespace-nowrap text-muted-foreground sm:inline">失物招领</span>
       </span>
     </Link>
   );
 }
 
 // --------------------------------------------------------------------------- language
-export function LanguageToggle({ className = "" }: { className?: string }) {
+export function LanguageToggle({ className }: { className?: string }) {
   const { t } = useTranslation();
   const lang = useLang();
   const options = [
@@ -59,20 +55,18 @@ export function LanguageToggle({ className = "" }: { className?: string }) {
     { id: "en" as const, label: "EN", htmlLang: "en" },
   ];
   return (
-    <div role="group" aria-label={t("nav.language")} className={`inline-flex shrink-0 rounded-full bg-surface ${className}`}>
+    <div role="group" aria-label={t("nav.language")} className={cn("inline-flex shrink-0 items-center gap-0.5 rounded-lg border p-0.5", className)}>
       {options.map((option) => (
-        <button
+        <Toggle
           key={option.id}
-          type="button"
+          size="sm"
           lang={option.htmlLang}
-          aria-pressed={lang === option.id}
-          onClick={() => setLang(option.id)}
-          className={`min-h-11 min-w-12 rounded-full px-3.5 text-sm font-semibold transition-colors duration-200 ${
-            lang === option.id ? "bg-brand text-water" : "text-muted hover:text-ink"
-          }`}
+          pressed={lang === option.id}
+          onPressedChange={() => setLang(option.id)}
+          className="h-7 min-w-9 rounded-md px-2 text-xs text-muted-foreground aria-pressed:bg-muted aria-pressed:text-foreground"
         >
           {option.label}
-        </button>
+        </Toggle>
       ))}
     </div>
   );
@@ -82,187 +76,207 @@ export function LanguageToggle({ className = "" }: { className?: string }) {
 function useNavItems() {
   const { t } = useTranslation();
   const { user, isAdmin } = useUser();
-  const items = [
+  const main = [
     { to: "/browse", label: t("nav.browse") },
     { to: "/report/lost", label: t("nav.reportLost") },
     { to: "/report/found", label: t("nav.reportFound") },
     { to: "/about", label: t("nav.about") },
   ];
-  if (user) items.push({ to: "/me", label: t("nav.myItems") });
-  if (isAdmin) items.push({ to: "/admin", label: t("nav.admin") });
-  return items;
+  const account = [];
+  if (user) account.push({ to: "/me", label: t("nav.myItems") });
+  if (isAdmin) account.push({ to: "/admin", label: t("nav.admin") }, { to: "/admin/quick-add", label: t("nav.quickAdd") });
+  return { main, account, isAdmin };
 }
 
-const desktopLink = ({ isActive }: { isActive: boolean }) =>
-  `inline-flex min-h-11 items-center whitespace-nowrap rounded-sm px-3 text-[0.9375rem] transition-colors duration-200 ${
-    isActive ? "bg-mist font-semibold text-brand-deep" : "font-medium text-muted hover:bg-surface hover:text-ink"
-  }`;
+function initials(name: string): string {
+  const clean = name.trim();
+  if (!clean) return "?";
+  // CJK names: last two characters (given name); Latin names: first letters of the first two words.
+  if (/[\u3400-\u9fff]/.test(clean)) return clean.slice(-2);
+  return clean
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
+}
 
 function UserMenu() {
   const { t } = useTranslation();
   const { user, isAdmin } = useUser();
   const logout = useLogout();
-  const [open, setOpen] = useState(false);
-  const ref = useOutsideClick<HTMLDivElement>(open, () => setOpen(false));
-  const location = useLocation();
-  useEffect(() => setOpen(false), [location.pathname]);
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (event: KeyboardEvent) => event.key === "Escape" && setOpen(false);
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [open]);
   if (!user) return null;
-  const menuItem = "flex min-h-11 w-full items-center gap-2 rounded-xs px-3 text-left text-[0.9375rem] font-medium text-ink hover:bg-surface";
   return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        aria-expanded={open}
-        aria-controls="user-menu"
-        aria-label={t("nav.account", { name: user.display_name })}
-        onClick={() => setOpen((v) => !v)}
-        className="inline-flex min-h-11 max-w-[12rem] items-center gap-2 rounded-sm border border-line px-3 text-[0.9375rem] font-medium text-ink hover:bg-surface"
-      >
-        <UserRound aria-hidden className="size-4 shrink-0 text-brand" />
-        <span className="truncate">{user.display_name}</span>
-        <ChevronDown aria-hidden className={`size-4 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
-      </button>
-      {open && (
-        <div id="user-menu" className="absolute right-0 top-[calc(100%+6px)] z-40 w-64 rounded-sm border border-line-strong bg-water p-1.5">
-          <div className="px-3 py-2">
-            <p className="text-xs font-medium text-muted">{t("nav.signedInAs")}</p>
-            <p className="truncate text-sm font-semibold text-ink">{user.email}</p>
-          </div>
-          <div className="my-1 h-px bg-line" />
-          <Link to="/me" className={menuItem}>
-            {t("nav.myItems")}
-          </Link>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="max-w-52 gap-2 px-1.5" aria-label={t("nav.account", { name: user.display_name })}>
+          <Avatar className="size-7">
+            <AvatarFallback className="bg-primary/10 text-xs font-medium text-primary">{initials(user.display_name)}</AvatarFallback>
+          </Avatar>
+          <span className="truncate">{user.display_name}</span>
+          <ChevronDown aria-hidden className="text-muted-foreground" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-60">
+        <DropdownMenuLabel className="font-normal">
+          <p className="text-xs text-muted-foreground">{t("nav.signedInAs")}</p>
+          <p className="truncate text-sm font-medium text-foreground">{user.email}</p>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <DropdownMenuItem asChild>
+            <Link to="/me">{t("nav.myItems")}</Link>
+          </DropdownMenuItem>
           {isAdmin && (
             <>
-              <Link to="/admin" className={menuItem}>
-                {t("nav.admin")}
-              </Link>
-              <Link to="/admin/quick-add" className={menuItem}>
-                {t("nav.quickAdd")}
-              </Link>
+              <DropdownMenuItem asChild>
+                <Link to="/admin">{t("nav.admin")}</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/admin/quick-add">{t("nav.quickAdd")}</Link>
+              </DropdownMenuItem>
             </>
           )}
-          <div className="my-1 h-px bg-line" />
-          <button type="button" className={menuItem} onClick={() => logout.mutate()} disabled={logout.isPending}>
-            <LogOut aria-hidden className="size-4 text-muted" />
-            {logout.isPending ? t("nav.loggingOut") : t("nav.logout")}
-          </button>
-        </div>
-      )}
-    </div>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem disabled={logout.isPending} onSelect={() => logout.mutate()}>
+          <LogOut aria-hidden />
+          {logout.isPending ? t("nav.loggingOut") : t("nav.logout")}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
-function LoginLink({ className = "" }: { className?: string }) {
-  const { t } = useTranslation();
+function useLoginHref() {
   const location = useLocation();
-  const next = location.pathname === "/login" ? "" : `?next=${encodeURIComponent(location.pathname + location.search)}`;
+  return location.pathname === "/login" ? "/login" : `/login?next=${encodeURIComponent(location.pathname + location.search)}`;
+}
+
+/** Sheets take focus themselves on open, so phones don't show a focus ring on the first control. */
+export function focusSheet(event: Event) {
+  event.preventDefault();
+  (event.currentTarget as HTMLElement | null)?.focus();
+}
+
+function MobileMenu() {
+  const { t } = useTranslation();
+  const { main, account } = useNavItems();
+  const { user } = useUser();
+  const logout = useLogout();
+  const loginHref = useLoginHref();
+  const location = useLocation();
+  const [open, setOpen] = useState(false);
+  useEffect(() => setOpen(false), [location.pathname, location.search]);
+
+  const link = ({ isActive }: { isActive: boolean }) =>
+    cn(
+      "flex h-10 items-center rounded-md px-3 text-sm font-medium transition-colors",
+      isActive ? "bg-muted text-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground",
+    );
+
   return (
-    <Link to={`/login${next}`} className={buttonClass("primary", "sm", className)}>
-      <LogIn aria-hidden />
-      {t("nav.login")}
-    </Link>
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
+        <Button variant="ghost" size="icon" className="lg:hidden" aria-label={open ? t("nav.closeMenu") : t("nav.openMenu")}>
+          <Menu aria-hidden className="size-5" />
+        </Button>
+      </SheetTrigger>
+      <SheetContent
+        side="right"
+        className="w-[min(20rem,85vw)] gap-0 outline-none"
+        closeLabel={t("nav.closeMenu")}
+        onOpenAutoFocus={focusSheet}
+      >
+        <SheetHeader className="border-b">
+          <SheetTitle className="flex items-center gap-2">
+            <LogoMark className="size-7" />
+            BIPH FindMy
+          </SheetTitle>
+          <SheetDescription className="sr-only">{t("nav.menu")}</SheetDescription>
+        </SheetHeader>
+        <nav aria-label={t("nav.main")} className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
+          {main.map((item) => (
+            <NavLink key={item.to} to={item.to} className={link}>
+              {item.label}
+            </NavLink>
+          ))}
+          {account.length > 0 && <Separator className="my-2" />}
+          {account.map((item) => (
+            <NavLink key={item.to} to={item.to} end={item.to === "/admin"} className={link}>
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
+        <div className="space-y-3 border-t p-4">
+          {user ? (
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-xs text-muted-foreground">{t("nav.signedInAs")}</p>
+                <p className="truncate text-sm font-medium">{user.email}</p>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => logout.mutate()} disabled={logout.isPending}>
+                <LogOut aria-hidden data-icon="inline-start" />
+                {logout.isPending ? t("nav.loggingOut") : t("nav.logout")}
+              </Button>
+            </div>
+          ) : (
+            <Button asChild className="w-full">
+              <Link to={loginHref}>
+                <LogIn aria-hidden data-icon="inline-start" />
+                {t("nav.login")}
+              </Link>
+            </Button>
+          )}
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }
 
 function Header() {
   const { t } = useTranslation();
-  const navItems = useNavItems();
-  const { user, isAdmin } = useUser();
+  const { main, isAdmin } = useNavItems();
+  const { user } = useUser();
   const me = useMe();
-  const logout = useLogout();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const location = useLocation();
-  const menuButton = useRef<HTMLButtonElement>(null);
+  const loginHref = useLoginHref();
+  const items = isAdmin ? [...main, { to: "/admin", label: t("nav.admin") }] : main;
 
-  useEffect(() => setMenuOpen(false), [location.pathname, location.search]);
-  useEffect(() => {
-    if (!menuOpen) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setMenuOpen(false);
-        menuButton.current?.focus();
-      }
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [menuOpen]);
-
-  const mobileLink = ({ isActive }: { isActive: boolean }) =>
-    `flex min-h-12 items-center rounded-sm px-3 text-base ${
-      isActive ? "bg-mist font-semibold text-brand-deep" : "font-medium text-ink hover:bg-surface"
-    }`;
+  const link = ({ isActive }: { isActive: boolean }) =>
+    cn(
+      "inline-flex h-8 items-center rounded-md px-3 text-sm font-medium whitespace-nowrap transition-colors",
+      isActive ? "bg-muted text-foreground" : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+    );
 
   return (
-    <header className="border-b border-line bg-water">
-      <div className="container-page flex min-h-16 items-center justify-between gap-3 py-2">
+    <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur supports-backdrop-filter:bg-background/75">
+      <div className="container-page flex h-14 items-center gap-4">
         <Wordmark />
-        <nav aria-label={t("nav.main")} className="hidden min-w-0 items-center gap-0.5 xl:flex">
-          {navItems.map((item) => (
-            <NavLink key={item.to} to={item.to} end={item.to === "/admin"} className={desktopLink}>
+        <nav aria-label={t("nav.main")} className="hidden min-w-0 items-center gap-1 lg:flex">
+          {items.map((item) => (
+            <NavLink key={item.to} to={item.to} end={item.to === "/admin"} className={link}>
               {item.label}
             </NavLink>
           ))}
         </nav>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="ml-auto flex shrink-0 items-center gap-2">
           <LanguageToggle />
-          <div className="hidden xl:block">{me.isPending ? <div className="h-11 w-24" /> : user ? <UserMenu /> : <LoginLink />}</div>
-          <button
-            ref={menuButton}
-            type="button"
-            className="inline-flex size-11 items-center justify-center rounded-sm border border-line text-ink hover:bg-surface xl:hidden"
-            aria-expanded={menuOpen}
-            aria-controls="mobile-menu"
-            aria-label={menuOpen ? t("nav.closeMenu") : t("nav.openMenu")}
-            onClick={() => setMenuOpen((v) => !v)}
-          >
-            {menuOpen ? <X aria-hidden className="size-5" /> : <Menu aria-hidden className="size-5" />}
-          </button>
+          <div className="hidden lg:block">
+            {me.isPending ? (
+              <div className="h-9 w-24" />
+            ) : user ? (
+              <UserMenu />
+            ) : (
+              <Button asChild size="sm">
+                <Link to={loginHref}>
+                  <LogIn aria-hidden data-icon="inline-start" />
+                  {t("nav.login")}
+                </Link>
+              </Button>
+            )}
+          </div>
+          <MobileMenu />
         </div>
       </div>
-      {menuOpen && (
-        <div id="mobile-menu" className="border-t border-line xl:hidden">
-          <nav aria-label={t("nav.main")} className="container-page flex flex-col gap-1 py-3">
-            {navItems.map((item) => (
-              <NavLink key={item.to} to={item.to} end={item.to === "/admin"} className={mobileLink}>
-                {item.label}
-              </NavLink>
-            ))}
-            {isAdmin && (
-              <NavLink to="/admin/quick-add" className={mobileLink}>
-                {t("nav.quickAdd")}
-              </NavLink>
-            )}
-            <div className="mt-2 border-t border-line pt-3">
-              {user ? (
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="text-xs font-medium text-muted">{t("nav.signedInAs")}</p>
-                    <p className="truncate text-sm font-semibold text-ink">{user.email}</p>
-                  </div>
-                  <button
-                    type="button"
-                    className={buttonClass("secondary", "sm")}
-                    onClick={() => logout.mutate()}
-                    disabled={logout.isPending}
-                  >
-                    <LogOut aria-hidden />
-                    {logout.isPending ? t("nav.loggingOut") : t("nav.logout")}
-                  </button>
-                </div>
-              ) : (
-                <LoginLink className="w-full" />
-              )}
-            </div>
-          </nav>
-        </div>
-      )}
     </header>
   );
 }
@@ -272,16 +286,14 @@ const WECHAT_KEY = "findmy.wechatDismissed";
 
 /** Inside WeChat, uploads and cookies are unreliable — ask people to open the system browser (both languages). */
 function WeChatBanner() {
-  const [visible, setVisible] = useState(
-    () => /MicroMessenger/i.test(navigator.userAgent) && readStorage(WECHAT_KEY) !== "1",
-  );
+  const [visible, setVisible] = useState(() => /MicroMessenger/i.test(navigator.userAgent) && readStorage(WECHAT_KEY) !== "1");
   if (!visible) return null;
   const en = i18n.getFixedT("en");
   const zh = i18n.getFixedT("zh");
   return (
-    <div role="region" aria-label={`${zh("wechat.title")} ${en("wechat.title")}`} className="bg-ink text-water">
+    <div role="region" aria-label={`${zh("wechat.title")} ${en("wechat.title")}`} className="bg-foreground text-background">
       <div className="container-page flex items-start gap-3 py-3">
-        <Smartphone aria-hidden className="mt-0.5 size-5 shrink-0 text-mist" />
+        <Smartphone aria-hidden className="mt-0.5 size-5 shrink-0 opacity-80" />
         <div className="min-w-0 flex-1 space-y-1 text-sm leading-relaxed">
           <p lang="zh-CN">
             <strong className="font-semibold">{zh("wechat.title")}</strong> {zh("wechat.body")}
@@ -290,17 +302,18 @@ function WeChatBanner() {
             <strong className="font-semibold">{en("wechat.title")}</strong> {en("wechat.body")}
           </p>
         </div>
-        <button
-          type="button"
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => {
             writeStorage(WECHAT_KEY, "1");
             setVisible(false);
           }}
           aria-label={`${zh("wechat.dismiss")} / ${en("wechat.dismiss")}`}
-          className="-mr-2 inline-flex size-11 shrink-0 items-center justify-center rounded-sm text-mist hover:bg-white/10"
+          className="-mr-2 shrink-0 text-background hover:bg-background/10 hover:text-background"
         >
-          <X aria-hidden className="size-5" />
-        </button>
+          <X aria-hidden />
+        </Button>
       </div>
     </div>
   );
@@ -310,23 +323,20 @@ function WeChatBanner() {
 function Footer() {
   const { t } = useTranslation();
   return (
-    <footer className="mt-16 border-t border-line">
-      <div className="container-page flex flex-col gap-4 py-8 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
+    <footer className="mt-16 border-t bg-muted/30">
+      <div className="container-page flex flex-col gap-4 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <BrandMark className="size-8" />
+          <LogoMark className="size-7" />
           <div>
-            <p className="font-semibold text-ink">{t("footer.clubs")}</p>
+            <p className="font-medium text-foreground">{t("footer.clubs")}</p>
             <p className="mt-0.5">{t("footer.noTracking")}</p>
           </div>
         </div>
-        <nav aria-label={t("footer.about")} className="flex flex-wrap gap-x-4 gap-y-1">
-          <Link to="/about" className="inline-flex min-h-11 items-center font-medium text-brand underline-offset-4 hover:underline">
+        <nav aria-label={t("footer.about")} className="flex flex-wrap gap-x-5 gap-y-1">
+          <Link to="/about" className="inline-flex min-h-9 items-center underline-offset-4 hover:text-foreground hover:underline">
             {t("footer.about")}
           </Link>
-          <Link
-            to="/about#privacy"
-            className="inline-flex min-h-11 items-center font-medium text-brand underline-offset-4 hover:underline"
-          >
+          <Link to="/about#privacy" className="inline-flex min-h-9 items-center underline-offset-4 hover:text-foreground hover:underline">
             {t("footer.privacy")}
           </Link>
         </nav>
@@ -378,9 +388,9 @@ function PageCrash() {
   const { t } = useTranslation();
   return (
     <div className="container-page flex flex-col items-center py-20 text-center" role="alert">
-      <BrandMark className="size-16" />
-      <h1 className="mt-6 text-2xl font-bold text-ink">{t("common.errorTitle")}</h1>
-      <p className="mt-2 max-w-[48ch] text-muted">{t("errors.generic")}</p>
+      <LogoMark className="size-12" />
+      <h1 className="mt-6 text-2xl font-semibold tracking-tight">{t("common.errorTitle")}</h1>
+      <p className="mt-2 max-w-[48ch] text-muted-foreground">{t("errors.generic")}</p>
       <Button className="mt-6" onClick={() => window.location.reload()}>
         {t("common.reload")}
       </Button>
@@ -439,10 +449,10 @@ export function Layout() {
   const location = useLocation();
   useFocusMainOnNavigate();
   return (
-    <ToastProvider>
+    <>
       <a
         href="#main"
-        className="sr-only rounded-sm bg-ink px-4 py-3 font-semibold text-water focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[70]"
+        className="sr-only rounded-md bg-primary px-4 py-3 font-medium text-primary-foreground focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[70]"
       >
         {t("app.skip")}
       </a>
@@ -458,7 +468,8 @@ export function Layout() {
         </main>
         <Footer />
       </div>
+      <Toaster position="bottom-right" closeButton containerAriaLabel={t("common.notifications")} toastOptions={{ closeButtonAriaLabel: t("common.dismiss") }} />
       <ScrollManager />
-    </ToastProvider>
+    </>
   );
 }

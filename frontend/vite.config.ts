@@ -1,5 +1,6 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
+import { fileURLToPath, URL } from "node:url";
 import { defineConfig } from "vite";
 
 // The browser only ever talks to its own origin: /api/* and /media/* are proxied to FastAPI in
@@ -12,6 +13,7 @@ const proxy = {
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } },
   build: {
     outDir: "dist",
     emptyOutDir: true,
@@ -23,7 +25,8 @@ export default defineConfig({
         codeSplitting: {
           groups: [
             { name: "react", test: /node_modules[\\/](react|react-dom|scheduler|react-router)[\\/]/ },
-            { name: "vendor", test: /node_modules[\\/]/ },
+            // Only libraries the first page needs; lazy-only ones (Recharts on the stats page) stay with their page.
+            { name: "vendor", test: /node_modules[\\/]/, tags: ["$initial"] },
           ],
         },
       },

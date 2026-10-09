@@ -1,39 +1,51 @@
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, HandHeart, PackageOpen, Search } from "lucide-react";
+import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
-import { ItemCard } from "../components/ItemBits";
-import { Mascot } from "../components/Layout";
-import { CardGridSkeleton, EmptyState, ErrorState } from "../components/States";
-import { buttonClass } from "../components/ui";
-import { api } from "../lib/api";
-import { useDocumentTitle } from "../lib/hooks";
+import { Link, useNavigate } from "react-router";
+import { ItemCard } from "@/components/ItemBits";
+import { SectionHeader } from "@/components/page";
+import { CardGridSkeleton, EmptyState, ErrorState } from "@/components/States";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
+import { api } from "@/lib/api";
+import { useDocumentTitle } from "@/lib/hooks";
 
-function ActionTile({ to, title, hint, icon: Icon, primary }: {
-  to: string;
-  title: string;
-  hint: string;
-  icon: typeof Search;
-  primary?: boolean;
-}) {
+function HeroSearch() {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [q, setQ] = useState("");
+  const submit = (event: FormEvent) => {
+    event.preventDefault();
+    navigate(q.trim() ? `/browse?q=${encodeURIComponent(q.trim())}` : "/browse");
+  };
   return (
-    <Link
-      to={to}
-      className={`group flex min-h-[4.5rem] items-center gap-4 rounded-sm px-5 py-4 no-underline transition-colors duration-200 active:translate-y-px ${
-        primary ? "bg-brand text-water hover:bg-brand-deep" : "border border-line-strong bg-water text-ink hover:bg-surface"
-      }`}
-    >
-      <span
-        className={`flex size-11 shrink-0 items-center justify-center rounded-full ${primary ? "bg-water/15" : "bg-mist text-brand"}`}
-      >
-        <Icon aria-hidden className="size-5" />
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block text-lg font-semibold leading-snug">{title}</span>
-        <span className={`mt-0.5 block text-sm ${primary ? "text-mist" : "text-muted"}`}>{hint}</span>
-      </span>
-      <ArrowRight aria-hidden className="size-5 shrink-0 transition-transform duration-200 group-hover:translate-x-0.5" />
-    </Link>
+    <form role="search" onSubmit={submit} className="max-w-xl">
+      <label htmlFor="home-search" className="sr-only">
+        {t("browse.searchLabel")}
+      </label>
+      <InputGroup className="h-11 bg-background">
+        <InputGroupAddon>
+          <Search aria-hidden />
+        </InputGroupAddon>
+        <InputGroupInput
+          id="home-search"
+          type="search"
+          enterKeyHint="search"
+          autoComplete="off"
+          value={q}
+          onChange={(event) => setQ(event.target.value)}
+          placeholder={t("browse.searchPlaceholder")}
+        />
+        <InputGroupAddon align="inline-end">
+          <InputGroupButton type="submit" variant="secondary" size="sm" className="h-8 px-3">
+            {t("browse.search")}
+          </InputGroupButton>
+        </InputGroupAddon>
+      </InputGroup>
+    </form>
   );
 }
 
@@ -52,61 +64,110 @@ export default function HomePage() {
 
   const waiting = recent.data?.total;
   const returnedCount = returned.data?.total;
+  const steps = [
+    [t("home.step1Title"), t("home.step1")],
+    [t("home.step2Title"), t("home.step2")],
+    [t("home.step3Title"), t("home.step3")],
+  ] as const;
 
   return (
-    <div className="container-page">
-      <section aria-labelledby="hero-title" className="grid items-center gap-8 pb-10 pt-8 sm:pt-12 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-12 lg:pb-14">
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-brand">{t("home.eyebrow")}</p>
-          <h1
-            id="hero-title"
-            className="mt-3 text-[2.25rem] font-bold leading-[1.08] tracking-[-0.03em] text-ink sm:text-5xl lg:text-[3.25rem]"
-          >
-            {t("home.title")}
-          </h1>
-          <p className="mt-5 max-w-[60ch] text-lg leading-relaxed text-muted">{t("home.promise")}</p>
-          <div className="mt-8 grid gap-3 sm:grid-cols-2">
-            <ActionTile to="/report/lost" title={t("home.lost")} hint={t("home.lostHint")} icon={Search} primary />
-            <ActionTile to="/report/found" title={t("home.found")} hint={t("home.foundHint")} icon={HandHeart} />
-          </div>
-          <p className="mt-6 flex min-h-6 flex-wrap items-center gap-x-2 gap-y-1 text-[0.9375rem] text-muted" aria-live="polite">
-            {waiting !== undefined && (
-              <>
-                <span aria-hidden className="size-2.5 shrink-0 rounded-full bg-sonar" />
-                <Link to="/browse" className="font-semibold text-ink underline-offset-4 hover:underline">
-                  {t("home.waiting", { count: waiting })}
+    <>
+      <section aria-labelledby="hero-title" className="border-b bg-gradient-to-b from-muted/60 to-background">
+        <div className="container-page grid items-center gap-10 py-12 sm:py-16 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-14">
+          <div className="min-w-0">
+            <Badge variant="outline" className="bg-background">
+              {t("home.eyebrow")}
+            </Badge>
+            <h1 id="hero-title" className="mt-4 text-4xl leading-[1.15] font-semibold tracking-tight text-balance sm:text-5xl sm:leading-[1.15]">
+              {t("home.title")}
+            </h1>
+            <p className="mt-4 max-w-[60ch] text-lg text-muted-foreground">{t("home.promise")}</p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Button asChild size="lg" className="h-11 px-5 text-base">
+                <Link to="/report/lost">
+                  <Search aria-hidden data-icon="inline-start" />
+                  {t("home.lost")}
                 </Link>
-                {returnedCount !== undefined && returnedCount > 0 && (
-                  <>
-                    <span aria-hidden>·</span>
-                    <span>{t("home.returned", { count: returnedCount })}</span>
-                  </>
-                )}
-              </>
-            )}
-          </p>
-        </div>
-        <div className="flex items-center gap-4 overflow-hidden rounded-md bg-brand p-4 sm:gap-6 sm:p-5 lg:flex-col lg:items-stretch lg:gap-0 lg:p-0">
-          <div className="size-28 shrink-0 sm:size-36 lg:aspect-square lg:size-auto lg:w-full lg:p-10">
-            <Mascot alt={t("home.mascotAlt")} sizes="(min-width: 1024px) 460px, 144px" />
+              </Button>
+              <Button asChild size="lg" variant="outline" className="h-11 px-5 text-base">
+                <Link to="/report/found">
+                  <HandHeart aria-hidden data-icon="inline-start" />
+                  {t("home.found")}
+                </Link>
+              </Button>
+            </div>
+            <div className="mt-8">
+              <HeroSearch />
+            </div>
+            <p className="mt-4 flex min-h-5 flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground" aria-live="polite">
+              {waiting !== undefined && (
+                <>
+                  <span aria-hidden className="relative flex size-2">
+                    <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-60 motion-reduce:hidden" />
+                    <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
+                  </span>
+                  <Link to="/browse" className="font-medium text-foreground underline-offset-4 hover:underline">
+                    {t("home.waiting", { count: waiting })}
+                  </Link>
+                  {returnedCount !== undefined && returnedCount > 0 && (
+                    <>
+                      <span aria-hidden>·</span>
+                      <span>{t("home.returned", { count: returnedCount })}</span>
+                    </>
+                  )}
+                </>
+              )}
+            </p>
           </div>
-          <p className="text-sm leading-relaxed text-mist lg:border-t lg:border-water/15 lg:px-6 lg:py-4">{t("home.clubLine")}</p>
+
+          <Card>
+            <CardHeader>
+              <CardTitle id="steps-title" role="heading" aria-level={2}>
+                {t("home.stepsTitle")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ol className="space-y-5">
+                {steps.map(([title, body], index) => (
+                  <li key={title} className="flex gap-3">
+                    <span
+                      aria-hidden
+                      className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary"
+                    >
+                      {index + 1}
+                    </span>
+                    <div className="min-w-0">
+                      <h3 className="font-medium">{title}</h3>
+                      <p className="mt-0.5 text-sm text-muted-foreground">{body}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+              <Button asChild variant="link" className="mt-4 h-auto px-0">
+                <Link to="/about">
+                  {t("nav.about")}
+                  <ArrowRight aria-hidden data-icon="inline-end" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </section>
 
-      <section aria-labelledby="recent-title" className="border-t border-line pt-10">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 id="recent-title" className="text-2xl font-semibold text-ink">
-              {t("home.recent")}
-            </h2>
-            <p className="mt-1 text-[0.9375rem] text-muted">{t("home.recentLead")}</p>
-          </div>
-          <Link to="/browse" className={buttonClass("quiet", "sm", "-mr-2")}>
-            {t("home.browseAll")}
-            <ArrowRight aria-hidden />
-          </Link>
-        </div>
+      <section aria-labelledby="recent-title" className="container-page pt-12">
+        <SectionHeader
+          id="recent-title"
+          title={t("home.recent")}
+          description={t("home.recentLead")}
+          actions={
+            <Button asChild variant="ghost" className="-mr-2.5">
+              <Link to="/browse">
+                {t("home.browseAll")}
+                <ArrowRight aria-hidden data-icon="inline-end" />
+              </Link>
+            </Button>
+          }
+        />
         <div className="mt-6">
           {recent.isPending ? (
             <CardGridSkeleton count={8} />
@@ -125,39 +186,6 @@ export default function HomePage() {
           )}
         </div>
       </section>
-
-      <section aria-labelledby="steps-title" className="mt-14 border-t border-line pt-10">
-        <h2 id="steps-title" className="text-2xl font-semibold text-ink">
-          {t("home.stepsTitle")}
-        </h2>
-        <ol className="mt-6 grid gap-6 md:grid-cols-3 md:gap-8">
-          {(
-            [
-              ["1", t("home.step1Title"), t("home.step1")],
-              ["2", t("home.step2Title"), t("home.step2")],
-              ["3", t("home.step3Title"), t("home.step3")],
-            ] as const
-          ).map(([n, title, body]) => (
-            <li key={n} className="flex gap-4">
-              <span
-                aria-hidden
-                className="flex size-10 shrink-0 items-center justify-center rounded-full bg-mist text-base font-bold text-brand-deep"
-              >
-                {n}
-              </span>
-              <div>
-                <h3 className="text-lg font-semibold text-ink">{title}</h3>
-                <p className="mt-1 leading-relaxed text-muted">{body}</p>
-              </div>
-            </li>
-          ))}
-        </ol>
-        <p className="mt-8">
-          <Link to="/about" className="font-semibold text-brand underline-offset-4 hover:underline">
-            {t("nav.about")} →
-          </Link>
-        </p>
-      </section>
-    </div>
+    </>
   );
 }

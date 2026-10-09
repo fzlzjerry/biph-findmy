@@ -1,17 +1,31 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Lightbulb, Lock, Plus, ShieldCheck, Sparkles, Sticker } from "lucide-react";
+import { Check, CircleAlert, Lightbulb, LoaderCircle, Lock, Plus, ShieldCheck, Sparkles, Sticker } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import { Swatch } from "../components/ItemBits";
-import { CategorySelect, ColorPicker, PhotoPicker, PlacePicker, chipClass } from "../components/Pickers";
-import { Badge, Button, describedBy, Field, FieldError, Notice, PageHeader } from "../components/ui";
-import { ApiError, api } from "../lib/api";
-import { useErrorText } from "../lib/errors";
-import { useDebounced, useDocumentTitle } from "../lib/hooks";
-import { useLabels } from "../lib/meta";
-import { deviceIsOnChinaTime, inputToDate, inputToIso, isFuture, shanghaiAt, toInputValue } from "../lib/time";
-import type { Analysis, Holding, ItemKind } from "../lib/types";
+import { BusyButton } from "@/components/BusyButton";
+import { describedBy, FormField, OptionalMark } from "@/components/form";
+import { Swatch } from "@/components/ItemBits";
+import { PageHeader } from "@/components/page";
+import { CategorySelect, chipClass, ColorPicker, PhotoPicker, PlacePicker } from "@/components/Pickers";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Field, FieldContent, FieldDescription, FieldError, FieldLabel, FieldLegend, FieldSet, FieldTitle } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { Toggle } from "@/components/ui/toggle";
+import { ApiError, api } from "@/lib/api";
+import { useErrorText } from "@/lib/errors";
+import { useDebounced, useDocumentTitle } from "@/lib/hooks";
+import { useLabels } from "@/lib/meta";
+import { deviceIsOnChinaTime, inputToDate, inputToIso, isFuture, shanghaiAt, toInputValue } from "@/lib/time";
+import type { Analysis, Holding, ItemKind } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 type FieldKey = "description" | "category" | "places" | "timeFrom" | "timeTo" | "photos";
 const FIELD_ORDER: [FieldKey, string][] = [
@@ -22,13 +36,20 @@ const FIELD_ORDER: [FieldKey, string][] = [
   ["timeTo", "report-time-to"],
 ];
 
-function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
+function Section({ id, step, title, children }: { id: string; step: number; title: string; children: ReactNode }) {
   return (
-    <section aria-labelledby={id} className="border-t border-line pt-7">
-      <h2 id={id} className="text-xl font-semibold text-ink">
-        {title}
-      </h2>
-      <div className="mt-5 space-y-6">{children}</div>
+    <section id={id} aria-labelledby={`${id}-title`} className="scroll-mt-20">
+      <Card>
+        <CardHeader>
+          <CardTitle id={`${id}-title`} role="heading" aria-level={2} className="flex items-center gap-2.5 text-base">
+            <span aria-hidden className="flex size-6 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
+              {step}
+            </span>
+            {title}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="gap-6">{children}</CardContent>
+      </Card>
     </section>
   );
 }
@@ -209,9 +230,7 @@ export default function ReportPage({ kind }: { kind: ItemKind }) {
   result?.colors.forEach((c) =>
     detected.push({ key: `k-${c.id}`, label: labels.text(c.label), hex: c.hex, applied: colors.includes(c.id), apply: () => applyColor(c.id) }),
   );
-  result?.brands.forEach((b) =>
-    detected.push({ key: `b-${b.id}`, label: b.label, applied: brand === b.id, apply: () => applyBrand(b.id) }),
-  );
+  result?.brands.forEach((b) => detected.push({ key: `b-${b.id}`, label: b.label, applied: brand === b.id, apply: () => applyBrand(b.id) }));
   result?.places.forEach((p) =>
     detected.push({ key: `p-${p.id}`, label: labels.text(p.label), applied: places.includes(p.id), apply: () => applyPlace(p.id) }),
   );
@@ -230,28 +249,37 @@ export default function ReportPage({ kind }: { kind: ItemKind }) {
   ].filter((pick) => !isFuture(pick.value, 0));
 
   const chinaTimeHint = deviceIsOnChinaTime() ? null : t("time.chinaTime");
+  const statusText = analysing
+    ? t("report.analysing")
+    : analysis.isError && analysisEnabled
+      ? t("report.analysisFailed")
+      : !result
+        ? t("report.analysisIdle")
+        : summaryItems.length === 0
+          ? t("report.noDetections")
+          : "";
 
   return (
     <div className="container-page py-8 sm:py-10">
-      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-12 xl:grid-cols-[minmax(0,1fr)_20rem]">
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-10 xl:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="min-w-0 max-w-3xl">
           <PageHeader
             eyebrow={lost ? t("kind.lostReport") : t("kind.foundItem")}
             title={lost ? t("report.titleLost") : t("report.titleFound")}
-            lead={lost ? t("report.leadLost") : t("report.leadFound")}
+            description={lost ? t("report.leadLost") : t("report.leadFound")}
           />
 
-          <form noValidate onSubmit={onSubmit} className="mt-8 space-y-10">
-            <Section id="sec-describe" title={t("report.sectionDescribe")}>
-              <Field
+          <form noValidate onSubmit={onSubmit} className="mt-8 space-y-6">
+            <Section id="sec-describe" step={1} title={t("report.sectionDescribe")}>
+              <FormField
                 id="report-description"
                 label={lost ? t("report.descriptionLabelLost") : t("report.descriptionLabelFound")}
                 hint={t("report.descriptionHint")}
                 error={errors.description}
               >
-                <textarea
+                <Textarea
                   id="report-description"
-                  className="field-control"
+                  className="min-h-28"
                   rows={4}
                   maxLength={2000}
                   value={description}
@@ -264,75 +292,67 @@ export default function ReportPage({ kind }: { kind: ItemKind }) {
                   aria-describedby={describedBy("report-description", { hint: true, error: errors.description })}
                   aria-required
                 />
-              </Field>
+              </FormField>
 
-              <Field
+              <FormField
                 id="report-marks"
                 label={t("report.marks")}
                 hint={t("report.marksHint")}
                 optional
-                labelExtra={<Sticker aria-hidden className="size-4 text-brand" />}
+                labelExtra={<Sticker aria-hidden className="size-4 text-primary" />}
               >
-                <input
+                <Input
                   id="report-marks"
-                  className="field-control"
                   maxLength={500}
                   value={marks}
                   onChange={(event) => setMarks(event.target.value)}
                   placeholder={t("report.marksPlaceholder")}
                   aria-describedby="report-marks-hint"
                 />
-              </Field>
+              </FormField>
 
-              <div className="rounded-md bg-surface p-4" data-testid="analysis-panel">
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                  <span className="inline-flex items-center gap-2 text-sm font-semibold text-ink">
-                    <span
-                      aria-hidden
-                      className={`size-2.5 rounded-full bg-sonar ${analysing ? "animate-pulse-dot" : ""}`}
-                    />
+              <div className="rounded-lg border bg-muted/40 p-4" data-testid="analysis-panel">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+                  <span className="inline-flex items-center gap-1.5 font-medium">
+                    {analysing ? (
+                      <LoaderCircle aria-hidden className="size-4 animate-spin text-primary" />
+                    ) : (
+                      <Sparkles aria-hidden className="size-4 text-primary" />
+                    )}
                     {t("report.analysisLive")}
                   </span>
-                  <span className="text-sm text-muted">
-                    {analysing
-                      ? t("report.analysing")
-                      : analysis.isError && analysisEnabled
-                        ? t("report.analysisFailed")
-                        : !result
-                          ? t("report.analysisIdle")
-                          : summaryItems.length === 0
-                            ? t("report.noDetections")
-                            : ""}
-                  </span>
+                  {statusText && <span className="text-muted-foreground">{statusText}</span>}
                 </div>
                 <p className="sr-only" aria-live="polite">
                   {!analysing && result && summaryItems.length > 0 ? t("report.analysisSummary", { items: summaryItems.join(", ") }) : ""}
                 </p>
 
                 {result && detected.length > 0 && (
-                  <div className={`mt-3 transition-opacity ${analysing ? "opacity-60" : ""}`}>
-                    <p className="text-[0.8125rem] font-semibold text-muted">{t("report.detected")}</p>
-                    <ul className="mt-1.5 flex flex-wrap gap-2" data-testid="detected-chips">
+                  <div className={cn("mt-3 transition-opacity", analysing && "opacity-60")}>
+                    <p className="text-xs font-medium text-muted-foreground">{t("report.detected")}</p>
+                    <ul className="mt-2 flex flex-wrap gap-2" data-testid="detected-chips">
                       {detected.map((chip) => (
                         <li key={chip.key}>
                           {chip.applied ? (
-                            <span className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-brand px-3 text-sm font-medium text-water">
-                              {chip.hex && <Swatch hex={chip.hex} size="sm" className="border-water/60" />}
+                            <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-primary px-3 text-sm font-medium text-primary-foreground">
+                              {chip.hex && <Swatch hex={chip.hex} size="sm" className="border-white/60" />}
                               {chip.label}
                               <Check aria-hidden className="size-3.5" strokeWidth={3} />
                               <span className="sr-only">({t("report.applied")})</span>
                             </span>
                           ) : (
-                            <button
+                            <Button
                               type="button"
+                              variant="outline"
+                              size="sm"
                               onClick={chip.apply}
-                              className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-brand bg-water px-3 text-sm font-medium text-brand-deep hover:bg-mist"
+                              className="rounded-full"
                               aria-label={t("report.useDetected", { label: chip.label })}
                             >
                               {chip.hex && <Swatch hex={chip.hex} size="sm" />}
                               {chip.label}
-                              <Plus aria-hidden className="size-3.5" strokeWidth={3} />
-                            </button>
+                              <Plus aria-hidden data-icon="inline-end" />
+                            </Button>
                           )}
                         </li>
                       ))}
@@ -340,35 +360,32 @@ export default function ReportPage({ kind }: { kind: ItemKind }) {
                   </div>
                 )}
                 {result && noticed.length > 0 && (
-                  <div className={`mt-3 transition-opacity ${analysing ? "opacity-60" : ""}`}>
-                    <p className="text-[0.8125rem] font-semibold text-muted">{t("report.noticed")}</p>
-                    <ul className="mt-1.5 flex flex-wrap gap-2" data-testid="noticed-chips">
+                  <div className={cn("mt-3 transition-opacity", analysing && "opacity-60")}>
+                    <p className="text-xs font-medium text-muted-foreground">{t("report.noticed")}</p>
+                    <ul className="mt-2 flex flex-wrap gap-2" data-testid="noticed-chips">
                       {noticed.map((label) => (
-                        <li
-                          key={label}
-                          className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-mist px-3 text-sm font-medium text-brand-deep"
-                        >
-                          <Sparkles aria-hidden className="size-3.5" />
-                          {label}
+                        <li key={label}>
+                          <Badge variant="secondary" className="h-8 rounded-full px-3 text-sm font-normal">
+                            <Sparkles aria-hidden data-icon="inline-start" className="text-primary" />
+                            {label}
+                          </Badge>
                         </li>
                       ))}
                     </ul>
                   </div>
                 )}
-                {result && autoFilled && detected.length > 0 && (
-                  <p className="mt-3 text-sm text-muted">{t("report.prefillNote")}</p>
-                )}
+                {result && autoFilled && detected.length > 0 && <p className="mt-3 text-sm text-muted-foreground">{t("report.prefillNote")}</p>}
                 {result?.sensitive && (
-                  <p className="mt-3 flex items-start gap-2 text-sm text-ink">
-                    <Lock aria-hidden className="mt-0.5 size-4 shrink-0 text-brand" />
+                  <p className="mt-3 flex items-start gap-2 text-sm">
+                    <Lock aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
                     {t("report.sensitiveDetected")}
                   </p>
                 )}
               </div>
             </Section>
 
-            <Section id="sec-details" title={t("report.sectionDetails")}>
-              <Field id="report-category" label={t("report.category")} error={errors.category}>
+            <Section id="sec-details" step={2} title={t("report.sectionDetails")}>
+              <FormField id="report-category" label={t("report.category")} error={errors.category}>
                 <CategorySelect
                   id="report-category"
                   value={category}
@@ -382,95 +399,86 @@ export default function ReportPage({ kind }: { kind: ItemKind }) {
                   describedById={describedBy("report-category", { error: errors.category })}
                   required
                 />
-              </Field>
+              </FormField>
 
-              <fieldset>
-                <legend className="text-[0.9375rem] font-semibold text-ink">
-                  {t("report.colors")} <span className="font-normal text-muted">({t("common.optional")})</span>
-                </legend>
-                <p id="report-colors-hint" className="mt-1 text-sm text-muted">
-                  {colors.length >= 3 ? t("report.colorsMax") : t("report.colorsHint")}
-                </p>
-                <div className="mt-3">
-                  <ColorPicker
-                    value={colors}
-                    describedById="report-colors-hint"
-                    onChange={(next) => {
-                      touched.current.colors = true;
-                      setColors(next);
-                    }}
-                  />
-                </div>
-              </fieldset>
+              <FieldSet className="gap-3">
+                <FieldLegend variant="label" className="mb-0">
+                  {t("report.colors")} <OptionalMark />
+                </FieldLegend>
+                <FieldDescription id="report-colors-hint">{colors.length >= 3 ? t("report.colorsMax") : t("report.colorsHint")}</FieldDescription>
+                <ColorPicker
+                  value={colors}
+                  describedById="report-colors-hint"
+                  onChange={(next) => {
+                    touched.current.colors = true;
+                    setColors(next);
+                  }}
+                />
+              </FieldSet>
 
-              <Field id="report-brand" label={t("report.brand")} optional>
-                <select
+              <FormField id="report-brand" label={t("report.brand")} optional>
+                <NativeSelect
                   id="report-brand"
-                  className="field-control sm:max-w-sm"
+                  className="w-full sm:max-w-sm"
                   value={brand}
                   onChange={(event) => {
                     touched.current.brand = true;
                     setBrand(event.target.value);
                   }}
                 >
-                  <option value="">{t("report.brandNone")}</option>
+                  <NativeSelectOption value="">{t("report.brandNone")}</NativeSelectOption>
                   {labels.meta.brands.map((b) => (
-                    <option key={b.id} value={b.id}>
+                    <NativeSelectOption key={b.id} value={b.id}>
                       {b.label}
-                    </option>
+                    </NativeSelectOption>
                   ))}
-                </select>
-              </Field>
+                </NativeSelect>
+              </FormField>
             </Section>
 
-            <Section id="sec-where" title={t("report.sectionWhere")}>
-              <fieldset>
-                <legend className="text-[0.9375rem] font-semibold text-ink">
+            <Section id="sec-where" step={3} title={t("report.sectionWhere")}>
+              <FieldSet className="gap-3" data-invalid={errors.places ? true : undefined}>
+                <FieldLegend variant="label" className="mb-0">
                   {lost ? t("report.placesLabelLost") : t("report.placesLabelFound")}
-                </legend>
-                <p id="report-places-hint" className="mt-1 text-sm text-muted">
-                  {lost ? t("report.placesHintLost") : t("report.placesHintFound")}
-                </p>
-                <div className="mt-3">
-                  <PlacePicker
-                    idPrefix="report-places"
-                    mode={lost ? "multi" : "single"}
-                    value={places}
-                    onChange={(next) => {
-                      touched.current.places = true;
-                      setPlaces(next);
-                      clearError("places");
-                    }}
-                    invalid={Boolean(errors.places)}
-                    describedById={describedBy("report-places", { hint: true, error: errors.places })}
-                  />
-                </div>
-                <FieldError id="report-places-error">{errors.places}</FieldError>
-              </fieldset>
-              <Field id="report-location-note" label={t("report.locationNote")} optional>
-                <input
+                </FieldLegend>
+                <FieldDescription id="report-places-hint">{lost ? t("report.placesHintLost") : t("report.placesHintFound")}</FieldDescription>
+                <PlacePicker
+                  idPrefix="report-places"
+                  mode={lost ? "multi" : "single"}
+                  value={places}
+                  onChange={(next) => {
+                    touched.current.places = true;
+                    setPlaces(next);
+                    clearError("places");
+                  }}
+                  invalid={Boolean(errors.places)}
+                  describedById={describedBy("report-places", { hint: true, error: errors.places })}
+                />
+                {errors.places && <FieldError id="report-places-error">{errors.places}</FieldError>}
+              </FieldSet>
+              <FormField id="report-location-note" label={t("report.locationNote")} optional>
+                <Input
                   id="report-location-note"
-                  className="field-control"
                   maxLength={200}
                   value={locationNote}
                   onChange={(event) => setLocationNote(event.target.value)}
                   placeholder={t("report.locationNotePlaceholder")}
                 />
-              </Field>
+              </FormField>
             </Section>
 
-            <Section id="sec-when" title={t("report.sectionWhen")}>
-              <div className={`grid gap-6 ${lost ? "sm:grid-cols-2" : ""}`}>
-                <Field
+            <Section id="sec-when" step={4} title={t("report.sectionWhen")}>
+              <div className={cn("grid gap-6", lost && "sm:grid-cols-2")}>
+                <FormField
                   id="report-time-from"
                   label={lost ? t("report.timeFrom") : t("report.timeFound")}
                   hint={[lost ? t("report.timeFromHint") : null, chinaTimeHint].filter(Boolean).join(" ") || undefined}
+                  hintAfter
                   error={errors.timeFrom}
                 >
-                  <input
+                  <Input
                     id="report-time-from"
                     type="datetime-local"
-                    className="field-control"
                     value={timeFrom}
                     max={nowValue}
                     step={60}
@@ -479,39 +487,34 @@ export default function ReportPage({ kind }: { kind: ItemKind }) {
                       clearError("timeFrom");
                     }}
                     aria-invalid={Boolean(errors.timeFrom) || undefined}
-                    aria-describedby={describedBy("report-time-from", {
-                      hint: lost || chinaTimeHint,
-                      error: errors.timeFrom,
-                    })}
+                    aria-describedby={describedBy("report-time-from", { hint: lost || chinaTimeHint, error: errors.timeFrom })}
                     aria-required
                   />
                   {lost && quickPicks.length > 0 && (
-                    <div className="mt-2.5" role="group" aria-label={t("report.quickPick")}>
-                      <div className="flex flex-wrap gap-1.5">
-                        {quickPicks.map((pick) => (
-                          <button
-                            key={pick.label}
-                            type="button"
-                            aria-pressed={timeFrom === pick.value}
-                            onClick={() => {
-                              setTimeFrom(pick.value);
-                              clearError("timeFrom");
-                            }}
-                            className={chipClass(timeFrom === pick.value, "", "sm")}
-                          >
-                            {pick.label}
-                          </button>
-                        ))}
-                      </div>
+                    <div className="flex flex-wrap gap-1.5" role="group" aria-label={t("report.quickPick")}>
+                      {quickPicks.map((pick) => (
+                        <Toggle
+                          key={pick.label}
+                          variant="outline"
+                          size="sm"
+                          pressed={timeFrom === pick.value}
+                          onPressedChange={() => {
+                            setTimeFrom(pick.value);
+                            clearError("timeFrom");
+                          }}
+                          className={cn(chipClass, "h-8")}
+                        >
+                          {pick.label}
+                        </Toggle>
+                      ))}
                     </div>
                   )}
-                </Field>
+                </FormField>
                 {lost && (
-                  <Field id="report-time-to" label={t("report.timeTo")} hint={chinaTimeHint ?? undefined} error={errors.timeTo}>
-                    <input
+                  <FormField id="report-time-to" label={t("report.timeTo")} hint={chinaTimeHint ?? undefined} hintAfter error={errors.timeTo}>
+                    <Input
                       id="report-time-to"
                       type="datetime-local"
-                      className="field-control"
                       value={timeTo}
                       max={nowValue}
                       step={60}
@@ -522,40 +525,39 @@ export default function ReportPage({ kind }: { kind: ItemKind }) {
                       aria-invalid={Boolean(errors.timeTo) || undefined}
                       aria-describedby={describedBy("report-time-to", { hint: chinaTimeHint, error: errors.timeTo })}
                     />
-                  </Field>
+                  </FormField>
                 )}
               </div>
             </Section>
 
-            <Section id="sec-photos" title={t("report.sectionPhotos")}>
+            <Section id="sec-photos" step={5} title={t("report.sectionPhotos")}>
               {sensitive ? (
-                <Notice icon={ShieldCheck}>{t("report.photosSensitive")}</Notice>
+                <Alert role="note">
+                  <ShieldCheck aria-hidden />
+                  <AlertDescription className="text-foreground">{t("report.photosSensitive")}</AlertDescription>
+                </Alert>
               ) : (
-                <div>
-                  <p id="report-photos-hint" className="mb-3 text-sm text-muted">
+                <div className="space-y-3">
+                  <p id="report-photos-hint" className="text-sm text-muted-foreground">
                     {lost ? t("report.photosHintLost") : t("report.photosHintFound")}
                   </p>
-                  <PhotoPicker
-                    idPrefix="report-photos"
-                    files={photos}
-                    onChange={setPhotos}
-                    describedById="report-photos-hint"
-                    onProcessingChange={setPhotoBusy}
-                  />
+                  <PhotoPicker idPrefix="report-photos" files={photos} onChange={setPhotos} describedById="report-photos-hint" onProcessingChange={setPhotoBusy} />
                 </div>
               )}
               {photosNotice && (
-                <p role="status" className="text-sm text-muted">
+                <p role="status" className="text-sm text-muted-foreground">
                   {photosNotice}
                 </p>
               )}
             </Section>
 
             {!lost && (
-              <Section id="sec-handover" title={t("report.sectionHandover")}>
-                <fieldset>
-                  <legend className="text-[0.9375rem] font-semibold text-ink">{t("report.holding")}</legend>
-                  <div className="mt-3 grid gap-2">
+              <Section id="sec-handover" step={6} title={t("report.sectionHandover")}>
+                <FieldSet className="gap-3">
+                  <FieldLegend variant="label" className="mb-0">
+                    {t("report.holding")}
+                  </FieldLegend>
+                  <RadioGroup value={holding} onValueChange={(value) => setHolding(value as Holding)} className="gap-2">
                     {(
                       [
                         ["front_desk", t("report.holdingFrontDesk"), t("report.holdingFrontDeskHint")],
@@ -563,101 +565,90 @@ export default function ReportPage({ kind }: { kind: ItemKind }) {
                         ["other", t("report.holdingOther"), t("report.holdingOtherHint")],
                       ] as const
                     ).map(([value, title, hint]) => (
-                      <label
-                        key={value}
-                        className={`flex min-h-12 cursor-pointer items-start gap-3 rounded-sm border px-4 py-3 transition-colors ${
-                          holding === value ? "border-brand bg-mist" : "border-line-strong hover:bg-surface"
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="holding"
-                          value={value}
-                          checked={holding === value}
-                          onChange={() => setHolding(value)}
-                          className="mt-1 size-5 shrink-0 accent-[var(--color-brand)]"
-                        />
-                        <span>
-                          <span className="block font-semibold text-ink">{title}</span>
-                          <span className="block text-sm text-muted">{hint}</span>
-                        </span>
-                      </label>
+                      <FieldLabel key={value} htmlFor={`holding-${value}`}>
+                        <Field orientation="horizontal">
+                          <RadioGroupItem value={value} id={`holding-${value}`} />
+                          <FieldContent>
+                            <FieldTitle>{title}</FieldTitle>
+                            <FieldDescription>{hint}</FieldDescription>
+                          </FieldContent>
+                        </Field>
+                      </FieldLabel>
                     ))}
-                  </div>
-                </fieldset>
-                <Field id="report-holding-note" label={t("report.holdingNote")} optional>
-                  <input
+                  </RadioGroup>
+                </FieldSet>
+                <FormField id="report-holding-note" label={t("report.holdingNote")} optional>
+                  <Input
                     id="report-holding-note"
-                    className="field-control"
                     maxLength={200}
                     value={holdingNote}
                     onChange={(event) => setHoldingNote(event.target.value)}
                     placeholder={t("report.holdingNotePlaceholder")}
                   />
-                </Field>
-                <Field
+                </FormField>
+                <FormField
                   id="report-private"
                   label={t("report.private")}
                   hint={t("report.privateHint")}
                   optional
                   labelExtra={
-                    <Badge tone="mist" icon={Lock}>
+                    <Badge variant="secondary">
+                      <Lock aria-hidden data-icon="inline-start" />
                       {t("report.privateBadge")}
                     </Badge>
                   }
                 >
-                  <input
+                  <Input
                     id="report-private"
-                    className="field-control"
                     maxLength={500}
                     value={privateDetail}
                     onChange={(event) => setPrivateDetail(event.target.value)}
                     placeholder={t("report.privatePlaceholder")}
                     aria-describedby="report-private-hint"
                   />
-                </Field>
+                </FormField>
               </Section>
             )}
 
-            <div className="space-y-4 border-t border-line pt-7">
-              {submitError && (
-                <Notice tone="error" role="alert">
-                  {submitError}
-                </Notice>
+            <div className="space-y-4 pt-2">
+              {(submitError || Object.values(errors).some(Boolean)) && (
+                <Alert variant="destructive">
+                  <CircleAlert aria-hidden />
+                  <AlertDescription>{submitError || t("report.fixErrors")}</AlertDescription>
+                </Alert>
               )}
-              {!submitError && Object.values(errors).some(Boolean) && (
-                <Notice tone="error" role="alert">
-                  {t("report.fixErrors")}
-                </Notice>
-              )}
-              <Button
+              <BusyButton
                 type="submit"
                 size="lg"
-                className="w-full sm:w-auto"
+                className="h-11 w-full px-6 text-base sm:w-auto"
                 busy={mutation.isPending || photoBusy}
                 busyLabel={photoBusy ? t("report.processingPhoto") : t("report.submitting")}
               >
                 {lost ? t("report.submitLost") : t("report.submitFound")}
-              </Button>
-              <p className="text-sm text-muted">{t("report.privacyNote")}</p>
+              </BusyButton>
+              <p className="text-sm text-muted-foreground">{t("report.privacyNote")}</p>
             </div>
           </form>
         </div>
 
-        <aside className="mt-12 hidden lg:mt-[5.5rem] lg:block">
-          <div className="sticky top-6 space-y-5 rounded-md bg-surface p-5">
-            <h2 className="flex items-center gap-2 text-base font-semibold text-ink">
-              <Lightbulb aria-hidden className="size-5 text-brand" />
-              {t("report.marks")}
-            </h2>
-            <p className="text-[0.9375rem] leading-relaxed text-muted">{t("report.marksHint")}</p>
-            <p className="text-[0.9375rem] leading-relaxed text-ink">{t("report.marksStat")}</p>
-            <div className="h-px bg-line" />
-            <p className="flex gap-2 text-sm leading-relaxed text-muted">
-              <ShieldCheck aria-hidden className="mt-0.5 size-4 shrink-0 text-brand" />
-              {t("report.privacyNote")}
-            </p>
-          </div>
+        <aside className="hidden lg:block">
+          <Card className="sticky top-20 mt-[5.75rem]">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Lightbulb aria-hidden className="size-4 text-amber-500" />
+                {t("report.marks")}
+              </CardTitle>
+              <CardDescription>{t("report.marksHint")}</CardDescription>
+            </CardHeader>
+            <CardContent className="gap-4">
+              <p className="text-sm">{t("report.marksStat")}</p>
+              <Separator />
+              <p className="flex gap-2 text-sm text-muted-foreground">
+                <ShieldCheck aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
+                {t("report.privacyNote")}
+              </p>
+            </CardContent>
+          </Card>
         </aside>
       </div>
     </div>

@@ -2,10 +2,12 @@ import { useQuery } from "@tanstack/react-query";
 import { Camera } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link, useSearchParams } from "react-router";
-import { TabPanel, Tabs } from "../../components/Tabs";
-import { buttonClass, PageHeader } from "../../components/ui";
-import { api } from "../../lib/api";
-import { useDocumentTitle } from "../../lib/hooks";
+import { PageHeader } from "@/components/page";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { api } from "@/lib/api";
+import { useDocumentTitle } from "@/lib/hooks";
 import ClaimsTab from "./ClaimsTab";
 import ItemsTab from "./ItemsTab";
 import StatsTab from "./StatsTab";
@@ -25,39 +27,44 @@ export default function AdminPage() {
     <div className="container-page py-8 sm:py-10">
       <PageHeader
         title={t("admin.title")}
-        lead={t("admin.lead")}
+        description={t("admin.lead")}
         actions={
-          <Link to="/admin/quick-add" className={buttonClass("primary")}>
-            <Camera aria-hidden />
-            {t("admin.quickAdd")}
-          </Link>
+          <Button asChild>
+            <Link to="/admin/quick-add">
+              <Camera aria-hidden data-icon="inline-start" />
+              {t("admin.quickAdd")}
+            </Link>
+          </Button>
         }
       />
-      <Tabs
-        className="mt-8"
-        idPrefix="admin"
-        label={t("admin.tabsLabel")}
-        value={tab}
-        onChange={(id) => setParams(id === "claims" ? {} : { tab: id }, { replace: true })}
-        items={[
-          {
-            id: "claims",
-            label: t("admin.claimsTab"),
-            extra:
-              pendingCount > 0 ? (
-                <span className="inline-flex min-w-6 items-center justify-center rounded-full bg-water px-1.5 text-xs font-bold text-brand-deep">
-                  {pendingCount}
-                  <span className="sr-only"> {t("admin.pendingCount", { count: pendingCount })}</span>
-                </span>
-              ) : null,
-          },
-          { id: "items", label: t("admin.itemsTab") },
-          { id: "stats", label: t("admin.statsTab") },
-        ]}
-      />
-      <TabPanel idPrefix="admin" activeId={tab} className="mt-6">
-        {tab === "claims" ? <ClaimsTab /> : tab === "items" ? <ItemsTab /> : <StatsTab />}
-      </TabPanel>
+      <Tabs value={tab} onValueChange={(id) => setParams(id === "claims" ? {} : { tab: id }, { replace: true })} className="mt-8 gap-6">
+        <TabsList aria-label={t("admin.tabsLabel")}>
+          <TabsTrigger value="claims" className="px-3">
+            {t("admin.claimsTab")}
+            {pendingCount > 0 && (
+              <Badge className="h-5 min-w-5 px-1.5 tabular-nums">
+                {pendingCount}
+                <span className="sr-only"> {t("admin.pendingCount", { count: pendingCount })}</span>
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="items" className="px-3">
+            {t("admin.itemsTab")}
+          </TabsTrigger>
+          <TabsTrigger value="stats" className="px-3">
+            {t("admin.statsTab")}
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="claims" className="text-base">
+          <ClaimsTab />
+        </TabsContent>
+        <TabsContent value="items" className="text-base">
+          <ItemsTab />
+        </TabsContent>
+        <TabsContent value="stats" className="text-base">
+          <StatsTab />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
