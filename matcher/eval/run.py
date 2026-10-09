@@ -17,7 +17,7 @@ import numpy as np
 from ..api import Matcher
 from ..features import FEATURES
 from ..scoring import manual_weights, sigmoid
-from .common import bootstrap, fit_logistic, metrics, pair_table, prepare, ranks_from_scores
+from .common import bootstrap, bootstrap_runs, fit_logistic, metrics, pair_table, prepare, ranks_from_scores
 from .datasets import EvalSet, load_handwritten, load_real
 from .generate import Generator, generate
 
@@ -182,8 +182,12 @@ def distractor_curve(data, backend_list: list[str], n_queries: int = 120, seed: 
     return out
 
 
-def false_alarms(ev: Evaluator, backend: str) -> dict:
-    """Queries whose true match is NOT in the pool: how often would we still show a match?"""
+def false_alarms(ev: Evaluator, backend: str, unmatched_only: bool = False) -> dict:
+    """How often would we still show a match when the owner's item is NOT in the pool?
+
+    By default every query is scored on its best wrong candidate; with `unmatched_only` only the
+    queries that have no true match at all (the real set's owner-only items) count.
+    """
     m = ev.matcher(backend)
     table = ev.table(backend)
     vec = np.array([m.weights.weights[f] for f in FEATURES])
@@ -194,6 +198,8 @@ def false_alarms(ev: Evaluator, backend: str) -> dict:
         by_q.setdefault(q, []).append(i)
     for qid, idx in by_q.items():
         true = ev.truth.get(qid)
+        if unmatched_only and true is not None:
+            continue
         rest = [probs[i] for i in idx if table.cids[i] != true]
         total += 1
         top = max(rest) if rest else 0.0
@@ -209,6 +215,41 @@ def breakdown(ev: Evaluator, backend: str, key) -> dict[str, dict]:
     for q, r in zip(queries, ranks):
         groups.setdefault(key(q), []).append(r)
     return {g: metrics(r) for g, r in sorted(groups.items())}
+
+
+def mean_rows(tables: list[dict[str, dict]]) -> dict[str, dict]:
+    """Average metric tables computed on each finder split (same rows, same queries)."""
+    out = {}
+    for row in tables[0]:
+        ms = [t[row] for t in tables if row in t]
+        out[row] = {k: (float(np.mean([m[k] for m in ms])) if k != "n" else ms[0]["n"]) for k in ms[0]}
+    return out
+
+
+def evaluate_real(real: EvalSet, with_onnx: bool, backend: str) -> dict:
+    """Real club data. Each finder's description of an object is ranked once (see EvalSet.finder_splits)
+    and the metrics are averaged over finders, so a second finder's report never counts as a wrong answer."""
+    splits = real.finder_splits()
+    evs = [Evaluator(s) for s in splits]
+    matched = [q for q in real.queries if q.id in evs[0].truth]
+    out: dict = {"queries": len(matched), "owner_only": len(real.queries) - len(matched), "pool": len(real.pool),
+                 "objects": len({r.object_id for r in real.queries + real.pool}), "finder_splits": len(splits),
+                 "methods": mean_rows([methods_table(ev, with_onnx) for ev in evs]),
+                 "ci": bootstrap_runs([ev.model_ranks(backend) for ev in evs], n_boot=1000),
+                 "text_only_input": mean_rows([{"x": metrics(Evaluator(s, structured=False).model_ranks(backend))}
+                                               for s in splits])["x"]}
+    if out["owner_only"]:
+        fas = [false_alarms(ev, backend, unmatched_only=True) for ev in evs]
+        out["false_alarms"] = {"queries": fas[0]["queries"],
+                               "strong_rate": float(np.mean([f["strong_rate"] for f in fas])),
+                               "shown_rate": float(np.mean([f["shown_rate"] for f in fas]))}
+    if any(q.lang for q in matched):
+        out["by_language"] = mean_rows([breakdown(ev, backend, lambda q: q.lang or "?") for ev in evs])
+    if any(q.meta.get("distinguishable") for q in matched):
+        out["by_distinguishable"] = mean_rows([breakdown(ev, backend, lambda q: {
+            "yes": "look-alike, distinguishable", "no": "look-alike, not distinguishable"}.get(
+            q.meta.get("distinguishable", ""), "no look-alike group")) for ev in evs])
+    return out
 
 
 # ------------------------------------------------------------------------- report
@@ -304,9 +345,60 @@ def charts(results: dict) -> list[str]:
     return files
 
 
+def best_row(methods: dict[str, dict]) -> dict:
+    return methods.get("Full model — embeddings, fitted weights") or methods["Full model — TF-IDF"]
+
+
+def comparison_md(results: dict) -> list[str]:
+    """Synthetic vs hand-written vs real, full model only."""
+    cols = [(name, results[key]) for name, key in (("Synthetic", "synthetic"), ("Hand-written", "handwritten"),
+                                                   ("Real", "real")) if results.get(key)]
+
+    def pct(v):
+        return f"{v * 100:.0f}%"
+    rows = [("Lost reports with a match", lambda b: str(b["queries"])),
+            ("R@1", lambda b: pct(best_row(b["methods"])["R@1"])),
+            ("R@3", lambda b: pct(best_row(b["methods"])["R@3"])),
+            ("MRR", lambda b: f"{best_row(b['methods'])['MRR']:.3f}"),
+            ("Free text only, R@1", lambda b: pct(b["text_only_input"]["R@1"]) if b.get("text_only_input") else "—"),
+            ("No match handed in, still shown", lambda b: pct(b["false_alarms"]["shown_rate"])
+             if b.get("false_alarms") else "—")]
+    out = ["| | " + " | ".join(n for n, _ in cols) + " |", "|---|" + "---|" * len(cols)]
+    out += [f"| {label} | " + " | ".join(fn(b) for _, b in cols) + " |" for label, fn in rows]
+    return out
+
+
+def real_section(results: dict) -> list[str]:
+    real = results["real"]
+    lo, hi = real["ci"]["R@1"]
+    intro = (f"{real['queries']} lost reports ranked against {real['pool']} found reports ({real['objects']} objects) "
+             "from the Data Science Club's describe-an-object activity. Real data is test-only: the weights were "
+             "never fitted on it.")
+    if real.get("finder_splits", 1) > 1:
+        intro += (f" Each object was described by up to {real['finder_splits']} finders; every finder's description "
+                  "is ranked once and the numbers are averaged, so a second finder's report never counts as a "
+                  "wrong answer.")
+    intro += (f" With this few objects the uncertainty is large: 95% bootstrap CI for R@1 is "
+              f"{lo * 100:.0f}–{hi * 100:.0f}%, for R@3 {real['ci']['R@3'][0] * 100:.0f}–"
+              f"{real['ci']['R@3'][1] * 100:.0f}%.")
+    lines = ["### Real data · 真实数据", "", intro, "", table_md(real["methods"]),
+             "Synthetic vs real, full model:", "", *comparison_md(results), ""]
+    if real.get("by_language"):
+        lines += ["By language of the lost report:", "", table_md(real["by_language"]), ""]
+    if real.get("by_distinguishable"):
+        lines += ["Look-alikes: could two club labellers tell the right item apart from the lost text alone?", "",
+                  table_md(real["by_distinguishable"]), ""]
+    fa = real.get("false_alarms")
+    if fa:
+        lines += [f"For the {fa['queries']} owner-only items (never handed in), the top candidate still lands in the "
+                  f"*strong* band for {fa['strong_rate'] * 100:.0f}% and is shown at all for "
+                  f"{fa['shown_rate'] * 100:.0f}%.", ""]
+    return lines
+
+
 def write_report(results: dict) -> None:
     syn = results["synthetic"]
-    best = syn["methods"].get("Full model — embeddings, fitted weights") or syn["methods"]["Full model — TF-IDF"]
+    best = best_row(syn["methods"])
     ci = syn.get("ci", {})
     lines = [
         "# Matching engine evaluation · 匹配引擎评估报告",
@@ -315,6 +407,18 @@ def write_report(results: dict) -> None:
         "",
         "## Summary · 结论",
         "",
+    ]
+    if results.get("real"):
+        real = results["real"]
+        rb = best_row(real["methods"])
+        lo, hi = real["ci"]["R@1"]
+        lines += [f"- On **real** descriptions written by the Data Science Club ({real['queries']} lost reports vs "
+                  f"{real['pool']} found), the full model puts the right item **first for {rb['R@1'] * 100:.0f}%** "
+                  f"(95% CI {lo * 100:.0f}–{hi * 100:.0f}%) and **in the top 3 for {rb['R@3'] * 100:.0f}%**. "
+                  "This is the honest number; the synthetic results below are an upper-bound sanity check.",
+                  f"- 在社团同学写的**真实**描述上，完整模型把正确物品排在第 1 位的比例是 **{rb['R@1'] * 100:.0f}%**，"
+                  f"排进前 3 的比例是 **{rb['R@3'] * 100:.0f}%**。"]
+    lines += [
         f"- On a synthetic test campus the full model puts the right found item **first for "
         f"{best['R@1'] * 100:.0f}%** of lost reports and **in the top 3 for {best['R@3'] * 100:.0f}%** "
         f"(95% CI R@1 {ci.get('R@1', [0, 0])[0] * 100:.0f}–{ci.get('R@1', [0, 0])[1] * 100:.0f}%).",
@@ -325,17 +429,10 @@ def write_report(results: dict) -> None:
     ]
     hw = results.get("handwritten")
     if hw:
-        hb = hw["methods"].get("Full model — embeddings, fitted weights") or hw["methods"]["Full model — TF-IDF"]
+        hb = best_row(hw["methods"])
         lines.append(f"- On the hand-written (LLM-authored, not template) set: R@1 **{hb['R@1'] * 100:.0f}%**, "
                      f"R@3 **{hb['R@3'] * 100:.0f}%** over {hw['pool']} found items.")
-    if results.get("real"):
-        real = results["real"]
-        rb = real["methods"].get("Full model — embeddings, fitted weights") or real["methods"]["Full model — TF-IDF"]
-        lo, hi = real["ci"]["R@1"]
-        lines.append(f"- On **real** club-collected data ({real['queries']} lost reports vs {real['pool']} found): "
-                     f"R@1 **{rb['R@1'] * 100:.0f}%** (95% CI {lo * 100:.0f}–{hi * 100:.0f}%), "
-                     f"R@3 **{rb['R@3'] * 100:.0f}%**.")
-    else:
+    if not results.get("real"):
         lines.append("- **Real data is still pending** — run the describe-an-object activity "
                      "(docs/data-collection.md) and re-run this script; synthetic numbers are an upper-bound sanity check, not a promise.")
     lines += [
@@ -364,12 +461,7 @@ def write_report(results: dict) -> None:
     if hw:
         lines += ["### Hand-written set", "", table_md(hw["methods"]), ""]
     if results.get("real"):
-        real = results["real"]
-        lo, hi = real["ci"]["R@1"]
-        lines += ["### Real data", "",
-                  f"{real['queries']} lost reports ranked against {real['pool']} found reports from the club activity. "
-                  f"With this few objects the uncertainty is large: 95% bootstrap CI for R@1 is "
-                  f"{lo * 100:.0f}–{hi * 100:.0f}%.", "", table_md(real["methods"]), ""]
+        lines += real_section(results)
     if results.get("distractors"):
         d = results["distractors"]
         lines += [
@@ -478,9 +570,7 @@ def evaluate(quick: bool = False) -> dict:
                               "methods": methods_table(hw, with_onnx)}
     real = load_real()
     if real:
-        rev = Evaluator(real)
-        results["real"] = {"queries": len(real.queries), "pool": len(real.pool), "methods": methods_table(rev, with_onnx),
-                           "ci": bootstrap(rev.model_ranks(main_backend), n_boot=1000)}
+        results["real"] = evaluate_real(real, with_onnx, main_backend)
     results["weights"] = {b: Matcher(backend=b).weights.weights for b in backends}
     return results
 

@@ -86,12 +86,19 @@ def metrics(ranks: list[float | None]) -> dict[str, float]:
 
 
 def bootstrap(ranks: list[float | None], n_boot: int = 1000, seed: int = 0) -> dict[str, tuple[float, float]]:
+    return bootstrap_runs([ranks], n_boot, seed)
+
+
+def bootstrap_runs(runs: list[list[float | None]], n_boot: int = 1000,
+                   seed: int = 0) -> dict[str, tuple[float, float]]:
+    """95% intervals, resampling queries; `runs` are rank lists aligned query by query (e.g. one per finder)."""
     rng = np.random.default_rng(seed)
-    arr = np.array([r if r is not None else math.inf for r in ranks], dtype=float)
+    arr = np.array([[r if r is not None else math.inf for r in ranks] for ranks in runs], dtype=float)
+    n = arr.shape[1]
     out = {}
     for name, fn in {"R@1": lambda a: np.mean(a <= 1), "R@3": lambda a: np.mean(a <= 3),
                      "MRR": lambda a: np.mean(np.where(np.isinf(a), 0, 1 / a))}.items():
-        samples = [fn(arr[rng.integers(0, len(arr), len(arr))]) for _ in range(n_boot)]
+        samples = [fn(arr[:, rng.integers(0, n, n)]) for _ in range(n_boot)]
         out[name] = (float(np.percentile(samples, 2.5)), float(np.percentile(samples, 97.5)))
     return out
 

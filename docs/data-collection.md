@@ -58,6 +58,18 @@ A02,lost,"white airpods case with a cat sticker, lost it somewhere near the lock
 
 `places`、`colors`、`category` 这三列模拟的是网站上用户确认过的标签，不确定的话可以留空，让 NLP 自己从描述里抽取。
 
+标注阶段可以再加几列（都是可选的，评估脚本会按列名读取）：
+
+| 列 | 说明 |
+|---|---|
+| `writer` | 写这条描述的成员编号（如 `M07`），不写真名 |
+| `lang` | 丢失描述的语言：`en` `zh` `zh-hant` `mixed`，报告里会按语言分组 |
+| `group` | 长得很像的一组物品的编号（如 `G1`），单独的物品留空 |
+| `distinguishable` | 只看丢失描述，能不能从这一组里认出正确的那件：`yes` / `no` |
+| `pair_ok` | 核对时发现编号写错又改不回来，填 `no`，这一行会被跳过 |
+
+只有丢失描述、没有捡到描述的物品（「没人交上来」）也可以放进来，报告会用它们算误报率。
+
 <details>
 <summary>可用的 ID · allowed values</summary>
 
@@ -80,8 +92,13 @@ A02,lost,"white airpods case with a cat sticker, lost it somewhere near the lock
 ## 跑评估 · Run the evaluation
 
 ```bash
-uv run python -m matcher.eval.run      # 重新生成 docs/eval_report.md 和图表
+# 用问卷导出的两个 CSV 生成 matcher/data/real_pairs.csv（失主表、捡到者表）
+uv run python scripts/form_to_csv.py --owner owner.csv --finder finder.csv
+uv run python -m matcher.eval.check_real   # 检查编号、日期、地点/颜色/类别 ID 和疑似个人信息
+uv run python -m matcher.eval.run          # 重新生成 docs/eval_report.md 和图表
 ```
+
+同一件物品有两个人写「捡到描述」时，每条捡到描述各算一次、结果取平均，另一位的描述不会被当成错误答案。
 
 报告里会多出一节 **Real**，列出 R@1、R@3、MRR，以及和两个 baseline 的对比。
 
