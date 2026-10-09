@@ -126,6 +126,7 @@ class Report:
     colors: list[str] | None = None
     locations: list[str] = field(default_factory=list)
     private_detail: str = ""
+    meta: dict[str, str] = field(default_factory=dict)  # real data only: writer, group, distinguishable
 
     def to_item(self, structured: bool = True) -> ItemInput:
         return ItemInput(
