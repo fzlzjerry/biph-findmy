@@ -114,7 +114,7 @@ export default function LoginPage() {
                 className="field-control"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                placeholder={t("login.emailPlaceholder")}
+                placeholder={domains.length ? `name@${domains[0]}` : t("login.emailPlaceholder")}
                 aria-invalid={Boolean(emailError) || undefined}
                 aria-describedby={describedBy("login-email", { hint: true, error: emailError })}
                 required
