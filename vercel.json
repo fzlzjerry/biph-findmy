@@ -7,6 +7,9 @@
       "excludeFiles": "{docs/**,data/**,supabase/**,scripts/**,.github/**,backend/tests/**,matcher/tests/**,matcher/eval/**,frontend/src/**,frontend/tests/**,frontend/scripts/**,frontend/test-results/**,frontend/playwright-report/**}"
     }
   },
+  "rewrites": [
+    { "source": "/((?!api/|media/|assets/).*)", "destination": "/index.html" }
+  ],
   "crons": [
     { "path": "/api/cron/expire", "schedule": "0 19 * * *" }
   ],
