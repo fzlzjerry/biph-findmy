@@ -8,7 +8,7 @@ import { categoryIcon } from "@/lib/categoryIcon";
 import { excerpt } from "@/lib/hooks";
 import { useLabels } from "@/lib/meta";
 import { formatDateTime, formatRelative, useNow } from "@/lib/time";
-import type { Item, Reason } from "@/lib/types";
+import type { Band, Item, Reason } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export function itemTitle(item: Item, max = 90): string {
@@ -86,6 +86,10 @@ export function RelativeTime({ iso, className }: { iso: string; className?: stri
   );
 }
 
+/** The white, borderless row card that lifts on hover (item lists, "My items"). */
+export const cardLinkClass =
+  "group flex w-full min-w-0 items-center gap-4 rounded-[1.25rem] bg-card p-3.5 pr-4 shadow-[0_1px_2px_rgb(44_46_42/0.06)] transition-[box-shadow,transform] duration-200 ease-(--ease-out-expo) outline-none hover:-translate-y-0.5 hover:shadow-[0_8px_24px_-12px_rgb(44_46_42/0.35)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink";
+
 export function ItemCard({ item, headingLevel = 3 }: { item: Item; headingLevel?: 2 | 3 }) {
   const labels = useLabels();
   const location = useLocation();
@@ -93,20 +97,15 @@ export function ItemCard({ item, headingLevel = 3 }: { item: Item; headingLevel?
   const place = item.locations[0];
   const settled = item.status !== "open";
   return (
-    <Link
-      to={`/items/${item.id}`}
-      state={{ from: location.pathname + location.search }}
-      className="group flex w-full min-w-0 items-center gap-4 rounded-[1.25rem] bg-card p-3.5 pr-4 shadow-[0_1px_2px_rgb(44_46_42/0.06)] transition-[box-shadow,transform] duration-200 ease-(--ease-out-expo) outline-none hover:-translate-y-0.5 hover:shadow-[0_8px_24px_-12px_rgb(44_46_42/0.35)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
-    >
+    <Link to={`/items/${item.id}`} state={{ from: location.pathname + location.search }} className={cardLinkClass}>
       <div className="size-16 shrink-0 overflow-hidden rounded-full">
         <ItemThumb item={item} iconClass="size-7" />
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <Heading className="line-clamp-2 text-[1.0625rem] leading-snug font-semibold break-words">{itemTitle(item, 80)}</Heading>
-        <p className="flex min-w-0 flex-wrap items-center gap-x-1.5 text-sm text-muted-foreground">
+        <Heading className="line-clamp-2 text-[1.0625rem] leading-snug font-semibold text-pretty break-words">{itemTitle(item, 80)}</Heading>
+        <p className="dot-list text-sm text-muted-foreground">
           {place && <span className="truncate font-medium text-foreground/80">{labels.place(place)}</span>}
-          {place && <span aria-hidden>·</span>}
-          <RelativeTime iso={item.created_at} />
+          <RelativeTime iso={item.created_at} className="whitespace-nowrap" />
         </p>
         <p className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
           <ColorDots colors={item.colors} />
@@ -118,11 +117,17 @@ export function ItemCard({ item, headingLevel = 3 }: { item: Item; headingLevel?
   );
 }
 
-/** Match strength on a fixed four-dot ramp. Never "certain": a match is evidence, not proof. */
-export function ProbabilityMeter({ value }: { value: number }) {
+/**
+ * Match strength on a fixed four-dot ramp that agrees with the band word beside it: strong lights four dots, weak
+ * one, and possible two or three (split at the middle of the possible range). Thresholds come from /api/meta.
+ * Never "certain": a match is evidence, not proof.
+ */
+export function ProbabilityMeter({ value, band }: { value: number; band?: Band }) {
   const { t } = useTranslation();
+  const { strong, possible } = useLabels().meta.bands;
   const pct = Math.max(1, Math.min(99, Math.round(value * 100)));
-  const lit = value >= 0.85 ? 4 : value >= 0.6 ? 3 : value >= 0.35 ? 2 : 1;
+  const level = band ?? (value >= strong ? "strong" : value >= possible ? "possible" : "weak");
+  const lit = level === "strong" ? 4 : level === "weak" ? 1 : value >= (strong + possible) / 2 ? 3 : 2;
   return (
     <span
       role="meter"
@@ -141,15 +146,15 @@ export function ProbabilityMeter({ value }: { value: number }) {
   );
 }
 
-/** Match reasons in the current language as one plain line; evidence against reads in coral text with a minus. */
+/** Match reasons in the current language as one plain line; evidence against reads in red text with a minus. */
 export function ReasonChips({ reasons }: { reasons: Reason[] }) {
   const { t } = useTranslation();
   const lang = useLang();
   if (!reasons.length) return null;
   const sorted = [...reasons].sort((a, b) => Number(b.contribution >= 0) - Number(a.contribution >= 0));
   return (
-    <ul aria-label={t("item.reasons")} className="flex flex-wrap items-baseline gap-x-0 gap-y-1 text-[0.9375rem] leading-relaxed">
-      {sorted.map((reason, index) => {
+    <ul aria-label={t("item.reasons")} className="dot-list gap-y-1 text-[0.9375rem] leading-relaxed [--dot-gap:1.25em]">
+      {sorted.map((reason) => {
         const positive = reason.contribution >= 0;
         const Icon = positive ? Check : Minus;
         return (
@@ -157,11 +162,6 @@ export function ReasonChips({ reasons }: { reasons: Reason[] }) {
             <Icon aria-hidden className={cn("mr-1 size-3.5 shrink-0 self-center", positive ? "text-success" : "")} strokeWidth={3} />
             <span className="sr-only">{positive ? t("item.reasonFor") : t("item.reasonAgainst")}</span>
             <span className="break-words">{reason[lang] || reason.en}</span>
-            {index < sorted.length - 1 && (
-              <span aria-hidden className="mx-2 text-muted-foreground/60">
-                ·
-              </span>
-            )}
           </li>
         );
       })}

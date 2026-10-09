@@ -22,7 +22,7 @@ import { KindBadge, StatusBadge } from "@/components/badges";
 import { BusyButton } from "@/components/BusyButton";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { describedBy, FormField } from "@/components/form";
-import { ItemThumb, itemTitle, RelativeTime, Swatch } from "@/components/ItemBits";
+import { Email, ItemThumb, itemTitle, RelativeTime, Swatch } from "@/components/ItemBits";
 import { MatchCard } from "@/components/MatchCard";
 import { SectionHeader } from "@/components/page";
 import { EmptyState, ErrorState, LinesSkeleton } from "@/components/States";
@@ -32,7 +32,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useLang } from "@/i18n";
@@ -51,13 +50,6 @@ function Gallery({ item }: { item: Item }) {
   const { t } = useTranslation();
   const [index, setIndex] = useState(0);
   const title = itemTitle(item, 60);
-  if (!item.photos.length) {
-    return (
-      <div className="mx-auto aspect-square max-w-[13rem] overflow-hidden lg:max-w-[22rem] rounded-[58%_42%_55%_45%/52%_48%_52%_48%]">
-        <ItemThumb item={item} iconClass="size-1/4" alt={t("item.noPhoto")} />
-      </div>
-    );
-  }
   const photo = item.photos[Math.min(index, item.photos.length - 1)];
   return (
     <div>
@@ -94,16 +86,17 @@ function Gallery({ item }: { item: Item }) {
 }
 
 // --------------------------------------------------------------------------- attributes
-function Attr({ label, children }: { label: string; children: ReactNode }) {
+function Attr({ label, wide = false, children }: { label: string; wide?: boolean; children: ReactNode }) {
   return (
-    <div className="min-w-0">
+    <div className={cn("min-w-0", wide && "sm:col-span-2")}>
       <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
-      <dd className="mt-1 text-sm break-words">{children}</dd>
+      <dd className={cn("mt-1 break-words", wide ? "text-[0.9375rem] leading-relaxed whitespace-pre-line" : "text-sm")}>{children}</dd>
     </div>
   );
 }
 
-function Attributes({ item }: { item: Item }) {
+/** Every public fact about the item in one card; free text (description when the title doesn't show it, marks) last. */
+function Attributes({ item, showDescription }: { item: Item; showDescription: boolean }) {
   const { t } = useTranslation();
   const labels = useLabels();
   const lang = useLang();
@@ -148,6 +141,16 @@ function Attributes({ item }: { item: Item }) {
         <RelativeTime iso={item.created_at} /> <span className="text-muted-foreground">· {formatDateTime(item.created_at, lang)}</span>
       </Attr>
       {item.returned_at && <Attr label={t("status.found.returned")}>{t("item.returnedOn", { time: formatDateTime(item.returned_at, lang) })}</Attr>}
+      {showDescription && (
+        <Attr label={t("item.description")} wide>
+          {item.description}
+        </Attr>
+      )}
+      {item.marks_text && (
+        <Attr label={t("item.marks")} wide>
+          {item.marks_text}
+        </Attr>
+      )}
     </dl>
   );
 }
@@ -555,14 +558,22 @@ export default function ItemPage() {
 
   if (query.isPending)
     return (
-      <div className="container-page py-8 sm:py-10">
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-          <Skeleton className="mx-auto aspect-square max-w-[22rem] rounded-full" />
-          <div>
-            <Skeleton className="h-5 w-40" />
-            <Skeleton className="mt-4 h-8 w-full max-w-md" />
-            <LinesSkeleton lines={6} className="mt-6" />
+      <div className="container-page py-6 sm:py-8">
+        <Skeleton className="h-8 w-36 rounded-full" />
+        <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-x-10 xl:grid-cols-[minmax(0,1fr)_24rem]">
+          <div className="min-w-0">
+            <div className="flex items-center gap-5">
+              <Skeleton className="size-18 shrink-0 rounded-full sm:size-20" />
+              <div className="flex-1">
+                <Skeleton className="h-8 w-full max-w-md" />
+                <Skeleton className="mt-3 h-6 w-44 rounded-full" />
+              </div>
+            </div>
+            <div className="mt-6 rounded-[1.25rem] bg-card p-4">
+              <LinesSkeleton lines={5} />
+            </div>
           </div>
+          <Skeleton className="h-36 rounded-[1.25rem]" />
         </div>
       </div>
     );
@@ -598,6 +609,7 @@ export default function ItemPage() {
   const matchesSection = showMatches ? <MatchesSection item={item} matches={matches} /> : null;
   const matchCount = matches?.length ?? 0;
   const justPosted = isNew && item.is_mine;
+  const hasPhotos = item.photos.length > 0;
   // Without a title the heading already shows the (short) description — don't print it twice.
   const descriptionIsTitle = !item.title?.trim() && itemTitle(item, 80) === item.description.replace(/\s+/g, " ").trim();
 
@@ -632,22 +644,24 @@ export default function ItemPage() {
         </Alert>
       )}
 
+      {/* Phones read top to bottom (photo, facts, next step); from lg the facts take the main column and the photo
+          and next step sit beside them, the step sticky so it stays in reach. */}
       <article
         aria-labelledby="item-title"
         className={cn(
-          "grid gap-8 lg:gap-10",
-          item.photos.length && "lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]",
-          justPosted ? "mt-10 border-t pt-8" : "mt-4",
+          "grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-x-10 xl:grid-cols-[minmax(0,1fr)_24rem]",
+          hasPhotos && "lg:grid-rows-[auto_1fr]",
+          justPosted ? "mt-14" : "mt-4",
         )}
       >
-        {item.photos.length > 0 && (
-          <div className="min-w-0">
+        {hasPhotos && (
+          <div className="min-w-0 lg:col-start-2 lg:row-start-1">
             <Gallery item={item} />
           </div>
         )}
-        <div className="min-w-0">
+        <div className={cn("min-w-0 lg:col-start-1 lg:row-start-1", hasPhotos && "lg:row-span-2")}>
           <div className="flex items-start gap-5">
-            {!item.photos.length && (
+            {!hasPhotos && (
               <div className="size-18 shrink-0 overflow-hidden rounded-full sm:size-20">
                 <ItemThumb item={item} iconClass="size-2/5" alt={t("item.noPhoto")} />
               </div>
@@ -665,58 +679,44 @@ export default function ItemPage() {
 
           <Card size="sm" className="mt-6">
             <CardContent>
-              <Attributes item={item} />
+              <Attributes item={item} showDescription={!descriptionIsTitle} />
             </CardContent>
           </Card>
 
-          {(!descriptionIsTitle || item.marks_text || item.private_detail || (isAdmin && item.reporter)) && (
-            <div className="mt-6 space-y-4">
-              {!descriptionIsTitle && (
-                <div>
-                  <h2 className="text-sm font-medium">{t("item.description")}</h2>
-                  <p className="mt-1.5 leading-relaxed break-words whitespace-pre-line">{item.description}</p>
-                </div>
-              )}
-              {item.marks_text && (
-                <div>
-                  <h2 className="text-sm font-medium">{t("item.marks")}</h2>
-                  <p className="mt-1.5 leading-relaxed break-words whitespace-pre-line">{item.marks_text}</p>
-                </div>
-              )}
-              {item.private_detail && (
-                <Alert role="note" className="border-transparent bg-[#d8ecff]">
-                  <Lock aria-hidden className="text-primary" />
-                  <AlertTitle>{t("item.privateDetail")}</AlertTitle>
-                  <AlertDescription className="text-foreground">{item.private_detail}</AlertDescription>
-                </Alert>
-              )}
-              {isAdmin && item.reporter && (
-                <p className="text-sm text-muted-foreground">
-                  {t("admin.reporter")}: <span className="font-medium text-foreground">{item.reporter.display_name}</span> · {item.reporter.email}
-                </p>
-              )}
-            </div>
+          {item.private_detail && (
+            <Alert role="note" className="mt-4 border-transparent bg-[#d8ecff]">
+              <Lock aria-hidden className="text-primary" />
+              <AlertTitle>{t("item.privateDetail")}</AlertTitle>
+              <AlertDescription className="text-foreground">{item.private_detail}</AlertDescription>
+            </Alert>
           )}
-
-          <Separator className="my-6" />
-
-          <div className="space-y-4">
-            {item.is_mine ? (
-              <OwnerTools item={item} />
-            ) : item.kind === "found" ? (
-              <ClaimPanel item={item} claim={my_claim} onClaim={() => setClaimOpen(true)} />
-            ) : (
-              <ActionCard title={t("item.lostByOtherTitle")} description={t("item.lostByOtherBody")}>
-                <Button asChild variant="outline">
-                  <Link to="/report/found">{t("item.reportFoundCta")}</Link>
-                </Button>
-              </ActionCard>
-            )}
-          </div>
+          {isAdmin && item.reporter && (
+            <p className="mt-4 text-sm text-muted-foreground">
+              {t("admin.reporter")}: <span className="font-medium text-foreground">{item.reporter.display_name}</span> ·{" "}
+              <Email value={item.reporter.email} />
+            </p>
+          )}
         </div>
+
+        <aside
+          aria-label={t("item.nextStep")}
+          className={cn("min-w-0 space-y-4 lg:sticky lg:top-24 lg:col-start-2 lg:self-start", hasPhotos ? "lg:row-start-2" : "lg:row-start-1")}
+        >
+          {item.is_mine ? (
+            <OwnerTools item={item} />
+          ) : item.kind === "found" ? (
+            <ClaimPanel item={item} claim={my_claim} onClaim={() => setClaimOpen(true)} />
+          ) : (
+            <ActionCard title={t("item.lostByOtherTitle")} description={t("item.lostByOtherBody")}>
+              <Button asChild variant="coral">
+                <Link to="/report/found">{t("item.reportFoundCta")}</Link>
+              </Button>
+            </ActionCard>
+          )}
+        </aside>
       </article>
 
-      {!justPosted && matchesSection && <div className="mt-12 border-t pt-8">{matchesSection}</div>}
+      {!justPosted && matchesSection && <div className="mt-14">{matchesSection}</div>}
 
       {item.kind === "found" && !item.is_mine && user && (
         <ClaimDialog item={item} open={claimOpen} onClose={() => setClaimOpen(false)} preselectLost={params.get("lost")} />

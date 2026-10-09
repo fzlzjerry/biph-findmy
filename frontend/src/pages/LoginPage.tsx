@@ -118,7 +118,7 @@ export default function LoginPage() {
             <CardTitle role="heading" aria-level={1} className="text-xl font-semibold">
               {t("login.title")}
             </CardTitle>
-            <CardDescription>{t("login.lead")}</CardDescription>
+            <CardDescription className="text-balance">{t("login.lead")}</CardDescription>
           </CardHeader>
           <CardContent>
             {step === "email" ? (

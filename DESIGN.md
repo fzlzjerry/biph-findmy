@@ -240,10 +240,10 @@ Status badges use soft tint pairs that each clear 4.5:1: blue (#d8ecff / #0d4677
 - **Display** (700, clamp(2.5rem, 5vw, 4.25rem), 0.98, -0.045em): the home hero question only.
 - **Headline** (700, 2.25rem rising to 2.75rem from 640px, 1.02, -0.04em): page titles via the page header.
 - **Title** (700, 1.5rem, -0.03em): section headings ("Recently found", "Possible matches").
-- **Map Label** (700, clamp(1.125rem, 2vw, 1.875rem), 0.95, -0.04em): zone names on the large map; 0.8125rem on the compact map strip.
-- **Item Title** (600, 1.0625rem, snug): item card headings, clamped to two lines; strong match titles step up to 1.25rem.
+- **Map Label** (700, clamp(0.9375rem, 4.4cqi, 1.875rem), 0.95, -0.04em): zone names on the large map, sized by the map's own width so they keep their proportion to the lobes; clamp(0.75rem, 3.7cqi, 1.125rem) on the compact map. The gate and "other" lobes are smaller and step their names down.
+- **Item Title** (600, 1.0625rem, snug): item card headings, clamped to two lines and wrapped with `text-wrap: pretty` (balanced wrapping leaves card titles narrow and splits CJK words); strong match titles step up to 1.25rem.
 - **Body** (450, 1rem, 1.5): running text; lead paragraphs at 1.0625-1.125rem with max 46-60ch.
-- **Label** (600, 0.875rem): buttons, nav, form labels, meta emphasis. Metadata runs at 0.875rem 450 in Muted Ink, joined by middle dots.
+- **Label** (600, 0.875rem): buttons, nav, form labels, meta emphasis. Metadata runs at 0.875rem 450 in Muted Ink, joined by middle dots (the `dot-list` utility: a wrapped line never starts or ends with a dot). In Chinese, "optional" marks take full-width brackets: 颜色（选填）.
 
 ### Named Rules
 **The Latin-Only Tracking Rule.** Negative letter-spacing applies to Latin only. Under `:lang(zh)` all headings and display text reset to 0 tracking; tight tracking crushes CJK.
@@ -254,9 +254,9 @@ Status badges use soft tint pairs that each clear 4.5:1: blue (#d8ecff / #0d4677
 
 ## Layout
 
-A centred page container (max 80rem) with 1rem side gutters below 640px and 1.5rem above, both respecting safe-area insets. The header is a sticky 4.5rem bar on a translucent cream with backdrop blur; primary nav appears from 1024px, the two report capsules from 768px, and a right-side sheet menu replaces nav below 1024px.
+A centred page container (max 80rem) with 1rem side gutters below 640px and 1.5rem above, both respecting safe-area insets. The header is a sticky 4.5rem bar on a translucent cream with backdrop blur; primary nav appears from 1280px, the two report capsules from 768px, and a right-side sheet menu replaces nav below 1280px. "Admin" stays active on its sub-pages.
 
-Home splits at 1024px into a map column (~1.1fr, left) and a hero column (1fr, right); below it stacks hero first, map second. Browse puts the compact map, category select and colour swatches in a white side panel beside a two-column item list. Item lists are a grid of one, two (from 768px) and three (from 1280px) columns with a 12px gap. Sections are separated by 64px; cards pad 24px (16px small). The footer is an ink slab with a 5rem gap above it.
+Home splits at 1024px into a map column (~1.1fr, left) and a hero column (1fr, right); below it stacks hero first, map second. Browse puts the compact map, category select and colour swatches in a white side panel beside a two-column item list. Item lists are a grid of one, two (from 768px) and three (from 1280px) columns with a 12px gap; the home "Recently found" grid shows nine items in three columns and drops the ninth on two-column widths so no card sits alone. The item page stacks photo, facts, next step on small screens; from 1024px the facts card (description and marks inside it) takes the main column and the photo and next step (claim, claim status, owner tools) sit in a 22-24rem column beside it, the step sticky. Sections are separated by spacing, not rules: 64px between sections; cards pad 24px (16px small). The footer is an ink slab with a 5rem gap above it.
 
 ## Elevation & Depth
 
@@ -289,7 +289,7 @@ Soft, confident capsules that press in.
 
 ### Chips and Badges
 - **Style:** 24px capsules, 12px semibold, transparent border, soft tint pairs (see Colors); icon 12px leading.
-- **Strong-match badge:** ink fill with cream text.
+- **Match strength** is never a badge: it is always the four-dot meter followed by the band word (match cards, claim review, About example).
 - **Zone count capsule (map):** white at 95% with bold tabular count; turns ink with cream text when its lobe is selected.
 
 ### Cards / Containers
@@ -306,10 +306,10 @@ A horizontal row: a 64px circle holding the photo or, without one, the category 
 Larger for strong matches (96px thumbnail, 1.25rem title, 24px padding) and smaller for possible/weak ones (64px, 1rem, 16px). Header line: the four-dot meter then the band word. Reasons follow as one plain wrapping line; weak matches fold reasons behind a "Reasons (n)" disclosure. Actions sit below: sun "This is mine", outline "Not mine", ghost undo.
 
 ### Probability Meter
-Four 10px dots, lit in ink, unlit at 15% ink. Thresholds 0.35 / 0.6 / 0.85 light two, three, four dots. The exact percentage lives only in the accessible value and tooltip; it is never drawn.
+Four 10px dots, lit in ink, unlit at 15% ink. The dots always agree with the band word beside them: strong lights four, weak one, and possible two or three (split at the middle of the possible range). Band thresholds come from `/api/meta` (currently strong 0.7, possible 0.15). The exact percentage lives only in the accessible value and tooltip; it is never drawn.
 
 ### Match Reasons
-One line at 0.9375rem, relaxed leading. Supporting reasons get a 14px green check; evidence against is red text with a minus and sorts last. Items are separated by a faint middle dot.
+One line at 0.9375rem, relaxed leading. Supporting reasons get a 14px green check; evidence against is red text with a minus and sorts last. Items are separated by a faint middle dot that never dangles at a line end (`dot-list`).
 
 ### Inputs / Fields
 - **Style:** 44px white field, 1px Field Stroke outline, ~22px radius, 14px side padding.
@@ -321,7 +321,10 @@ One line at 0.9375rem, relaxed leading. Supporting reasons get a 14px green chec
 Wordmark (lobe logo plus "FindMy" in 700 at -0.045em) on the left; nav links are 40px capsules in 600 ink that fill white on hover and ink when active. Right side: sun and coral report capsules, the 中文/EN segmented toggle (white capsule track, ink pressed segment), then account. Mobile uses a right sheet with 44px capsule links in the same active treatment.
 
 ### Campus Map (signature)
-A 10:7 SVG of eight zone lobes on the cream ground, with real buttons laid over each lobe's label. Lobe scale is 0.6 + 0.55 x sqrt(count / max), so busier zones read bigger. Hover or focus or selection adds 0.07 scale and drops every other lobe to 42% opacity, over 400ms on the swell ease (cubic-bezier(0.34, 1.3, 0.64, 1)); reduced motion removes the transition. Large map shows name plus a white count capsule; the compact strip (browse filter) shows name and an inline count.
+A 10:7 SVG of eight zone lobes on the cream ground, with real buttons laid over each lobe's label. Lobe scale is 0.6 + 0.55 x sqrt(count / max), so busier zones read bigger. Hover or focus or selection adds 0.07 scale and drops every other lobe to 42% opacity, over 400ms on the swell ease (cubic-bezier(0.34, 1.3, 0.64, 1)); reduced motion removes the transition. Large map shows name plus a white count capsule; the compact strip (browse filter) shows name and an inline count. The SVG frame is padded (viewBox −56 −12 1144 800.8) so even the busiest lobe at full swell stays inside it and never runs under neighbouring controls or a card edge; labels sit at the lobe centres.
+
+### Evaluation Charts
+The About page draws the Data Science Club's results itself, in both languages (numbers in `frontend/src/lib/evalResults.ts`, copied from `docs/eval_results.json`; recopy when the report is regenerated). Method bars are ink with a 20% ink tail for "in the top 3", the method FindMy runs in full ink and bold; the look-alike curves are ink solid, ink dashed and light-ink dotted lines over hairline gridlines, explained by a swatch legend. No raster or library charts on student pages.
 
 ## Do's and Don'ts
 

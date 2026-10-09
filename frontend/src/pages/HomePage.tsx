@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
 import { api } from "@/lib/api";
 import { useDocumentTitle } from "@/lib/hooks";
+import { cn } from "@/lib/utils";
 
 function HeroSearch() {
   const { t } = useTranslation();
@@ -39,8 +40,18 @@ function HeroSearch() {
           placeholder={t("browse.searchPlaceholder")}
         />
         <InputGroupAddon align="inline-end">
-          <InputGroupButton type="submit" variant="default" size="sm" className="mr-1.5 h-10 rounded-full px-5">
-            {t("browse.search")}
+          {/* On phones the button shrinks to an arrow so the placeholder has room. */}
+          <InputGroupButton
+            type="submit"
+            variant="default"
+            size="sm"
+            aria-label={t("browse.search")}
+            className="mr-1.5 size-10 rounded-full p-0 sm:w-auto sm:px-5"
+          >
+            <ArrowRight aria-hidden className="size-4.5 sm:hidden" />
+            <span aria-hidden className="max-sm:hidden">
+              {t("browse.search")}
+            </span>
           </InputGroupButton>
         </InputGroupAddon>
       </InputGroup>
@@ -87,14 +98,15 @@ export default function HomePage() {
             {t("home.title")}
           </h1>
           <p className="mt-5 max-w-[46ch] text-lg leading-relaxed text-foreground/80">{t("home.promise")}</p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Button asChild size="lg" variant="sun" className="h-14 pr-3 pl-7 text-[1.0625rem]">
+          {/* Phones: two equal full-width capsules with the chip on the trailing edge. */}
+          <div className="mt-8 grid gap-3 sm:flex sm:flex-wrap">
+            <Button asChild size="lg" variant="sun" className="h-14 justify-between pr-3 pl-7 text-[1.0625rem] sm:justify-center">
               <Link to="/report/lost">
                 {t("home.lost")}
                 <ChipArrow />
               </Link>
             </Button>
-            <Button asChild size="lg" variant="coral" className="h-14 pr-3 pl-7 text-[1.0625rem]">
+            <Button asChild size="lg" variant="coral" className="h-14 justify-between pr-3 pl-7 text-[1.0625rem] sm:justify-center">
               <Link to="/report/found">
                 {t("home.found")}
                 <ChipArrow />
@@ -155,9 +167,10 @@ export default function HomePage() {
           ) : recent.data.items.length === 0 ? (
             <EmptyState icon={PackageOpen} title={t("home.emptyRecent")} />
           ) : (
+            // Nine fill three columns; on two-column widths the ninth would sit alone, so it waits for wide screens.
             <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              {recent.data.items.map((item) => (
-                <li key={item.id} className="flex min-w-0">
+              {recent.data.items.map((item, index) => (
+                <li key={item.id} className={cn("flex min-w-0", index === 8 && "md:max-xl:hidden")}>
                   <ItemCard item={item} />
                 </li>
               ))}
@@ -171,9 +184,10 @@ export default function HomePage() {
           <h2 id="steps-title" className="text-2xl font-bold tracking-[-0.03em]">
             {t("home.stepsTitle")}
           </h2>
+          {/* Three columns are too narrow for disc + text until lg, so the disc sits above the text in between. */}
           <ol className="mt-6 grid gap-8 md:grid-cols-3">
             {steps.map(([title, body, fill], index) => (
-              <li key={title} className="flex gap-4">
+              <li key={title} className="flex gap-4 md:max-lg:flex-col md:max-lg:gap-3">
                 <span
                   aria-hidden
                   className="flex size-11 shrink-0 items-center justify-center rounded-full text-lg font-bold text-ink"
@@ -189,7 +203,7 @@ export default function HomePage() {
             ))}
           </ol>
           <Link to="/about" className="mt-8 inline-flex items-center gap-1.5 text-sm font-semibold underline decoration-ink/30 hover:decoration-ink">
-            {t("nav.about")}
+            {t("footer.about")}
             <ArrowRight aria-hidden className="size-4" />
           </Link>
         </div>

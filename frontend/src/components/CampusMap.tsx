@@ -9,19 +9,25 @@ import { cn } from "@/lib/utils";
  * the rest recede. The lobes are drawn in one SVG (decorative); the labels are real buttons laid over it.
  */
 
-type Lobe = { id: string; cx: number; cy: number; r: number; seed: number; label: { x: number; y: number } };
+type Lobe = { id: string; cx: number; cy: number; r: number; seed: number };
 
-// Schematic campus in a 1000 × 700 frame: the three teaching buildings across the top, gyms and canteen in the middle, the gate south.
+// Schematic campus laid out on a 1000 × 700 grid: the three teaching buildings across the top, gyms and canteen in
+// the middle, the gate south.
 const LOBES: Lobe[] = [
-  { id: "building_a", cx: 250, cy: 205, r: 150, seed: 3, label: { x: 25, y: 29 } },
-  { id: "building_b", cx: 560, cy: 160, r: 150, seed: 7, label: { x: 56, y: 23 } },
-  { id: "building_c", cx: 845, cy: 270, r: 150, seed: 11, label: { x: 84.5, y: 39 } },
-  { id: "sports", cx: 640, cy: 450, r: 150, seed: 13, label: { x: 64, y: 64 } },
-  { id: "dining", cx: 380, cy: 430, r: 150, seed: 5, label: { x: 38, y: 61 } },
-  { id: "boarding", cx: 140, cy: 520, r: 150, seed: 2, label: { x: 14, y: 74 } },
-  { id: "entrance", cx: 420, cy: 610, r: 130, seed: 17, label: { x: 42, y: 87 } },
-  { id: "other", cx: 885, cy: 615, r: 150, seed: 19, label: { x: 88.5, y: 88 } },
+  { id: "building_a", cx: 250, cy: 205, r: 150, seed: 3 },
+  { id: "building_b", cx: 560, cy: 160, r: 150, seed: 7 },
+  { id: "building_c", cx: 845, cy: 270, r: 150, seed: 11 },
+  { id: "sports", cx: 640, cy: 450, r: 150, seed: 13 },
+  { id: "dining", cx: 380, cy: 430, r: 150, seed: 5 },
+  { id: "boarding", cx: 140, cy: 520, r: 150, seed: 2 },
+  { id: "entrance", cx: 420, cy: 610, r: 130, seed: 17 },
+  { id: "other", cx: 885, cy: 615, r: 150, seed: 19 },
 ];
+
+// The frame (still 10:7) is wider than the grid: the busiest zone at full swell (scale 1.22) reaches x −55…1086 and
+// y −9…786, and a lobe must never spill onto the controls or card edge around the map.
+const VIEW = { x: -56, y: -12, w: 1144, h: 800.8 };
+const labelAt = (l: Lobe) => ({ left: `${((l.cx - VIEW.x) / VIEW.w) * 100}%`, top: `${((l.cy - VIEW.y) / VIEW.h) * 100}%` });
 
 export const ZONE_FILL: Record<string, string> = {
   building_a: "var(--color-zone-building-a)",
@@ -91,8 +97,8 @@ export function CampusMap({
   };
 
   return (
-    <div className={cn("relative aspect-[10/7] w-full select-none", className)}>
-      <svg viewBox="0 0 1000 700" aria-hidden className="absolute inset-0 size-full overflow-visible">
+    <div className={cn("@container relative aspect-[10/7] w-full select-none", className)}>
+      <svg viewBox={`${VIEW.x} ${VIEW.y} ${VIEW.w} ${VIEW.h}`} aria-hidden className="absolute inset-0 size-full">
         {zones.map((l) => (
           <path
             key={l.id}
@@ -111,8 +117,10 @@ export function CampusMap({
         {zones.map((l) => {
           const n = counts ? (counts[l.id] ?? 0) : undefined;
           const on = selected === l.id;
+          // The gate and "other" lobes are smaller, so their names step down a size.
+          const minor = l.id === "other" || l.id === "entrance";
           return (
-            <li key={l.id} className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: `${l.label.x}%`, top: `${l.label.y}%` }}>
+            <li key={l.id} className="absolute -translate-x-1/2 -translate-y-1/2" style={labelAt(l)}>
               <button
                 type="button"
                 aria-pressed={on}
@@ -121,26 +129,29 @@ export function CampusMap({
                 onPointerLeave={() => setHover(null)}
                 onFocus={() => setHover(l.id)}
                 onBlur={() => setHover(null)}
-                className={cn(
-                  "group flex flex-col items-center gap-1 rounded-2xl px-1.5 py-1 text-ink outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink",
-                )}
+                className="group flex flex-col items-center gap-[0.3em] rounded-2xl px-1.5 py-1 text-ink outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
               >
+                {/* Type scales with the map's own width (cqi), so labels keep their size relative to the lobes. */}
                 <span
                   className={cn(
                     "leading-[0.95] font-bold tracking-[-0.04em] whitespace-nowrap",
-                    size === "lg" ? "text-[clamp(1.125rem,2vw,1.875rem)]" : "text-[0.8125rem]",
-                    (l.id === "other" || l.id === "entrance") && (size === "lg" ? "text-lg" : "text-xs"),
+                    size === "lg"
+                      ? minor
+                        ? "text-[clamp(0.8125rem,3.1cqi,1.25rem)]"
+                        : "text-[clamp(0.9375rem,4.4cqi,1.875rem)]"
+                      : minor
+                        ? "text-[clamp(0.6875rem,2.9cqi,0.9375rem)]"
+                        : "text-[clamp(0.75rem,3.7cqi,1.125rem)]",
                   )}
                 >
                   <span aria-hidden>{t(`map.short.${l.id}` as "map.short.other")}</span>
                   <span className="sr-only">{labels.zone(l.id)}</span>
-                  {size === "sm" && n !== undefined && <span className="tabular ml-1 font-semibold opacity-70">{n}</span>}
+                  {size === "sm" && n !== undefined && <span className="tabular ml-[0.3em] font-semibold opacity-70">{n}</span>}
                 </span>
                 {size === "lg" && n !== undefined && (
                   <span
                     className={cn(
-                      "tabular rounded-full px-2.5 py-0.5 font-bold whitespace-nowrap transition-colors duration-200",
-                      size === "lg" ? "text-sm" : "text-xs",
+                      "tabular rounded-full px-[0.75em] py-[0.15em] text-[clamp(0.6875rem,2.1cqi,0.875rem)] font-bold whitespace-nowrap transition-colors duration-200",
                       on ? "bg-ink text-cream" : "bg-white/95 group-hover:bg-white",
                     )}
                   >

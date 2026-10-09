@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
+import { useLang } from "@/i18n";
+import { cn } from "@/lib/utils";
 
 /** aria-describedby for a control whose hint / error ids follow the `${id}-hint` / `${id}-error` convention. */
 export function describedBy(id: string, parts: { hint?: unknown; error?: unknown }): string | undefined {
@@ -10,7 +12,13 @@ export function describedBy(id: string, parts: { hint?: unknown; error?: unknown
 
 export function OptionalMark() {
   const { t } = useTranslation();
-  return <span className="font-normal text-muted-foreground">({t("common.optional")})</span>;
+  const lang = useLang();
+  // Chinese takes full-width brackets, which carry their own spacing: 颜色（选填）.
+  return (
+    <span className={cn("font-normal text-muted-foreground", lang === "zh" && "-ml-1.5")}>
+      {lang === "zh" ? `（${t("common.optional")}）` : `(${t("common.optional")})`}
+    </span>
+  );
 }
 
 /** Label + hint + control + error, wired together by id (shadcn Field underneath). */

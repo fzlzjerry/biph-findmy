@@ -48,7 +48,7 @@ export function MatchCard({ match, lostItemId, canFeedback, onFeedback, feedback
       </Link>
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-          <ProbabilityMeter value={match.probability} />
+          <ProbabilityMeter value={match.probability} band={match.band} />
           <span className="text-sm font-semibold">{t(`band.${match.band}`)}</span>
           {match.feedback === "confirmed" && (
             <ToneBadge tone="green" icon={Check}>
@@ -57,21 +57,15 @@ export function MatchCard({ match, lostItemId, canFeedback, onFeedback, feedback
           )}
           {match.feedback === "rejected" && <ToneBadge tone="gray">{t("item.rejectedNote")}</ToneBadge>}
         </div>
-        <h3 id={headingId} className={cn("mt-2 leading-snug font-semibold break-words", match.band === "strong" ? "text-xl" : "text-base")}>
+        <h3 id={headingId} className={cn("mt-2 leading-snug font-semibold text-pretty break-words", match.band === "strong" ? "text-xl" : "text-base")}>
           <Link to={`/items/${other.id}`} className="hover:underline">
             {itemTitle(other, 110)}
           </Link>
         </h3>
-        <p className="mt-1 flex flex-wrap items-center gap-x-1.5 text-sm text-muted-foreground">
+        <p className="dot-list mt-1 text-sm text-muted-foreground">
           <span>{labels.category(other.category)}</span>
-          {place && (
-            <>
-              <span aria-hidden>·</span>
-              <span>{labels.place(place)}</span>
-            </>
-          )}
-          <span aria-hidden>·</span>
-          <RelativeTime iso={other.time_from} />
+          {place && <span>{labels.place(place)}</span>}
+          <RelativeTime iso={other.time_from} className="whitespace-nowrap" />
         </p>
       </div>
       <div className="col-span-2 min-w-0 sm:col-span-1 sm:col-start-2">

@@ -50,9 +50,9 @@ function Filters({ idPrefix, params, update, onClear, counts, showMap = true }: 
 
   return (
     <div className="space-y-6">
-      <fieldset className="grid gap-1">
+      <fieldset className="grid gap-3">
         <legend className="mb-1 text-sm font-semibold">{t("browse.zone")}</legend>
-        {showMap && <CampusMap size="sm" counts={counts} selected={zone || null} onSelect={(id) => update({ zone: id, place: null })} className="-mx-1" />}
+        {showMap && <CampusMap size="sm" counts={counts} selected={zone || null} onSelect={(id) => update({ zone: id, place: null })} />}
         {zoneObj && (
           <div className="grid gap-2">
             <Label htmlFor={`${idPrefix}-place`} className="sr-only">
@@ -292,7 +292,7 @@ export default function BrowsePage() {
           </aside>
 
           <section aria-labelledby="results-heading" className="min-w-0 flex-1">
-            <div className="mb-5 rounded-[1.75rem] bg-card px-3 py-2 lg:hidden">
+            <div className="mb-5 rounded-[1.75rem] bg-card p-3 lg:hidden">
               <CampusMap
                 size="sm"
                 counts={zoneCounts}
@@ -336,7 +336,7 @@ export default function BrowsePage() {
                         {t("browse.clearFilters")}
                       </Button>
                     )}
-                    <Button asChild>
+                    <Button asChild variant={kind === "found" ? "sun" : "coral"}>
                       <Link to={kind === "found" ? "/report/lost" : "/report/found"}>
                         {kind === "found" ? t("nav.reportLost") : t("nav.reportFound")}
                       </Link>

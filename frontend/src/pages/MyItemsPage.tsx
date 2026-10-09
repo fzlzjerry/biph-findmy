@@ -3,11 +3,11 @@ import { CircleAlert, Inbox, PackageSearch } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useSearchParams } from "react-router";
-import { ClaimBadge, KindBadge, StatusBadge, ToneBadge } from "@/components/badges";
+import { ClaimBadge, StatusBadge, ToneBadge } from "@/components/badges";
 import { BusyButton } from "@/components/BusyButton";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FormField } from "@/components/form";
-import { Email, ItemThumb, itemTitle, RelativeTime } from "@/components/ItemBits";
+import { cardLinkClass, Email, ItemThumb, itemTitle, RelativeTime } from "@/components/ItemBits";
 import { PageHeader } from "@/components/page";
 import { EmptyState, ErrorState, RowsSkeleton } from "@/components/States";
 import { useToast } from "@/components/Toast";
@@ -16,7 +16,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Item as Row, ItemContent, ItemDescription, ItemMedia } from "@/components/ui/item";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLang } from "@/i18n";
 import { api } from "@/lib/api";
@@ -26,38 +25,32 @@ import { useDocumentTitle } from "@/lib/hooks";
 import { useLabels } from "@/lib/meta";
 import { formatDateTime, formatRelative, useNow } from "@/lib/time";
 import type { Claim, Item } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
+/** One of my reports: the same lifted white card as item lists, with its state and how many matches it has. */
 function ReportRow({ item }: { item: Item }) {
   const { t } = useTranslation();
   const labels = useLabels();
   const count = item.match_count ?? 0;
   return (
-    <Row variant="outline" className="items-start bg-card" asChild>
-      <Link to={`/items/${item.id}`}>
-        <ItemMedia variant="image" className="size-18 rounded-full sm:size-20">
-          <ItemThumb item={item} />
-        </ItemMedia>
-        <ItemContent className="min-w-0">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <KindBadge kind={item.kind} />
-            <StatusBadge kind={item.kind} status={item.status} />
-            {item.is_hidden && <ToneBadge tone="gray">{t("admin.hiddenBadge")}</ToneBadge>}
-          </div>
-          <h3 className="line-clamp-2 text-base font-medium leading-snug break-words">{itemTitle(item, 100)}</h3>
-          <ItemDescription className="flex flex-wrap items-center gap-x-1.5">
-            <span>{labels.category(item.category)}</span>
-            <span aria-hidden>·</span>
-            <RelativeTime iso={item.created_at} />
-            {count > 0 && (
-              <>
-                <span aria-hidden>·</span>
-                <span className="font-medium text-primary">{t("card.matches", { count })}</span>
-              </>
-            )}
-          </ItemDescription>
-        </ItemContent>
-      </Link>
-    </Row>
+    <Link to={`/items/${item.id}`} className={cn(cardLinkClass, "items-start sm:items-center")}>
+      <div className="size-16 shrink-0 overflow-hidden rounded-full sm:size-18">
+        <ItemThumb item={item} iconClass="size-7" />
+      </div>
+      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+        <h3 className="line-clamp-2 text-[1.0625rem] leading-snug font-semibold text-pretty break-words">{itemTitle(item, 100)}</h3>
+        <p className="dot-list text-sm text-muted-foreground">
+          <span>{t(item.kind === "lost" ? "kind.lostReport" : "kind.foundItem")}</span>
+          <span>{labels.category(item.category)}</span>
+          <RelativeTime iso={item.created_at} className="whitespace-nowrap" />
+        </p>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+          <StatusBadge kind={item.kind} status={item.status} />
+          {item.is_hidden && <ToneBadge tone="gray">{t("admin.hiddenBadge")}</ToneBadge>}
+          {count > 0 && <span className="text-sm font-semibold">{t("card.matches", { count })}</span>}
+        </div>
+      </div>
+    </Link>
   );
 }
 
@@ -68,16 +61,14 @@ function ClaimRow({ claim, onCancel }: { claim: Claim; onCancel: (claim: Claim) 
   const now = useNow();
   const found = claim.found;
   return (
-    <Row variant="outline" className="items-start bg-card">
-      <ItemMedia variant="image" className="size-18 rounded-full sm:size-20">
-        {found && <ItemThumb item={found} />}
-      </ItemMedia>
-      <ItemContent className="min-w-0 gap-1.5">
+    <div className="flex items-start gap-4 rounded-[1.25rem] bg-card p-3.5 pr-4 shadow-[0_1px_2px_rgb(44_46_42/0.06)]">
+      <div className="size-16 shrink-0 overflow-hidden rounded-full sm:size-18">{found && <ItemThumb item={found} iconClass="size-7" />}</div>
+      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         <div>
           <ClaimBadge status={claim.status} />
         </div>
         {found ? (
-          <h3 className="text-base font-medium leading-snug break-words">
+          <h3 className="text-[1.0625rem] leading-snug font-semibold text-pretty break-words">
             <Link to={`/items/${found.id}`} className="underline-offset-4 hover:underline">
               {itemTitle(found, 100)}
             </Link>
@@ -85,8 +76,8 @@ function ClaimRow({ claim, onCancel }: { claim: Claim; onCancel: (claim: Claim) 
         ) : (
           <p className="text-sm text-muted-foreground">{t("me.itemRemoved")}</p>
         )}
-        <p className="text-sm text-muted-foreground">
-          {found && <>{labels.category(found.category)} · </>}
+        <p className="dot-list text-sm text-muted-foreground">
+          {found && <span>{labels.category(found.category)}</span>}
           <time dateTime={claim.created_at} title={formatDateTime(claim.created_at, lang)}>
             {t("me.claimedOn", { time: formatRelative(claim.created_at, lang, now) })}
           </time>
@@ -104,8 +95,8 @@ function ClaimRow({ claim, onCancel }: { claim: Claim; onCancel: (claim: Claim) 
             </Button>
           </div>
         )}
-      </ItemContent>
-    </Row>
+      </div>
+    </div>
   );
 }
 
@@ -136,9 +127,10 @@ function ProfileForm() {
           {t("me.profile")}
         </CardTitle>
         <CardDescription>
-          {t("me.signedInAs", { email: "\u0000" }).split("\u0000")[0]}
-          <Email value={user.email} />
-          {t("me.signedInAs", { email: "\u0000" }).split("\u0000")[1]}
+          {t("nav.signedInAs")}
+          <span className="mt-0.5 block font-medium text-foreground">
+            <Email value={user.email} />
+          </span>
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -232,10 +224,10 @@ export default function MyItemsPage() {
                 title={t("me.noReports")}
                 actions={
                   <>
-                    <Button asChild>
+                    <Button asChild variant="sun">
                       <Link to="/report/lost">{t("home.lost")}</Link>
                     </Button>
-                    <Button asChild variant="outline">
+                    <Button asChild variant="coral">
                       <Link to="/report/found">{t("home.found")}</Link>
                     </Button>
                   </>

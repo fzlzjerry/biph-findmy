@@ -250,7 +250,9 @@ function Header() {
       "inline-flex h-10 items-center rounded-full px-4 text-[0.9375rem] font-semibold whitespace-nowrap transition-colors duration-200",
       isActive ? "bg-ink text-primary-foreground" : "text-foreground hover:bg-card",
     );
-  const action = ({ isActive }: { isActive: boolean }) => cn(isActive && "ring-2 ring-ink ring-offset-2 ring-offset-cream");
+  // Button's Slot only merges string classNames (a NavLink className function would be stringified), so the
+  // current-page ring keys off the aria-current="page" that NavLink sets.
+  const action = "aria-[current=page]:ring-2 aria-[current=page]:ring-ink aria-[current=page]:ring-offset-2 aria-[current=page]:ring-offset-cream";
 
   return (
     <header className="sticky top-0 z-40 bg-background/92 backdrop-blur-md supports-backdrop-filter:bg-background/80">
@@ -258,22 +260,19 @@ function Header() {
         <Wordmark />
         <nav aria-label={t("nav.main")} className="hidden min-w-0 items-center gap-1 xl:flex">
           {items.map((item) => (
-            <NavLink key={item.to} to={item.to} end={item.to === "/admin"} className={link}>
+            // "Admin" stays lit on its sub-pages (Quick add has no header link of its own).
+            <NavLink key={item.to} to={item.to} className={link}>
               {item.label}
             </NavLink>
           ))}
         </nav>
         <div className="ml-auto flex shrink-0 items-center gap-2">
           <div className="hidden items-center gap-2 md:flex">
-            <Button asChild variant="sun">
-              <NavLink to="/report/lost" className={action}>
-                {t("nav.reportLost")}
-              </NavLink>
+            <Button asChild variant="sun" className={action}>
+              <NavLink to="/report/lost">{t("nav.reportLost")}</NavLink>
             </Button>
-            <Button asChild variant="coral">
-              <NavLink to="/report/found" className={action}>
-                {t("nav.reportFound")}
-              </NavLink>
+            <Button asChild variant="coral" className={action}>
+              <NavLink to="/report/found">{t("nav.reportFound")}</NavLink>
             </Button>
           </div>
           <LanguageToggle />
@@ -345,7 +344,7 @@ function Footer() {
         <div className="flex items-center gap-3">
           <LogoMark className="size-7" />
           <div>
-            <p className="font-semibold text-cream">{t("footer.clubs")}</p>
+            <p className="font-semibold text-balance text-cream">{t("footer.clubs")}</p>
             <p className="mt-0.5">{t("footer.noTracking")}</p>
           </div>
         </div>

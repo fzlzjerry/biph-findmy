@@ -2,8 +2,8 @@ import { Gauge, GlobeLock, ImageOff, Languages, Lock, Scale, ScanSearch, Timer, 
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router";
-import { BandBadge } from "@/components/badges";
-import { ReasonChips } from "@/components/ItemBits";
+import { LookalikeChart, MethodsChart } from "@/components/EvalCharts";
+import { ProbabilityMeter, ReasonChips } from "@/components/ItemBits";
 import { LogoMark } from "@/components/Layout";
 import { PageHeader, SectionHeader } from "@/components/page";
 import { Button } from "@/components/ui/button";
@@ -12,11 +12,12 @@ import { useDocumentTitle } from "@/lib/hooks";
 import { useLabels } from "@/lib/meta";
 import type { Reason } from "@/lib/types";
 
+// The reasons the matcher gives for the example pair (same wording as on a real match card).
 const EXAMPLE_REASONS: Reason[] = [
   { code: "category_same", feature: "category", en: "Same type: Water bottle", zh: "同类物品：水杯", contribution: 2.73 },
   { code: "marks_shared", feature: "marks", en: "Shared details: sticker, dinosaur", zh: "共同特征：贴纸、恐龙", contribution: 1.97 },
   { code: "color_same", feature: "color", en: "Color matches: black", zh: "颜色一致：黑色", contribution: 1.93 },
-  { code: "location_same", feature: "location", en: "Same place: Gymnasium", zh: "同一地点：体育馆", contribution: 1.91 },
+  { code: "location_same", feature: "location", en: "Same place: Lower Gym", zh: "同一地点：下体育馆（Lower Gym）", contribution: 1.91 },
 ];
 
 function Step({ n, icon: Icon, title, body }: { n: number; icon: LucideIcon; title: string; body: string }) {
@@ -24,7 +25,7 @@ function Step({ n, icon: Icon, title, body }: { n: number; icon: LucideIcon; tit
     <li>
       <Card size="sm" className="h-full">
         <CardHeader>
-          <span className="mb-2 flex size-9 items-center justify-center rounded-lg bg-zone-sports text-ink" aria-hidden>
+          <span className="mb-2 flex size-9 items-center justify-center rounded-full bg-secondary text-ink" aria-hidden>
             <Icon className="size-4.5" />
           </span>
           <CardTitle role="heading" aria-level={3}>
@@ -79,11 +80,14 @@ export default function AboutPage() {
           </CardHeader>
           <CardContent className="gap-4 text-base">
             <div className="grid gap-3 sm:grid-cols-2">
-              <p className="rounded-2xl bg-card p-3 text-sm break-words">{t("about.exampleLost")}</p>
-              <p className="rounded-2xl bg-card p-3 text-sm break-words">{t("about.exampleFound")}</p>
+              <p className="rounded-2xl bg-cream p-3 text-sm break-words">{t("about.exampleLost")}</p>
+              <p className="rounded-2xl bg-cream p-3 text-sm break-words">{t("about.exampleFound")}</p>
             </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <BandBadge band="strong" />
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <ProbabilityMeter value={0.9} band="strong" />
+                <span className="text-sm font-semibold">{t("band.strong")}</span>
+              </div>
               <ReasonChips reasons={EXAMPLE_REASONS} />
             </div>
             <p className="text-sm text-muted-foreground">{t("about.exampleResult")}</p>
@@ -97,15 +101,20 @@ export default function AboutPage() {
         <div className="mt-6 grid gap-4 lg:grid-cols-2">
           {(
             [
-              ["/eval/methods.png", 1280, 672, t("about.evalMethodsCaption")],
-              ["/eval/distractor_curve.png", 1120, 640, t("about.evalDistractorCaption")],
+              ["methods", t("about.chartMethodsTitle"), <MethodsChart />, t("about.evalMethodsCaption")],
+              ["lookalikes", t("about.chartLookalikeTitle"), <LookalikeChart />, t("about.evalDistractorCaption")],
             ] as const
-          ).map(([src, width, height, caption]) => (
-            <Card key={src} size="sm" className="gap-3">
+          ).map(([key, title, chart, caption]) => (
+            <Card key={key} className="min-w-0">
+              <CardHeader>
+                <CardTitle role="heading" aria-level={3}>
+                  {title}
+                </CardTitle>
+              </CardHeader>
               <CardContent>
                 <figure className="min-w-0">
-                  <img src={src} width={width} height={height} loading="lazy" decoding="async" alt={caption} className="w-full rounded-md" />
-                  <figcaption className="mt-3 text-sm leading-relaxed text-muted-foreground">{caption}</figcaption>
+                  {chart}
+                  <figcaption className="mt-5 text-sm leading-relaxed text-muted-foreground">{caption}</figcaption>
                 </figure>
               </CardContent>
             </Card>
@@ -124,8 +133,8 @@ export default function AboutPage() {
         <ul className="mt-6 grid gap-x-8 gap-y-6 md:grid-cols-2">
           {privacy.map(([Icon, title, body]) => (
             <li key={title} className="flex gap-3">
-              <span className="flex size-8 shrink-0 items-center justify-center rounded-lg border bg-background" aria-hidden>
-                <Icon className="size-4 text-muted-foreground" />
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-secondary" aria-hidden>
+                <Icon className="size-4 text-ink" />
               </span>
               <div>
                 <h3 className="font-medium">{title}</h3>
@@ -164,10 +173,10 @@ export default function AboutPage() {
           </div>
         </div>
         <div className="mt-8 flex flex-wrap gap-3">
-          <Button asChild size="lg">
+          <Button asChild size="lg" variant="sun">
             <Link to="/report/lost">{t("about.ctaLost")}</Link>
           </Button>
-          <Button asChild size="lg" variant="outline">
+          <Button asChild size="lg" variant="coral">
             <Link to="/report/found">{t("about.ctaFound")}</Link>
           </Button>
         </div>

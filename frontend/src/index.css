@@ -244,6 +244,29 @@
   }
 }
 
+/* Inline facts joined by a faint middle dot ("Cafeteria · 5 hours ago"). Each item carries its dot in the column
+   gap on its left and the list clips its own left edge, so a wrapped line never starts or ends with a dot. */
+@utility dot-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  overflow: hidden;
+  column-gap: var(--dot-gap, 1.1em);
+  & > * {
+    position: relative;
+    min-width: 0;
+  }
+  & > *::before {
+    content: "·";
+    content: "·" / "";
+    position: absolute;
+    top: 0;
+    left: calc(var(--dot-gap, 1.1em) / -2 - 0.14em);
+    color: color-mix(in oklab, var(--muted-foreground) 70%, transparent);
+    font-weight: 600;
+  }
+}
+
 @utility container-page {
   width: 100%;
   max-width: 80rem;

@@ -3,7 +3,6 @@ import { CircleAlert, CircleCheck, CircleX, Inbox, Lock, PackageCheck, Quote } f
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
-import { BandBadge } from "@/components/badges";
 import { BusyButton } from "@/components/BusyButton";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FormField } from "@/components/form";
@@ -134,9 +133,9 @@ function ClaimReview({ claim }: { claim: Claim }) {
                 <ItemSummary item={claim.lost} />
                 {claim.match ? (
                   <div className="space-y-2">
-                    <div className="flex flex-wrap items-center gap-3">
-                      <BandBadge band={claim.match.band} />
-                      <ProbabilityMeter value={claim.match.probability} />
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                      <ProbabilityMeter value={claim.match.probability} band={claim.match.band} />
+                      <span className="text-sm font-semibold">{t(`band.${claim.match.band}`)}</span>
                     </div>
                     <ReasonChips reasons={claim.match.reasons} />
                   </div>

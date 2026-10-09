@@ -3,20 +3,18 @@ import {
   BadgeCheck,
   Ban,
   CircleCheck,
-  CircleHelp,
   CircleX,
   Hourglass,
   Inbox,
   Link2,
   Search,
-  Zap,
   type LucideIcon,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { Band, ClaimStatus, ItemKind, ItemStatus } from "@/lib/types";
+import type { ClaimStatus, ItemKind, ItemStatus } from "@/lib/types";
 
 /** Soft status colours on top of the shadcn Badge (text >= 4.5:1 on each tint). */
 export type Tone = "blue" | "amber" | "violet" | "green" | "gray" | "red";
@@ -87,22 +85,6 @@ export function ClaimBadge({ status }: { status: ClaimStatus }) {
   return (
     <ToneBadge tone={style.tone} icon={style.icon}>
       {t(`claimStatus.${status}`)}
-    </ToneBadge>
-  );
-}
-
-export function BandBadge({ band }: { band: Band }) {
-  const { t } = useTranslation();
-  if (band === "strong")
-    return (
-      <Badge className="bg-ink text-cream">
-        <Zap aria-hidden data-icon="inline-start" />
-        {t("band.strong")}
-      </Badge>
-    );
-  return (
-    <ToneBadge tone={band === "possible" ? "blue" : "gray"} icon={CircleHelp}>
-      {t(`band.${band}`)}
     </ToneBadge>
   );
 }
