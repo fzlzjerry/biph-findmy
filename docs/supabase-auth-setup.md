@@ -1,6 +1,6 @@
 # Supabase 登录邮件设置
 
-网站用 Supabase Auth 给 `@basischina.com` 邮箱发 6 位验证码。除了发信邮箱（SMTP），其他设置都已经通过管理接口配好了：
+网站用 Supabase Auth 给 `@basischina.com` 邮箱发 6 位验证码。下面的设置都已经通过管理接口配好了（2026-10-09）：
 
 ```bash
 supabase login                                    # 一次性登录，令牌存在 ~/.supabase/access-token
@@ -15,13 +15,15 @@ uv run python scripts/configure_supabase_auth.py  # 可重复执行
 | Site URL | `https://biph-findmy.vercel.app` | ✅ |
 | 只允许学校邮箱注册 | Before User Created hook → `public.hook_restrict_signup_domain`（[迁移文件](../supabase/migrations/0002_signup_domain_hook.sql)） | ✅ |
 | 登录 / 验证频率上限 | 每 IP 每 5 分钟 300 次（全校的请求都从我们的服务器发出） | ✅ |
-| **自定义 SMTP** | 见下文 | ⏳ 需要一个邮箱的授权码 |
-| 中英双语验证码邮件模板 | [`supabase/templates/otp-email.html`](../supabase/templates/otp-email.html) | ⏳ 免费版要先配好 SMTP 才能改；配好后重新运行上面的脚本 |
-| 发信上限 | 每小时 100 封 | ⏳ 同上 |
+| 自定义 SMTP | Purelymail：`findmynoreply@purelymail.com`，`smtp.purelymail.com:465`，发件人名 BIPH FindMy | ✅ 已实测发信成功 |
+| 中英双语验证码邮件模板 | [`supabase/templates/otp-email.html`](../supabase/templates/otp-email.html)（Magic Link 和 Confirm signup 两个模板） | ✅ |
+| 发信上限 | 每小时 100 封 | ✅ |
 
 > **为什么一定要配 SMTP**：Supabase 自带的发信服务**只能发给你 Supabase 组织里的成员**，每小时最多 2 封，而且免费版不允许修改邮件模板。
+>
+> **换发信邮箱**：在控制台 Authentication → Emails → SMTP Settings 里改，或者通过管理接口改 `smtp_*` 字段（密码不要写进仓库）。
 
-## SMTP：用一个邮箱帮网站发信
+## 其他可用的 SMTP（备选）
 
 **Authentication → Emails → SMTP Settings → Enable custom SMTP**。Sender name 填 `BIPH FindMy`；Sender email 必须和 SMTP 账号是同一个邮箱地址（Resend 除外）。
 
@@ -32,7 +34,7 @@ uv run python scripts/configure_supabase_auth.py  # 可重复执行
 | **Gmail** | `smtp.gmail.com` | `465` | Gmail 地址 | **应用专用密码** | 要先开两步验证；每天约 500 封 |
 | **Resend**（以后有域名时推荐） | `smtp.resend.com` | `465` | `resend` | Resend 的 API key | 要先验证自己的域名；发件人可以是 `noreply@你的域名` |
 
-最好专门注册一个社团用的邮箱来发信，不要用个人主邮箱。配好 SMTP 以后，再运行一次 `scripts/configure_supabase_auth.py`，验证码邮件模板和发信上限就会自动设上。
+最好专门注册一个社团用的邮箱来发信，不要用个人主邮箱。换完 SMTP 以后，再运行一次 `scripts/configure_supabase_auth.py`，确保模板和发信上限都在。
 
 ## 用学校邮箱实测一次
 
