@@ -63,7 +63,7 @@ def verify(body: VerifyRequest, response: Response, db: Session = Depends(get_db
     db.commit()
     set_session_cookies(response, session)
     return {"user": {"id": str(profile.id), "email": profile.email, "display_name": profile.display_name,
-                     "role": "admin" if profile.email in get_settings().admins else profile.role}}
+                     "role": profile.role}}
 
 
 @router.post("/auth/logout")

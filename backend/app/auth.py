@@ -110,8 +110,16 @@ def clear_session_cookies(response: Response) -> None:
     response.delete_cookie(REFRESH_COOKIE, path="/")
 
 
+def role_for(email: str, stored_role: str | None) -> str:
+    """ADMIN_EMAILS decides who is staff, so removing an address takes effect on the next request.
+    With no list configured (local dev), the stored role from the seed data is kept."""
+    admins = get_settings().admins
+    if email in admins:
+        return "admin"
+    return "user" if admins else (stored_role or "user")
+
+
 def upsert_profile(db: Session, user_id: str, email: str, display_name: str | None = None) -> Profile:
-    s = get_settings()
     profile = db.get(Profile, uuid.UUID(user_id))
     if profile is None:
         profile = db.query(Profile).filter(Profile.email == email).one_or_none()
@@ -123,8 +131,7 @@ def upsert_profile(db: Session, user_id: str, email: str, display_name: str | No
         db.add(profile)
     if display_name:
         profile.display_name = display_name[:60]
-    if email in s.admins:
-        profile.role = "admin"
+    profile.role = role_for(email, profile.role)
     profile.last_seen_at = utcnow()
     db.flush()
     return profile
@@ -161,8 +168,7 @@ def get_actor_optional(request: Request, response: Response, db: Session = Depen
     if profile is None:
         profile = upsert_profile(db, claims["sub"], email)
         db.commit()
-    role = "admin" if email in s.admins else profile.role
-    return Actor(profile.id, email, role, profile.display_name)
+    return Actor(profile.id, email, role_for(email, profile.role), profile.display_name)
 
 
 def get_actor(actor: Actor | None = Depends(get_actor_optional)) -> Actor:
