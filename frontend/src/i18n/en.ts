@@ -609,7 +609,7 @@ const en = {
     evalBody: "The Data Science Club tested the matcher on several hundred made-up reports in both languages. On that test data it put the right item first 89% of the time and in the top three 99% of the time. Real reports are messier, so expect lower numbers, and always check the details before you claim.",
     evalMethodsCaption: "Ranking accuracy by method. Combining all the evidence beats keyword search or a category + colour filter.",
     evalDistractorCaption: "Accuracy as more look-alikes are added. Reports that mention a distinguishing mark hold up better.",
-    evalNote: "Synthetic test data, so treat these as an upper bound. Full report: docs/eval_report.md.",
+    evalNote: "Synthetic test data, so treat these as an upper bound.",
     marksTitle: "Why we ask about distinguishing marks",
     marksBody: "Two plain black bottles look the same to any matcher. On synthetic test data with five look-alikes, reports that mentioned a sticker, keychain or initials were matched first 62% of the time, against 40% for reports without.",
     privacyTitle: "Privacy",
