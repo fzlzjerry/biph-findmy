@@ -674,6 +674,7 @@ const zh: Translation = {
     invalid_code: "验证码错误或已过期，请检查邮件或重新获取。",
     too_many_attempts: "错误次数太多，请重新获取验证码。",
     rate_limited: "尝试次数太多，请等一分钟再试。",
+    email_rate_limited: "这个小时发出的登录邮件太多了，请稍后再试。",
     email_not_deliverable: "无法向这个邮箱发送邮件，请检查是否有拼写错误。",
     auth_unreachable: "登录服务暂时没有响应，请稍后再试。",
     expired: "登录已过期，请重新登录。",

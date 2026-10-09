@@ -671,6 +671,7 @@ const en = {
     invalid_code: "That code is wrong or has expired. Check the email or request a new code.",
     too_many_attempts: "Too many wrong codes. Please request a new code.",
     rate_limited: "Too many attempts. Please wait a minute and try again.",
+    email_rate_limited: "We’ve sent too many login emails this hour. Please try again later.",
     email_not_deliverable: "We couldn’t send an email to that address. Check it for typos.",
     auth_unreachable: "The login service isn’t responding. Please try again in a moment.",
     expired: "Your session has expired. Please log in again.",
