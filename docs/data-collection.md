@@ -38,9 +38,9 @@ flatter the model. The real-data result is the honest number for the Q1 presenta
 
 ```csv
 object_id,kind,text,date,time,window_hours,places,colors,category,private_detail
-A01,lost,"我的黑色保温杯不见了 上面贴了个恐龙贴纸，周二体育课之后",2026-10-20,14:30,2,gym,black,water_bottle,
-A01,found,"Black thermos, green dinosaur sticker, gym bleachers",2026-10-20,16:00,,gym,black;green,water_bottle,lid says K.L.
-A02,lost,"white airpods case with a cat sticker, lost it somewhere near the lockers",2026-10-21,,4,hallway_lockers;classroom,white,earbuds,
+A01,lost,"我的黑色保温杯不见了 上面贴了个恐龙贴纸，周二体育课之后",2026-10-20,14:30,2,lower_gym,black,water_bottle,
+A01,found,"Black thermos, green dinosaur sticker, gym bleachers",2026-10-20,16:00,,lower_gym,black;green,water_bottle,lid says K.L.
+A02,lost,"white airpods case with a cat sticker, lost it somewhere near the lockers",2026-10-21,,4,a_1f;b_2f,white,earbuds,
 ```
 
 | 列 | 必填 | 说明 |
@@ -61,7 +61,7 @@ A02,lost,"white airpods case with a cat sticker, lost it somewhere near the lock
 <details>
 <summary>可用的 ID · allowed values</summary>
 
-- **places**：`classroom` `hallway_lockers` `science_lab` `computer_lab` `art_room` `music_room` `study_hall` `library` `cafeteria` `gym` `pool` `field_track` `basketball_courts` `tennis_courts` `locker_rooms` `auditorium` `black_box` `dorm` `dorm_common` `main_gate` `bus_stop` `front_desk` `other`
+- **places**：`a_1f`–`a_5f`（A 栋 1–5 楼）`library` `theater` `black_box` `clinic` `b_1f`–`b_4f` `c_1f`–`c_5f` `lower_gym` `upper_gym` `pool` `field_track` `basketball_courts` `tennis_courts` `cafeteria` `dorm` `dorm_common` `main_gate` `bus_stop` `front_desk` `other`。写教室号也行（如 A305），会自动识别成对应楼层。
   （完整中英文名称见 `matcher/data/locations.yaml`。这份地点表是按公开信息起草的，**请社团成员按校园实际情况修改**。）
 - **colors**：`black` `white` `gray` `silver` `red` `pink` `orange` `yellow` `gold` `green` `blue` `navy` `purple` `brown` `beige` `transparent` `multicolor`
 - **category**：

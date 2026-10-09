@@ -113,7 +113,7 @@ const en = {
     title: "Where things turn up",
     hint: "Tap a zone to see what was found there.",
     allZones: "All of campus",
-    short: { sports: "Sports", academic: "Academic", library: "Library", dining: "Cafeteria", arts: "Arts", boarding: "Boarding", entrance: "Gate & bus", other: "Other" },
+    short: { building_a: "Building A", building_b: "Building B", building_c: "Building C", sports: "Gyms", dining: "Cafeteria", boarding: "Boarding", entrance: "Gate & bus", other: "Other" },
   },
   home: {
     title: "Lost something at school? Let’s get it back.",

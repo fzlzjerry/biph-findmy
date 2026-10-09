@@ -75,7 +75,7 @@ export default function HomePage() {
   const returnedCount = returned.data?.total;
   const steps = [
     [t("home.step1Title"), t("home.step1"), "var(--color-zone-sports)"],
-    [t("home.step2Title"), t("home.step2"), "var(--color-zone-academic)"],
+    [t("home.step2Title"), t("home.step2"), "var(--color-zone-building-a)"],
     [t("home.step3Title"), t("home.step3"), "var(--color-zone-entrance)"],
   ] as const;
 

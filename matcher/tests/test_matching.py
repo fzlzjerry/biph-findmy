@@ -62,10 +62,10 @@ def test_user_confirmed_fields_override_extraction(tfidf_matcher):
 
 
 def test_analyze_payload_for_form_chips(tfidf_matcher):
-    out = tfidf_matcher.analyze("Found white AirPods Pro with a cat case in the music room")
+    out = tfidf_matcher.analyze("Found white AirPods Pro with a cat case in A402")
     assert out["category"]["id"] == "earbuds"
     assert out["colors"][0]["id"] == "white"
-    assert out["places"][0]["id"] == "music_room"
+    assert out["places"][0]["id"] == "a_4f"
     assert out["brands"][0]["id"] == "apple"
     assert not out["sensitive"]
     assert tfidf_matcher.analyze("捡到一张学生卡")["sensitive"] is True

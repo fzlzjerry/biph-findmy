@@ -90,6 +90,27 @@ MODEL_SUFFIX_STOP = {"ml", "l", "gb", "tb", "mb", "cm", "mm", "kg", "g", "mah", 
                      "pm", "am", "th", "st", "nd", "rd", "oz"}
 
 
+# Room numbers and floors → "<building>_<n>f" place ids: A305, b-210, c栋4楼, a3楼, B楼2层, building C 4th floor.
+_ROOM_PATTERNS = (
+    re.compile(r"(?<![a-z0-9])(?P<b>[abc])\s?-?(?P<f>[1-9])\d{2}(?![0-9])"),
+    re.compile(r"(?<![a-z0-9])(?P<b>[abc])\s*(?:栋|座|幢|楼)?\s*(?P<f>[1-9])\s*(?:楼|层)"),
+    re.compile(r"\bbuilding\s*(?P<b>[abc])\W*(?:floor\s*(?P<f>[1-9])|(?P<f2>[1-9])(?:st|nd|rd|th)?\s*floor)\b"),
+    re.compile(r"\b(?P<f>[1-9])(?:st|nd|rd|th)?\s*floor\s*(?:of\s*)?(?:building\s*)?(?P<b>[abc])\b"),
+)
+
+
+def _rooms(norm: str, vocab: Vocab) -> list[tuple[str, int, int]]:
+    found: list[tuple[str, int, int]] = []
+    for pattern in _ROOM_PATTERNS:
+        for m in pattern.finditer(norm):
+            groups = m.groupdict()
+            floor = groups.get("f") or groups.get("f2")
+            place = f"{groups['b']}_{floor}f"
+            if place in vocab.places:
+                found.append((place, m.start(), m.end()))
+    return found
+
+
 def _codes(raw: str, norm: str) -> list[str]:
     nfkc = unicodedata.normalize("NFKC", raw or "")
     found: list[str] = []
@@ -139,6 +160,16 @@ def extract(raw: str, vocab: Vocab | None = None) -> Extraction:
     norm = normalize(raw)
     occupied = bytearray(len(norm))
     spans: list[Span] = []
+
+    # Room numbers first: "A305" is a place, not a model number or a code.
+    rooms = _rooms(norm, vocab)
+    for place, start, end in rooms:
+        if not any(occupied[start:end]):
+            occupied[start:end] = b"\x01" * (end - start)
+            spans.append(Span("location", place, start, end, norm[start:end]))
+    code_norm = norm
+    for _, start, end in rooms:
+        code_norm = code_norm[:start] + " " * (end - start) + code_norm[end:]
 
     for phrase in vocab.span_phrases:
         if phrase.text not in norm:
@@ -200,7 +231,7 @@ def extract(raw: str, vocab: Vocab | None = None) -> Extraction:
     ex.marks = unique("mark", spans)
     ex.motifs = unique("motif", spans)
     ex.brands = unique("brand", sorted(brand_spans, key=lambda s: s.start))
-    ex.codes = _codes(raw, norm)
+    ex.codes = _codes(raw, code_norm)
 
     removed = [(s.start, s.end) for s in spans if s.kind in {"category", "color", "location", "stop"}]
     removed += [(s.start, s.end) for s in brand_spans]

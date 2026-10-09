@@ -94,7 +94,7 @@
           "oklch(95% 0.102 134.8)"
         ]
       },
-      "zone-academic": {
+      "zone-building-a": {
         "role": "tertiary",
         "displayName": "Sky Block",
         "canonical": "oklch(79.6% 0.111 244.6)",
@@ -109,7 +109,7 @@
           "oklch(95% 0.073 244.6)"
         ]
       },
-      "zone-library": {
+      "zone-building-b": {
         "role": "tertiary",
         "displayName": "Library Mint",
         "canonical": "oklch(86.7% 0.071 181.3)",
@@ -139,7 +139,7 @@
           "oklch(95% 0.092 30.0)"
         ]
       },
-      "zone-arts": {
+      "zone-building-c": {
         "role": "tertiary",
         "displayName": "Stage Lilac",
         "canonical": "oklch(86.7% 0.095 314.7)",
@@ -580,7 +580,7 @@
     "rules": [
       {
         "name": "The Zone Owns The Colour Rule",
-        "body": "A zone colour always means that zone. Item thumbnails, map lobes and filters must agree; never use a zone fill decoratively for something that is not located there (the How-it-works step discs are the one sanctioned exception and use sports, academic, entrance in order).",
+        "body": "A zone colour always means that zone. Item thumbnails, map lobes and filters must agree; never use a zone fill decoratively for something that is not located there (the How-it-works step discs are the one sanctioned exception and use sports, Building A, entrance in order).",
         "section": "colors"
       },
       {

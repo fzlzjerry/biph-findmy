@@ -6,12 +6,16 @@ from matcher.extract import extract
 @pytest.mark.parametrize(
     "text, category, colors, places",
     [
-        ("黑色保温杯 贴了恐龙贴纸，在体育馆丢的", "water_bottle", ["black"], ["gym"]),
-        ("Found a black Thermos bottle near the gym", "water_bottle", ["black"], ["gym"]),
-        ("在gym丢了black水杯", "water_bottle", ["black"], ["gym"]),
+        ("黑色保温杯 贴了恐龙贴纸，在体育馆丢的", "water_bottle", ["black"], ["lower_gym"]),
+        ("Found a black Thermos bottle near the gym", "water_bottle", ["black"], ["lower_gym"]),
+        ("在gym丢了black水杯", "water_bottle", ["black"], ["lower_gym"]),
         ("藍色耳機 在圖書館", "earbuds", ["blue"], ["library"]),
         ("purple pencil case with stripes, cafeteria", "pencil_case", ["purple"], ["cafeteria"]),
-        ("navy blue hoodie left in the changing room", "jacket", ["navy"], ["locker_rooms"]),
+        ("navy blue hoodie left in the changing room", "jacket", ["navy"], ["lower_gym"]),
+        ("在A305丢了黑色水杯", "water_bottle", ["black"], ["a_3f"]),
+        ("TI-84 calculator left in B210", "calculator", [], ["b_2f"]),
+        ("white earbuds, C栋4楼", "earbuds", ["white"], ["c_4f"]),
+        ("upper gym, red jacket", "jacket", ["red"], ["upper_gym"]),
     ],
 )
 def test_bilingual_attributes(text, category, colors, places):

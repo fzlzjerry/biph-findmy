@@ -1,45 +1,56 @@
-# BIPH campus places — DRAFT based on public information about the campus.
-# Club members: please correct names / add places (building floors, dorm buildings, etc.).
-# `aliases` are used to detect places mentioned in free-text descriptions.
-version: 1
+# BIPH campus places: buildings → floors / named rooms (structure confirmed by the Coding Club, 2026-10-09).
+# Club members: correct names or add rooms here; the web app and the matcher both read this file.
+# `aliases` are used to detect places mentioned in free-text descriptions. Room numbers are detected separately
+# (matcher/extract.py): "A305", "B 2xx", "C栋4楼", "building C 4th floor" → that building's floor.
+# `legacy` maps place ids from the first draft (still used by seed / eval data) onto today's places.
+version: 2
 
 zones:
-  - id: academic
-    label: {en: Academic building, zh: 教学楼}
+  - id: building_a
+    label: {en: Building A, zh: A 栋}
     places:
-      - {id: classroom, label: {en: Classroom, zh: 教室}, aliases: [classroom, class room, homeroom, 教室, 班级]}
-      - {id: hallway_lockers, label: {en: Hallway / lockers, zh: 走廊 / 储物柜}, aliases: [hallway, corridor, hall, lockers, locker, stairs, staircase, 走廊, 储物柜, 楼梯, 楼道]}
-      - {id: science_lab, label: {en: Science lab, zh: 实验室}, aliases: [science lab, lab, laboratory, chem lab, bio lab, physics lab, 实验室, 化学实验室, 生物实验室, 物理实验室]}
-      - {id: computer_lab, label: {en: Computer lab, zh: 电脑室}, aliases: [computer lab, mac lab, apple lab, it room, 电脑室, 机房, 电脑教室]}
-      - {id: art_room, label: {en: Art room, zh: 美术室}, aliases: [art room, art studio, 美术室, 画室]}
-      - {id: music_room, label: {en: Music room, zh: 音乐室}, aliases: [music room, band room, practice room, 音乐室, 琴房]}
-      - {id: study_hall, label: {en: Study hall / commons, zh: 自习区 / 公共区}, aliases: [study hall, commons, study area, lounge, 自习室, 自习区, 公共区]}
-
-  - id: library
-    label: {en: Library, zh: 图书馆}
-    places:
+      - {id: a_1f, label: {en: Building A · 1F (A1xx), zh: A 栋 · 1 楼（A1xx）}, aliases: []}
+      - {id: a_2f, label: {en: Building A · 2F (A2xx), zh: A 栋 · 2 楼（A2xx）}, aliases: []}
+      - {id: a_3f, label: {en: Building A · 3F (A3xx), zh: A 栋 · 3 楼（A3xx）}, aliases: []}
+      - {id: a_4f, label: {en: Building A · 4F (A4xx), zh: A 栋 · 4 楼（A4xx）}, aliases: []}
+      - {id: a_5f, label: {en: Building A · 5F (A5xx), zh: A 栋 · 5 楼（A5xx）}, aliases: []}
       - {id: library, label: {en: Library, zh: 图书馆}, aliases: [library, 图书馆, 阅览室]}
+      - {id: theater, label: {en: Theater, zh: 剧场}, aliases: [theater, theatre, auditorium, assembly hall, 剧场, 剧院, 礼堂, 大礼堂]}
+      - {id: black_box, label: {en: Black Box, zh: 黑盒剧场}, aliases: [black box, blackbox, black box theater, black box theatre, 黑盒剧场, 黑盒, 小剧场]}
+      - {id: clinic, label: {en: Clinic / nurse, zh: 医疗室}, aliases: [clinic, nurse, nurse's office, nurse office, health office, 医疗室, 医务室, 校医室, 医务处]}
+
+  - id: building_b
+    label: {en: Building B, zh: B 栋}
+    places:
+      - {id: b_1f, label: {en: Building B · 1F (B1xx), zh: B 栋 · 1 楼（B1xx）}, aliases: []}
+      - {id: b_2f, label: {en: Building B · 2F (B2xx), zh: B 栋 · 2 楼（B2xx）}, aliases: []}
+      - {id: b_3f, label: {en: Building B · 3F (B3xx), zh: B 栋 · 3 楼（B3xx）}, aliases: []}
+      - {id: b_4f, label: {en: Building B · 4F (B4xx), zh: B 栋 · 4 楼（B4xx）}, aliases: []}
+
+  - id: building_c
+    label: {en: Building C, zh: C 栋}
+    places:
+      - {id: c_1f, label: {en: Building C · 1F (C1xx), zh: C 栋 · 1 楼（C1xx）}, aliases: []}
+      - {id: c_2f, label: {en: Building C · 2F (C2xx), zh: C 栋 · 2 楼（C2xx）}, aliases: []}
+      - {id: c_3f, label: {en: Building C · 3F (C3xx), zh: C 栋 · 3 楼（C3xx）}, aliases: []}
+      - {id: c_4f, label: {en: Building C · 4F (C4xx), zh: C 栋 · 4 楼（C4xx）}, aliases: []}
+      - {id: c_5f, label: {en: Building C · 5F (C5xx), zh: C 栋 · 5 楼（C5xx）}, aliases: []}
+
+  - id: sports
+    label: {en: Gyms & sports, zh: 体育馆 / 运动场}
+    places:
+      # A bare "gym" / 体育馆 goes to the Lower Gym; both gyms share a zone, so matching still sees "same area".
+      - {id: lower_gym, label: {en: Lower Gym, zh: 下体育馆（Lower Gym）}, aliases: [lower gym, gym, gymnasium, sports hall, 下体育馆, 下层体育馆, 体育馆, 室内体育馆, 更衣室, changing room, locker room]}
+      - {id: upper_gym, label: {en: Upper Gym, zh: 上体育馆（Upper Gym）}, aliases: [upper gym, 上体育馆, 上层体育馆]}
+      - {id: pool, label: {en: Swimming pool, zh: 游泳馆}, aliases: [pool, swimming pool, natatorium, 游泳馆, 游泳池, 泳池]}
+      - {id: field_track, label: {en: Field & track, zh: 足球场 / 跑道}, aliases: [field, soccer field, football field, track, running track, pitch, 足球场, 跑道, 田径场, 操场]}
+      - {id: basketball_courts, label: {en: Basketball courts, zh: 篮球场}, aliases: [basketball court, basketball courts, 篮球场]}
+      - {id: tennis_courts, label: {en: Tennis courts, zh: 网球场}, aliases: [tennis court, tennis courts, 网球场]}
 
   - id: dining
     label: {en: Cafeteria, zh: 食堂}
     places:
       - {id: cafeteria, label: {en: Cafeteria, zh: 食堂}, aliases: [cafeteria, canteen, dining hall, lunch hall, lunchroom, 食堂, 饭堂, 餐厅]}
-
-  - id: sports
-    label: {en: Sports facilities, zh: 运动区}
-    places:
-      - {id: gym, label: {en: Gymnasium, zh: 体育馆}, aliases: [gym, gymnasium, sports hall, 体育馆, 室内体育馆]}
-      - {id: pool, label: {en: Swimming pool, zh: 游泳馆}, aliases: [pool, swimming pool, natatorium, 游泳馆, 游泳池, 泳池]}
-      - {id: field_track, label: {en: Field & track, zh: 足球场 / 跑道}, aliases: [field, soccer field, football field, track, running track, pitch, 足球场, 跑道, 田径场, 操场]}
-      - {id: basketball_courts, label: {en: Basketball courts, zh: 篮球场}, aliases: [basketball court, basketball courts, 篮球场]}
-      - {id: tennis_courts, label: {en: Tennis courts, zh: 网球场}, aliases: [tennis court, tennis courts, 网球场]}
-      - {id: locker_rooms, label: {en: Changing rooms, zh: 更衣室}, aliases: [locker room, locker rooms, changing room, changing rooms, 更衣室]}
-
-  - id: arts
-    label: {en: Performing arts, zh: 演艺区}
-    places:
-      - {id: auditorium, label: {en: Auditorium, zh: 礼堂}, aliases: [auditorium, assembly hall, 礼堂, 大礼堂]}
-      - {id: black_box, label: {en: Black box theater, zh: 黑盒剧场}, aliases: [black box, blackbox, black box theater, black box theatre, 黑盒剧场, 小剧场]}
 
   - id: boarding
     label: {en: Boarding, zh: 宿舍区}
@@ -48,7 +59,7 @@ zones:
       - {id: dorm_common, label: {en: Dorm common room, zh: 宿舍公共区}, aliases: [common room, dorm lounge, 宿舍大厅, 公共休息室]}
 
   - id: entrance
-    label: {en: Entrance & transport, zh: 校门 / 交通}
+    label: {en: Gate, bus & front desk, zh: 校门 / 校车 / 前台}
     places:
       - {id: main_gate, label: {en: Main gate, zh: 校门}, aliases: [main gate, gate, school gate, entrance, 校门, 大门, 门口]}
       - {id: bus_stop, label: {en: School bus, zh: 校车}, aliases: [school bus, bus stop, bus, 校车, 校车站, 公交站]}
@@ -58,3 +69,17 @@ zones:
     label: {en: Other / not sure, zh: 其他 / 不确定}
     places:
       - {id: other, label: {en: Other / not sure, zh: 其他 / 不确定}, aliases: []}
+
+# Old draft ids → current places. Rooms without a known building in the draft land on a fixed floor so
+# historical synthetic data stays internally consistent; real reports always use the ids above.
+legacy:
+  gym: lower_gym
+  locker_rooms: lower_gym
+  auditorium: theater
+  classroom: b_2f
+  hallway_lockers: a_1f
+  study_hall: a_2f
+  music_room: a_4f
+  science_lab: c_3f
+  computer_lab: c_2f
+  art_room: c_4f

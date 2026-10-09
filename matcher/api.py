@@ -180,7 +180,7 @@ class Matcher:
             colors, color_conf = ex.colors, 0.8
         brands = {item.brand} if item.brand else set(ex.brands)
         if item.locations:
-            places, place_conf = list(item.locations), 1.0
+            places, place_conf = list(dict.fromkeys(v.canon_place(p) for p in item.locations)), 1.0
         else:
             places, place_conf = ex.places, 0.7
 

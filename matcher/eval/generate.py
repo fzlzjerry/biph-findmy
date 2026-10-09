@@ -166,6 +166,8 @@ class Generator:
                                       "zh": [a for a in p["aliases"] if not a.isascii()][:3]}
                             for z in loc["zones"] for p in z["places"] if p["aliases"]}
         self.zone = {p["id"]: z["id"] for z in loc["zones"] for p in z["places"]}
+        # The tables above use the first campus draft's place ids; the matcher maps them onto today's places.
+        self.zone.update({old: self.zone[new] for old, new in (loc.get("legacy") or {}).items()})
         self.held_cats = held["categories"]
         self.held_marks = held["marks"]
         import opencc

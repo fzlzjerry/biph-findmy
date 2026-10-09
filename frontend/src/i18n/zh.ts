@@ -118,7 +118,7 @@ const zh: Translation = {
     title: "东西都在哪儿被捡到",
     hint: "点一个区域，看看那里捡到了什么。",
     allZones: "整个校园",
-    short: { sports: "运动区", academic: "教学楼", library: "图书馆", dining: "食堂", arts: "演艺区", boarding: "宿舍区", entrance: "校门", other: "其他" },
+    short: { building_a: "A 栋", building_b: "B 栋", building_c: "C 栋", sports: "体育馆", dining: "食堂", boarding: "宿舍区", entrance: "校门", other: "其他" },
   },
   home: {
     title: "在学校丢了东西？我们帮你找回来。",

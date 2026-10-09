@@ -15,6 +15,8 @@ from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import select
 
+from matcher import get_matcher
+
 from .auth import LOCAL_NAMESPACE
 from .config import get_settings
 from .db import get_engine, get_sessionmaker, init_db
@@ -139,7 +141,7 @@ def seed(reset: bool = False) -> int:
             start = min(_when(days, hour), now - timedelta(minutes=5))
             item = Item(
                 kind=kind, reporter_id=_profile(db, who).id, description=text, category=cat, colors=colors,
-                locations=places, time_from=start,
+                locations=[get_matcher().vocab.canon_place(p) for p in places], time_from=start,
                 time_to=start + timedelta(hours=extra.get("window_h", 0)) if kind == "lost" else None,
                 marks_text=extra.get("marks_text", ""), private_detail=extra.get("private_detail", ""),
                 brand=extra.get("brand"), holding="front_desk" if kind == "found" else None,

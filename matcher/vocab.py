@@ -52,6 +52,7 @@ class Vocab:
     motifs: dict[str, dict] = field(default_factory=dict)
     places: dict[str, Place] = field(default_factory=dict)
     zones: dict[str, dict] = field(default_factory=dict)
+    legacy_places: dict[str, str] = field(default_factory=dict)  # old draft id -> current place id
     stopwords_en: frozenset[str] = frozenset()
     stopwords_zh: tuple[str, ...] = ()
     span_phrases: list[Phrase] = field(default_factory=list)  # competing kinds, longest first
@@ -62,8 +63,12 @@ class Vocab:
             return 1.0
         return self.color_sim.get((a, b), self.color_sim.get((b, a), 0.0))
 
+    def canon_place(self, place_id: str) -> str:
+        """Current id for a place, mapping ids from the first campus draft (seed / eval data) onto today's."""
+        return self.legacy_places.get(place_id, place_id)
+
     def zone_of(self, place_id: str) -> str | None:
-        place = self.places.get(place_id)
+        place = self.places.get(self.canon_place(place_id))
         return place.zone if place else None
 
     def parent_of(self, category_id: str) -> str | None:
@@ -138,6 +143,7 @@ def load_vocab(data_dir: str | None = None) -> Vocab:
         for place in zone["places"]:
             vocab.places[place["id"]] = Place(place["id"], zone["id"], place["label"])
             span += _phrases(place.get("aliases") or [], "location", place["id"])
+    vocab.legacy_places = {old: new for old, new in (loc.get("legacy") or {}).items() if new in vocab.places}
 
     stop = tax.get("stopwords", {})
     vocab.stopwords_en = frozenset(normalize(w) for w in stop.get("en") or [])

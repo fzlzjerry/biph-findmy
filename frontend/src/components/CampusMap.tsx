@@ -11,24 +11,24 @@ import { cn } from "@/lib/utils";
 
 type Lobe = { id: string; cx: number; cy: number; r: number; seed: number; label: { x: number; y: number } };
 
-// Rough campus layout in a 1000 × 700 frame: sports fields west, academic block north-east, the gate south.
+// Schematic campus in a 1000 × 700 frame: the three teaching buildings across the top, gyms and canteen in the middle, the gate south.
 const LOBES: Lobe[] = [
-  { id: "sports", cx: 230, cy: 220, r: 150, seed: 3, label: { x: 23, y: 31 } },
-  { id: "academic", cx: 610, cy: 195, r: 150, seed: 7, label: { x: 61, y: 28 } },
-  { id: "library", cx: 870, cy: 340, r: 150, seed: 11, label: { x: 87, y: 49 } },
-  { id: "dining", cx: 470, cy: 430, r: 150, seed: 5, label: { x: 47, y: 61 } },
-  { id: "arts", cx: 740, cy: 545, r: 150, seed: 13, label: { x: 74, y: 78 } },
-  { id: "boarding", cx: 190, cy: 525, r: 150, seed: 2, label: { x: 19, y: 75 } },
-  { id: "entrance", cx: 455, cy: 585, r: 130, seed: 17, label: { x: 45.5, y: 84 } },
-  { id: "other", cx: 895, cy: 615, r: 150, seed: 19, label: { x: 89.5, y: 88 } },
+  { id: "building_a", cx: 250, cy: 205, r: 150, seed: 3, label: { x: 25, y: 29 } },
+  { id: "building_b", cx: 560, cy: 160, r: 150, seed: 7, label: { x: 56, y: 23 } },
+  { id: "building_c", cx: 845, cy: 270, r: 150, seed: 11, label: { x: 84.5, y: 39 } },
+  { id: "sports", cx: 640, cy: 450, r: 150, seed: 13, label: { x: 64, y: 64 } },
+  { id: "dining", cx: 380, cy: 430, r: 150, seed: 5, label: { x: 38, y: 61 } },
+  { id: "boarding", cx: 140, cy: 520, r: 150, seed: 2, label: { x: 14, y: 74 } },
+  { id: "entrance", cx: 420, cy: 610, r: 130, seed: 17, label: { x: 42, y: 87 } },
+  { id: "other", cx: 885, cy: 615, r: 150, seed: 19, label: { x: 88.5, y: 88 } },
 ];
 
 export const ZONE_FILL: Record<string, string> = {
+  building_a: "var(--color-zone-building-a)",
+  building_b: "var(--color-zone-building-b)",
+  building_c: "var(--color-zone-building-c)",
   sports: "var(--color-zone-sports)",
-  academic: "var(--color-zone-academic)",
-  library: "var(--color-zone-library)",
   dining: "var(--color-zone-dining)",
-  arts: "var(--color-zone-arts)",
   boarding: "var(--color-zone-boarding)",
   entrance: "var(--color-zone-entrance)",
   other: "var(--color-zone-other)",
@@ -139,7 +139,7 @@ export function CampusMap({
                 {size === "lg" && n !== undefined && (
                   <span
                     className={cn(
-                      "tabular rounded-full px-2.5 py-0.5 font-bold transition-colors duration-200",
+                      "tabular rounded-full px-2.5 py-0.5 font-bold whitespace-nowrap transition-colors duration-200",
                       size === "lg" ? "text-sm" : "text-xs",
                       on ? "bg-ink text-cream" : "bg-white/95 group-hover:bg-white",
                     )}

@@ -92,10 +92,10 @@
   --color-sun: var(--sun);
   --color-coral: var(--coral);
   --color-zone-sports: #8ed462;
-  --color-zone-academic: #7cc4ff;
-  --color-zone-library: #9fe3d6;
+  --color-zone-building-a: #7cc4ff;
+  --color-zone-building-b: #9fe3d6;
   --color-zone-dining: #ff8a78;
-  --color-zone-arts: #ebc1ff;
+  --color-zone-building-c: #ebc1ff;
   --color-zone-boarding: #ffc58a;
   --color-zone-entrance: #f5e211;
   --color-zone-other: #dcd6c4;

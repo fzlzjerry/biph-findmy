@@ -77,7 +77,7 @@ for (const vp of VIEWPORTS) {
       await page.goto("/admin/quick-add");
       await page.getByRole("button", { name: "Water bottle" }).click();
       await page.getByRole("button", { name: "Black" }).click();
-      await page.getByLabel("Where was it found?").selectOption("gym");
+      await page.getByLabel("Where was it found?").selectOption("lower_gym");
       await expect(page.getByText("Black water bottle")).toBeVisible();
       await shot("quick-add", true);
     });

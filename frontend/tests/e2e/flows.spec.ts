@@ -23,7 +23,7 @@ test("anonymous visitors can browse found items and search finds the dinosaur th
   const thermos = results.getByRole("link", { name: /green dinosaur sticker/i });
   await expect(thermos).toBeVisible();
   await expect(thermos).toContainText("Water bottle");
-  await expect(thermos).toContainText("Gymnasium");
+  await expect(thermos).toContainText("Lower Gym");
 });
 
 test("a student reports a lost thermos and gets a strong match with reasons", async ({ page }) => {
@@ -41,7 +41,7 @@ test("a student reports a lost thermos and gets a strong match with reasons", as
   await expect(page.getByRole("button", { name: "Black", pressed: true })).toBeVisible();
 
   await page.getByLabel("Area", { exact: true }).selectOption("sports");
-  await page.getByRole("group", { name: "Places in Sports facilities" }).getByRole("button", { name: "Gymnasium" }).click();
+  await page.getByRole("group", { name: "Places in Gyms & sports" }).getByRole("button", { name: "Lower Gym" }).click();
   await page.getByRole("button", { name: "A few days ago" }).click();
   await page.getByRole("button", { name: "Post lost report" }).click();
 
@@ -53,7 +53,7 @@ test("a student reports a lost thermos and gets a strong match with reasons", as
   await expect(best).toContainText(/green dinosaur sticker/);
   const reasons = best.getByRole("list", { name: "Why we think so" });
   await expect(reasons).toContainText("Shared details: sticker, dinosaur");
-  await expect(reasons).toContainText("Same place: Gymnasium");
+  await expect(reasons).toContainText("Same place: Lower Gym");
 });
 
 test("claim → front desk approves → item handed back and marked returned", async ({ page }) => {

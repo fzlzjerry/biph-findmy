@@ -60,6 +60,7 @@ def validate_fields(f: ItemFields) -> ItemFields:
         raise HTTPException(422, "unknown_category")
     if any(c not in v.colors for c in f.colors):
         raise HTTPException(422, "unknown_color")
+    f.locations = [v.canon_place(p) for p in f.locations]
     if any(p not in v.places for p in f.locations):
         raise HTTPException(422, "unknown_location")
     if f.brand and f.brand not in v.brands:

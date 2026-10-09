@@ -11,10 +11,10 @@ colors:
   coral: "#ff705d"
   coral-deep: "#ff5f49"
   zone-sports: "#8ed462"
-  zone-academic: "#7cc4ff"
-  zone-library: "#9fe3d6"
+  zone-building-a: "#7cc4ff"
+  zone-building-b: "#9fe3d6"
   zone-dining: "#ff8a78"
-  zone-arts: "#ebc1ff"
+  zone-building-c: "#ebc1ff"
   zone-boarding: "#ffc58a"
   zone-entrance: "#f5e211"
   zone-other: "#dcd6c4"
@@ -198,10 +198,10 @@ A warm, sunlit paper palette: cream and ink as the constants, two saturated acti
 ### Tertiary (zone fills)
 Each campus zone owns one flat fill. They appear as map lobes, the circular thumbnail behind a photo-less item's category icon, numbered step discs and the avatar fallback. All carry ink text/icons.
 - **Field Green** (#8ed462): sports.
-- **Sky Block** (#7cc4ff): academic.
-- **Library Mint** (#9fe3d6): library.
+- **Sky Block** (#7cc4ff): Building A.
+- **Library Mint** (#9fe3d6): Building B.
 - **Canteen Coral** (#ff8a78): dining.
-- **Stage Lilac** (#ebc1ff): arts.
+- **Stage Lilac** (#ebc1ff): Building C.
 - **Dorm Apricot** (#ffc58a): boarding.
 - **Gate Yellow** (#f5e211): entrance; deliberately the same hue as Signpost Sun.
 - **Sandbar** (#dcd6c4): other / unknown zone; the fallback for any item without a zone.
@@ -222,7 +222,7 @@ Each campus zone owns one flat fill. They appear as map lobes, the circular thum
 Status badges use soft tint pairs that each clear 4.5:1: blue (#d8ecff / #0d4677), amber (#fbf1a6 / #5c4b00), violet (#f1ddff / #5a2780), green (#d9f2c8 / #285a17), red (#ffe1dc / #8a1f10), grey (Sand / Muted Ink).
 
 ### Named Rules
-**The Zone Owns The Colour Rule.** A zone colour always means that zone. Item thumbnails, map lobes and filters must agree; never use a zone fill decoratively for something that is not located there (the How-it-works step discs are the one sanctioned exception and use sports, academic, entrance in order).
+**The Zone Owns The Colour Rule.** A zone colour always means that zone. Item thumbnails, map lobes and filters must agree; never use a zone fill decoratively for something that is not located there (the How-it-works step discs are the one sanctioned exception and use sports, Building A, entrance in order).
 
 **The Ink On Colour Rule.** Every coloured surface (sun, coral, all eight zones) carries ink text and ink icons. White text on these fills fails contrast and is not used.
 
