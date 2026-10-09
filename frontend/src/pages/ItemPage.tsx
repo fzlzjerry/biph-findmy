@@ -72,7 +72,7 @@ function Gallery({ item }: { item: Item }) {
               aria-label={t("item.showPhoto", { n: i + 1 })}
               onClick={() => setIndex(i)}
               className={cn(
-                "size-16 overflow-hidden rounded-2xl border-2 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink",
+                "size-16 overflow-hidden rounded-2xl border-2 outline-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-ink",
                 i === index ? "border-ink" : "border-transparent hover:border-input",
               )}
             >

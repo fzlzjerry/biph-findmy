@@ -82,7 +82,7 @@ function TabsContent({
     <TabsPrimitive.Content
       data-slot="tabs-content"
       // Radix makes the panel a tab stop (Tab from the tab row lands here), so it needs a visible focus outline.
-      className={cn("flex-1 rounded-lg text-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring", className)}
+      className={cn("flex-1 rounded-lg text-sm outline-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-4 focus-visible:outline-ring", className)}
       {...props}
     />
   )

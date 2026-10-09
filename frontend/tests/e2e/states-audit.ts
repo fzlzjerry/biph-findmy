@@ -61,7 +61,8 @@ const MEASURE = `(el) => {
   const s = getComputedStyle(el);
   const hasText = !!(el.innerText||'').trim() || (el.tagName==='INPUT' && el.value);
   return { ratio: Math.round(ratio*100)/100, fg: fg.slice(0,3).map(Math.round).join(','), bg: bg.slice(0,3).map(Math.round).join(','), hasText, gradient,
-    ring: [s.outlineStyle, s.outlineWidth, s.outlineColor, s.boxShadow, s.borderColor].join('|'),
+    // an outline only counts if it actually paints: outline-none leaves outline-style none even when width and colour change
+    ring: [s.outlineStyle !== 'none' && parseFloat(s.outlineWidth) > 0 ? s.outlineStyle + s.outlineWidth + s.outlineColor : 'no-outline', s.boxShadow, s.borderColor].join('|'),
     bgOwn: s.backgroundColor, opacity: s.opacity };
 }`;
 
