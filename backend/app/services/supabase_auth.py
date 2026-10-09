@@ -47,15 +47,16 @@ class SupabaseAuth:
             resp = httpx.post(f"{self.url}/auth/v1{path}", json=payload, headers=self._headers(token), timeout=15)
         except httpx.HTTPError as exc:
             raise AuthError("auth_unreachable", 503) from exc
-        if resp.status_code == 429:
-            raise AuthError("rate_limited", 429)
         if resp.status_code >= 400:
             body = resp.json() if resp.headers.get("content-type", "").startswith("application/json") else {}
             code = body.get("error_code") or body.get("code") or "auth_failed"
+            # The hourly email quota is shared by the whole school, so it gets its own message.
+            if code == "over_email_send_rate_limit":
+                raise AuthError("email_rate_limited", 429)
+            if resp.status_code == 429:
+                raise AuthError("rate_limited", 429)
             if code in ("otp_expired", "invalid_credentials") or "expired" in str(body).lower():
                 raise AuthError("invalid_code", 400)
-            if code == "over_email_send_rate_limit":
-                raise AuthError("rate_limited", 429)
             if code == "email_address_not_authorized":
                 raise AuthError("email_not_deliverable", 400)
             raise AuthError(str(code), 400 if resp.status_code < 500 else 502)

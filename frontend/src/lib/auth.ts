@@ -1,5 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router";
 import { api } from "./api";
 import type { User } from "./types";
 
@@ -25,13 +24,10 @@ export function useResetUserData() {
 }
 
 export function useLogout() {
-  const reset = useResetUserData();
-  const navigate = useNavigate();
   return useMutation({
     mutationFn: api.logout,
-    onSettled: () => {
-      reset(null);
-      navigate("/", { replace: true });
-    },
+    // A fresh load of the home page drops every cached query. Clearing the user in place instead would
+    // let RequireAuth on a signed-in-only page redirect to /login?next=… before a client-side navigation lands.
+    onSettled: () => window.location.replace("/"),
   });
 }

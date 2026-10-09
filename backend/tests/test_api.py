@@ -186,6 +186,20 @@ def test_admin_only_routes(users, client):
     assert csv_text.startswith("﻿")
 
 
+def test_removing_admin_email_revokes_access(users, monkeypatch):
+    from backend.app.config import get_settings
+
+    assert users["desk"].get("/api/admin/stats").status_code == 200
+    monkeypatch.setenv("ADMIN_EMAILS", "someone-else@school.test")
+    get_settings.cache_clear()
+    try:
+        assert users["desk"].get("/api/admin/stats").status_code == 403
+        assert users["desk"].get("/api/me").json()["user"]["role"] == "user"
+    finally:
+        monkeypatch.setenv("ADMIN_EMAILS", "desk@school.test")
+        get_settings.cache_clear()
+
+
 def test_feedback_marks_lost_item_matched(users):
     post_item(users["finder"], description="pink TI-84 calculator", category="calculator", colors=["pink"],
               locations=["library"])

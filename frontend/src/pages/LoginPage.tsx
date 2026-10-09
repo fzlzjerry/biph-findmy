@@ -220,6 +220,7 @@ export default function LoginPage() {
                       setDevCode(null);
                       setCode("");
                       verify.reset();
+                      requestCode.reset();
                     }}
                   >
                     <ArrowLeft aria-hidden data-icon="inline-start" />
