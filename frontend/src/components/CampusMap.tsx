@@ -129,7 +129,7 @@ export function CampusMap({
                 onPointerLeave={() => setHover(null)}
                 onFocus={() => setHover(l.id)}
                 onBlur={() => setHover(null)}
-                className="group flex flex-col items-center gap-[0.3em] rounded-2xl px-1.5 py-1 text-ink outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+                className="group flex flex-col items-center gap-[0.3em] rounded-2xl px-1.5 py-1 text-ink outline-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-ink"
               >
                 {/* Type scales with the map's own width (cqi), so labels keep their size relative to the lobes. */}
                 <span

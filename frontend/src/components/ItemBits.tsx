@@ -88,7 +88,7 @@ export function RelativeTime({ iso, className }: { iso: string; className?: stri
 
 /** The white, borderless row card that lifts on hover (item lists, "My items"). */
 export const cardLinkClass =
-  "group flex w-full min-w-0 items-center gap-4 rounded-[1.25rem] bg-card p-3.5 pr-4 shadow-[0_1px_2px_rgb(44_46_42/0.06)] transition-[box-shadow,transform] duration-200 ease-(--ease-out-expo) outline-none hover:-translate-y-0.5 hover:shadow-[0_8px_24px_-12px_rgb(44_46_42/0.35)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink";
+  "group flex w-full min-w-0 items-center gap-4 rounded-[1.25rem] bg-card p-3.5 pr-4 shadow-[0_1px_2px_rgb(44_46_42/0.06)] transition-[box-shadow,transform] duration-200 ease-(--ease-out-expo) outline-none hover:-translate-y-0.5 hover:shadow-[0_8px_24px_-12px_rgb(44_46_42/0.35)] focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-ink";
 
 export function ItemCard({ item, headingLevel = 3 }: { item: Item; headingLevel?: 2 | 3 }) {
   const labels = useLabels();
