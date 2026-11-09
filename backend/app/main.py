@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, FastAPI
 from .auth import csrf_guard
 from .config import get_settings
 from .db import init_db
-from .routers import admin, auth, cron, items, media, meta
+from .routers import admin, auth, cron, items, media, meta, staff
 
 FRONTEND_DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
 
@@ -28,7 +28,7 @@ def create_app() -> FastAPI:
     app = FastAPI(title="BIPH FindMy API", version="1.0.0", lifespan=lifespan,
                   docs_url="/api/docs", openapi_url="/api/openapi.json", redoc_url=None)
     api = APIRouter(prefix="/api", dependencies=[Depends(csrf_guard)])
-    for module in (meta, auth, items, admin, cron):
+    for module in (meta, auth, items, admin, staff, cron):
         api.include_router(module.router)
     app.include_router(api)
     app.include_router(media.router)

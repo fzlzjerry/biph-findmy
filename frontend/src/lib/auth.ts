@@ -8,10 +8,15 @@ export function useMe() {
   return useQuery({ queryKey: ME_KEY, queryFn: api.me, staleTime: 60_000 });
 }
 
-export function useUser(): { user: User | null; isLoading: boolean; isAdmin: boolean } {
+export function useUser(): { user: User | null; isLoading: boolean; isAdmin: boolean; isSuperAdmin: boolean } {
   const query = useMe();
   const user = query.data?.user ?? null;
-  return { user, isLoading: query.isPending, isAdmin: user?.role === "admin" };
+  return {
+    user,
+    isLoading: query.isPending,
+    isAdmin: user?.role === "admin" || user?.role === "superadmin",
+    isSuperAdmin: user?.role === "superadmin",
+  };
 }
 
 /** Drops everything cached for the previous account (is_mine flags, my items, admin data). */

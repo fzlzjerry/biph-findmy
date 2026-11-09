@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     allowed_email_domains: str = ""   # e.g. "basischina.com,students.basischina.com"
     allowed_emails: str = ""          # explicit allow-list while the school domain is unknown
     admin_emails: str = ""            # front-desk staff and club officers
+    superadmin_emails: str = ""       # may add / remove staff in the app; empty → everyone in ADMIN_EMAILS
     session_secret: str = "dev-only-session-secret-change-me"
     dev_show_code: bool = False       # local auth only: return the code in the API response
 
@@ -53,10 +54,14 @@ class Settings(BaseSettings):
     def admins(self) -> set[str]:
         return self._split(self.admin_emails)
 
+    @property
+    def superadmins(self) -> set[str]:
+        return self._split(self.superadmin_emails) or self.admins
+
     def email_allowed(self, email: str) -> bool:
         """Who may sign in. Closed by default in production until a domain or allow-list is set."""
         email = email.strip().lower()
-        if email in self.admins or email in self._split(self.allowed_emails):
+        if email in self.admins or email in self.superadmins or email in self._split(self.allowed_emails):
             return True
         if self.domains:
             return email.rsplit("@", 1)[-1] in self.domains

@@ -22,7 +22,7 @@ import { Toggle } from "@/components/ui/toggle";
 import { ApiError, api } from "@/lib/api";
 import { useErrorText } from "@/lib/errors";
 import { useDebounced, useDocumentTitle } from "@/lib/hooks";
-import { useLabels } from "@/lib/meta";
+import { dropoffAdvice, useLabels } from "@/lib/meta";
 import { deviceIsOnChinaTime, inputToDate, inputToIso, isFuture, shanghaiAt, toInputValue } from "@/lib/time";
 import type { Analysis, Holding, ItemKind } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -78,7 +78,8 @@ export default function ReportPage({ kind }: { kind: ItemKind }) {
   const [timeFrom, setTimeFrom] = useState(() => (lost ? "" : toInputValue(new Date())));
   const [timeTo, setTimeTo] = useState(() => toInputValue(new Date()));
   const [photos, setPhotos] = useState<File[]>([]);
-  const [holding, setHolding] = useState<Holding>("front_desk");
+  // Until the finder picks one, the drop-off follows the desk's rule of thumb (see dropoffAdvice).
+  const [pickedHolding, setPickedHolding] = useState<Holding | null>(null);
   const [holdingNote, setHoldingNote] = useState("");
   const [privateDetail, setPrivateDetail] = useState("");
   const [errors, setErrors] = useState<Partial<Record<FieldKey, string>>>({});
@@ -129,6 +130,13 @@ export default function ReportPage({ kind }: { kind: ItemKind }) {
   }, [result, lost]);
 
   const sensitive = category ? labels.isSensitive(category) : Boolean(result?.sensitive);
+  const desks = labels.meta.dropoffs.filter((d) => d.kind === "desk");
+  const shelves = labels.meta.dropoffs.filter((d) => d.kind === "shelf");
+  const hasMarks = Boolean(
+    marks.trim() || privateDetail.trim() || result?.marks.length || result?.motifs.length || result?.codes.length,
+  );
+  const advice = !lost && category ? dropoffAdvice(labels.meta, category, hasMarks) : null;
+  const holding = pickedHolding ?? (advice === "shelf" && shelves.length ? shelves[0].id : (desks[0]?.id ?? "other"));
   useEffect(() => {
     if (sensitive && photos.length) {
       setPhotos([]);
@@ -557,19 +565,55 @@ export default function ReportPage({ kind }: { kind: ItemKind }) {
                   <FieldLegend variant="label" className="mb-0">
                     {t("report.holding")}
                   </FieldLegend>
-                  <RadioGroup value={holding} onValueChange={(value) => setHolding(value as Holding)} className="gap-2">
-                    {(
-                      [
-                        ["front_desk", t("report.holdingFrontDesk"), t("report.holdingFrontDeskHint")],
-                        ["with_finder", t("report.holdingWithMe"), t("report.holdingWithMeHint")],
-                        ["other", t("report.holdingOther"), t("report.holdingOtherHint")],
-                      ] as const
-                    ).map(([value, title, hint]) => (
+                  {advice && (
+                    <p id="report-holding-advice" className="flex gap-2 text-sm" data-testid="dropoff-advice">
+                      <Lightbulb aria-hidden className="mt-0.5 size-4 shrink-0 text-ink" />
+                      {advice === "shelf" ? t("report.adviceShelf") : t("report.adviceDesk")}
+                    </p>
+                  )}
+                  <RadioGroup
+                    value={holding}
+                    onValueChange={(value) => setPickedHolding(value)}
+                    className="gap-2"
+                    aria-describedby={advice ? "report-holding-advice" : undefined}
+                  >
+                    <div className="rounded-xl border p-3">
+                      <p className="flex flex-wrap items-center gap-2 text-sm font-medium">
+                        {t("report.holdingDesks")}
+                        {advice === "desk" && <Badge variant="secondary">{t("report.holdingSuggested")}</Badge>}
+                      </p>
+                      <p className="mt-0.5 text-sm text-muted-foreground">{t("report.holdingDeskHint")}</p>
+                      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                        {desks.map((desk) => (
+                          <FieldLabel key={desk.id} htmlFor={`holding-${desk.id}`}>
+                            <Field orientation="horizontal">
+                              <RadioGroupItem value={desk.id} id={`holding-${desk.id}`} />
+                              <FieldContent>
+                                <FieldTitle>{labels.text(desk.label)}</FieldTitle>
+                              </FieldContent>
+                            </Field>
+                          </FieldLabel>
+                        ))}
+                      </div>
+                    </div>
+                    {[
+                      ...shelves.map((shelf) => ({
+                        value: shelf.id,
+                        title: labels.text(shelf.label),
+                        hint: t("report.holdingShelfHint", { days: shelf.ttl_days ?? labels.meta.item_ttl_days }),
+                        suggested: advice === "shelf",
+                      })),
+                      { value: "with_finder", title: t("report.holdingWithMe"), hint: t("report.holdingWithMeHint"), suggested: false },
+                      { value: "other", title: t("report.holdingOther"), hint: t("report.holdingOtherHint"), suggested: false },
+                    ].map(({ value, title, hint, suggested }) => (
                       <FieldLabel key={value} htmlFor={`holding-${value}`}>
                         <Field orientation="horizontal">
                           <RadioGroupItem value={value} id={`holding-${value}`} />
                           <FieldContent>
-                            <FieldTitle>{title}</FieldTitle>
+                            <FieldTitle>
+                              {title}
+                              {suggested && <Badge variant="secondary">{t("report.holdingSuggested")}</Badge>}
+                            </FieldTitle>
                             <FieldDescription>{hint}</FieldDescription>
                           </FieldContent>
                         </Field>

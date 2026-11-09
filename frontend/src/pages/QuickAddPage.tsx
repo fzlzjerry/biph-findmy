@@ -18,6 +18,7 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Toggle } from "@/components/ui/toggle";
 import { api } from "@/lib/api";
+import { useUser } from "@/lib/auth";
 import { categoryIcon } from "@/lib/categoryIcon";
 import { useErrorText } from "@/lib/errors";
 import { readStorage, useDocumentTitle, writeStorage } from "@/lib/hooks";
@@ -40,6 +41,7 @@ const QUICK_CATEGORIES = [
   "other",
 ];
 const PLACE_KEY = "findmy.quickAdd.place";
+const DROPOFF_KEY = "findmy.quickAdd.dropoff";
 
 function categoryLabel(labels: Labels, id: string): Bilingual | null {
   for (const group of labels.meta.categories) for (const child of group.children) if (child.id === id) return child.label;
@@ -83,7 +85,15 @@ export default function QuickAddPage() {
   const errorText = useErrorText();
   useDocumentTitle(t("quickAdd.title"));
 
+  const { user } = useUser();
   const placeIds = new Set(labels.meta.zones.flatMap((z) => z.places.map((p) => p.id)));
+  const dropoffIds = new Set(labels.meta.dropoffs.map((d) => d.id));
+  const [dropoff, setDropoff] = useState(() => {
+    const saved = readStorage(DROPOFF_KEY) ?? "";
+    if (dropoffIds.has(saved)) return saved;
+    if (user?.desk && dropoffIds.has(user.desk)) return user.desk;
+    return labels.meta.dropoffs[0]?.id ?? "";
+  });
   const [photos, setPhotos] = useState<File[]>([]);
   const [category, setCategory] = useState("");
   const [colors, setColors] = useState<string[]>([]);
@@ -162,7 +172,7 @@ export default function QuickAddPage() {
     form.set("locations", place);
     form.set("description", description.trim() || auto);
     form.set("private_detail", privateDetail.trim());
-    form.set("holding", "front_desk");
+    form.set("holding", dropoff);
     form.set("time_from", inputToIso(toInputValue(new Date())) ?? new Date().toISOString());
     if (!sensitive) photos.forEach((file) => form.append("photos", file, file.name));
     mutation.mutate(form);
@@ -274,6 +284,25 @@ export default function QuickAddPage() {
                         </NativeSelectOption>
                       ))}
                     </NativeSelectOptGroup>
+                  ))}
+                </NativeSelect>
+              </FormField>
+
+              <FormField id="qa-dropoff" label={t("quickAdd.dropoff")} hint={t("quickAdd.dropoffHint")}>
+                <NativeSelect
+                  id="qa-dropoff"
+                  className="w-full"
+                  value={dropoff}
+                  onChange={(event) => {
+                    setDropoff(event.target.value);
+                    writeStorage(DROPOFF_KEY, event.target.value);
+                  }}
+                  aria-describedby="qa-dropoff-hint"
+                >
+                  {labels.meta.dropoffs.map((d) => (
+                    <NativeSelectOption key={d.id} value={d.id}>
+                      {labels.text(d.label)}
+                    </NativeSelectOption>
                   ))}
                 </NativeSelect>
               </FormField>

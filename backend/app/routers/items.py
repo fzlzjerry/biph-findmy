@@ -15,6 +15,7 @@ from matcher import get_matcher
 
 from ..auth import Actor, get_actor, get_actor_optional
 from ..db import get_db
+from ..dropoffs import get_dropoffs
 from ..models import Claim, Item, Match, utcnow
 from ..serializers import claim_view, item_view, match_view
 from ..services import audit
@@ -40,8 +41,11 @@ class ItemFields(BaseModel):
     location_note: str = Field(default="", max_length=200)
     time_from: datetime
     time_to: datetime | None = None
-    holding: Literal["front_desk", "with_finder", "other"] | None = None
+    holding: str | None = Field(default=None, max_length=20)  # dropoffs.yaml point id | with_finder | other
     holding_note: str = Field(default="", max_length=200)
+
+
+CloseReason = Literal["found_myself", "from_desk", "gave_up"]
 
 
 def _split(value: str | None) -> list[str]:
@@ -71,8 +75,9 @@ def validate_fields(f: ItemFields) -> ItemFields:
         raise HTTPException(422, "time_in_future")
     if f.kind == "found":
         f.time_to = None
-        if f.holding is None:
-            f.holding = "front_desk"
+        f.holding = get_dropoffs().canon(f.holding)
+        if f.holding is not None and not get_dropoffs().valid(f.holding):
+            raise HTTPException(422, "unknown_holding")
     else:
         f.holding, f.holding_note, f.private_detail = None, "", ""
         if f.time_to and f.time_to < f.time_from:
@@ -139,6 +144,8 @@ def get_item_or_404(db: Session, item_id: uuid.UUID, viewer: Actor | None) -> It
 def create_item(fields: ItemFields = Depends(item_form), photos: list[UploadFile] = File(default=[]),
                 actor: Actor = Depends(get_actor), db: Session = Depends(get_db)) -> dict:
     f = validate_fields(fields)
+    if f.kind == "found" and f.holding is None:
+        f.holding = actor.desk or get_dropoffs().desks[0]
     cat = get_matcher().vocab.categories.get(f.category)
     if cat and cat.sensitive and any(p.filename for p in photos):
         raise HTTPException(422, "photos_not_allowed_for_sensitive_items")
@@ -237,9 +244,10 @@ class ItemPatch(BaseModel):
     brand: str | None = None
     locations: list[str] | None = None
     location_note: str | None = Field(default=None, max_length=200)
-    holding: Literal["front_desk", "with_finder", "other"] | None = None
+    holding: str | None = Field(default=None, max_length=20)
     holding_note: str | None = Field(default=None, max_length=200)
     status: Literal["open", "closed"] | None = None
+    close_reason: CloseReason | None = None  # lost reports: why the owner closed it
 
 
 CONTENT_FIELDS = {"title", "description", "marks_text", "private_detail", "category", "colors", "brand", "locations"}
@@ -253,6 +261,7 @@ def update_item(item_id: uuid.UUID, body: ItemPatch, actor: Actor = Depends(get_
         raise HTTPException(403, "not_owner")
     changes = body.model_dump(exclude_unset=True)
     status = changes.pop("status", None)
+    close_reason = changes.pop("close_reason", None)
     if changes:
         merged = ItemFields(**{**{k: getattr(item, k) for k in ItemFields.model_fields}, **changes})
         f = validate_fields(merged)
@@ -260,13 +269,17 @@ def update_item(item_id: uuid.UUID, body: ItemPatch, actor: Actor = Depends(get_
             setattr(item, key, getattr(f, key))
     if status == "closed" and item.status in ACTIVE:
         item.status, item.closed_at = "closed", utcnow()
+        attrs = {k: v for k, v in (item.attrs or {}).items() if k != "close_reason"}
+        item.attrs = {**attrs, "close_reason": close_reason} if close_reason else attrs
     elif status == "open" and item.status == "closed":
         item.status, item.closed_at = "open", None
+        item.attrs = {k: v for k, v in (item.attrs or {}).items() if k != "close_reason"}
     if CONTENT_FIELDS & set(changes):
         enrich(item)
     db.flush()
     refresh_matches(db, item)
-    audit.log(db, actor.id, "item.update", "item", item.id, fields=sorted(changes), status=status)
+    audit.log(db, actor.id, "item.update", "item", item.id, fields=sorted(changes), status=status,
+              close_reason=close_reason)
     db.commit()
     return {"item": item_view(item, actor), "matches": _matches_for(db, item, actor)}
 
@@ -307,6 +320,8 @@ def create_claim(item_id: uuid.UUID, body: ClaimRequest, actor: Actor = Depends(
     item = get_item_or_404(db, item_id, actor)
     if item.kind != "found":
         raise HTTPException(422, "only_found_items_can_be_claimed")
+    if get_dropoffs().is_shelf(item.holding):
+        raise HTTPException(422, "shelf_item_self_service")
     if item.status not in MATCHABLE:
         raise HTTPException(409, "item_not_claimable")
     if item.reporter_id == actor.id:
@@ -344,6 +359,35 @@ def cancel_claim(claim_id: uuid.UUID, actor: Actor = Depends(get_actor), db: Ses
         item.status = "open"
     db.commit()
     return {"claim": claim_view(claim, item, actor)}
+
+
+# --------------------------------------------------------------------------- open shelf
+class Collected(BaseModel):
+    lost_item_id: uuid.UUID | None = None
+
+
+@router.post("/items/{item_id}/collected")
+def mark_collected(item_id: uuid.UUID, body: Collected, actor: Actor = Depends(get_actor),
+                   db: Session = Depends(get_db)) -> dict:
+    """Open-shelf items have no one on duty to hand them over: whoever takes one marks it taken,
+    so the next person doesn't walk to an empty shelf."""
+    item = get_item_or_404(db, item_id, actor)
+    if item.kind != "found" or not get_dropoffs().is_shelf(item.holding):
+        raise HTTPException(422, "not_a_shelf_item")
+    if item.status not in MATCHABLE:
+        raise HTTPException(409, "item_not_claimable")
+    now = utcnow()
+    item.status, item.returned_at = "returned", now
+    item.attrs = {**(item.attrs or {}), "collected_by": str(actor.id), "collected_via": "shelf"}
+    lost = db.get(Item, body.lost_item_id) if body.lost_item_id else None
+    if lost and lost.reporter_id == actor.id and lost.kind == "lost" and lost.status in ACTIVE:
+        lost.status, lost.returned_at = "returned", now
+        refresh_matches(db, lost)
+    db.flush()
+    refresh_matches(db, item)
+    audit.log(db, actor.id, "item.collected", "item", item.id, lost_id=str(lost.id) if lost else None)
+    db.commit()
+    return {"item": item_view(item, actor)}
 
 
 # --------------------------------------------------------------------------- mine

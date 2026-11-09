@@ -7,19 +7,23 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/lib/api";
+import { useUser } from "@/lib/auth";
 import { useDocumentTitle } from "@/lib/hooks";
+import CheckTab from "./CheckTab";
 import ClaimsTab from "./ClaimsTab";
 import ItemsTab from "./ItemsTab";
+import StaffTab from "./StaffTab";
 import StatsTab from "./StatsTab";
 
-type Tab = "claims" | "items" | "stats";
+type Tab = "claims" | "check" | "items" | "stats" | "staff";
 
 export default function AdminPage() {
   const { t } = useTranslation();
   useDocumentTitle(t("admin.title"));
   const [params, setParams] = useSearchParams();
+  const { isSuperAdmin } = useUser();
   const raw = params.get("tab");
-  const tab: Tab = raw === "items" || raw === "stats" ? raw : "claims";
+  const tab: Tab = raw === "check" || raw === "items" || raw === "stats" || (raw === "staff" && isSuperAdmin) ? raw : "claims";
   const pending = useQuery({ queryKey: ["admin", "claims", "pending"], queryFn: () => api.admin.claims("pending") });
   const pendingCount = pending.data?.claims.length ?? 0;
 
@@ -48,15 +52,26 @@ export default function AdminPage() {
               </Badge>
             )}
           </TabsTrigger>
+          <TabsTrigger value="check" className="px-3">
+            {t("admin.checkTab")}
+          </TabsTrigger>
           <TabsTrigger value="items" className="px-3">
             {t("admin.itemsTab")}
           </TabsTrigger>
           <TabsTrigger value="stats" className="px-3">
             {t("admin.statsTab")}
           </TabsTrigger>
+          {isSuperAdmin && (
+            <TabsTrigger value="staff" className="px-3">
+              {t("admin.staffTab")}
+            </TabsTrigger>
+          )}
         </TabsList>
         <TabsContent value="claims" className="text-base">
           <ClaimsTab />
+        </TabsContent>
+        <TabsContent value="check" className="text-base">
+          <CheckTab />
         </TabsContent>
         <TabsContent value="items" className="text-base">
           <ItemsTab />
@@ -64,6 +79,11 @@ export default function AdminPage() {
         <TabsContent value="stats" className="text-base">
           <StatsTab />
         </TabsContent>
+        {isSuperAdmin && (
+          <TabsContent value="staff" className="text-base">
+            <StaffTab />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );

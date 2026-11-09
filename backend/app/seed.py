@@ -20,6 +20,7 @@ from matcher import get_matcher
 from .auth import LOCAL_NAMESPACE
 from .config import get_settings
 from .db import get_engine, get_sessionmaker, init_db
+from .dropoffs import is_generic
 from .models import Base, Item, Profile
 from .services.matching import enrich, refresh_matches
 
@@ -29,6 +30,9 @@ DEMO_USERS = {
     "finder": ("finder.demo@findmy.local", "Demo Finder"),
     "desk": ("desk.demo@findmy.local", "Front Desk"),
 }
+
+# Which front desk a demo item went to, by the zone it was found in (anything else: the 5th-floor desk).
+DESK_BY_ZONE = {"sports": "desk_lower_gym", "boarding": "desk_dorm"}
 
 # (kind, reporter, days_ago, hour, description, category, colors, places, extra)
 FOUND = [
@@ -119,6 +123,16 @@ def _profile(db, key: str) -> Profile:
     return profile
 
 
+def _dropoff(item: Item) -> str:
+    """Look-alike cups and pens with nothing to tell them apart go on the canteen's open shelf, as the desk asked."""
+    if is_generic(item):
+        return "canteen_shelf"
+    place = item.locations[0] if item.locations else ""
+    if place == "library":
+        return "desk_library"
+    return DESK_BY_ZONE.get(get_matcher().vocab.zone_of(place) or "", "desk_5f")
+
+
 def _when(days_ago: float, hour: float) -> datetime:
     today = datetime.now(CST).replace(hour=0, minute=0, second=0, microsecond=0)
     return (today - timedelta(days=days_ago) + timedelta(hours=hour)).astimezone(timezone.utc)
@@ -144,8 +158,7 @@ def seed(reset: bool = False) -> int:
                 locations=[get_matcher().vocab.canon_place(p) for p in places], time_from=start,
                 time_to=start + timedelta(hours=extra.get("window_h", 0)) if kind == "lost" else None,
                 marks_text=extra.get("marks_text", ""), private_detail=extra.get("private_detail", ""),
-                brand=extra.get("brand"), holding="front_desk" if kind == "found" else None,
-                holding_note="Front desk, main building" if kind == "found" and who == "desk" else "",
+                brand=extra.get("brand"),
                 created_at=start + timedelta(minutes=30) if start + timedelta(minutes=30) < now else now,
                 attrs={"demo": True},
             )
@@ -153,6 +166,8 @@ def seed(reset: bool = False) -> int:
             db.flush()
             enrich(item)
             item.attrs = {**item.attrs, "demo": True}
+            if kind == "found":
+                item.holding = _dropoff(item)
             created.append(item)
         db.flush()
         for item in created:

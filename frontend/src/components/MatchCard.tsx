@@ -23,6 +23,7 @@ export function MatchCard({ match, lostItemId, canFeedback, onFeedback, feedback
   const headingId = `match-${match.id}`;
   const place = other.locations[0];
   const claimable = other.kind === "found" && (other.status === "open" || other.status === "matched");
+  const keptAt = other.kind === "found" ? labels.dropoffLabel(other.holding) : null;
 
   return (
     <Card
@@ -66,6 +67,7 @@ export function MatchCard({ match, lostItemId, canFeedback, onFeedback, feedback
           <span>{labels.category(other.category)}</span>
           {place && <span>{labels.place(place)}</span>}
           <RelativeTime iso={other.time_from} className="whitespace-nowrap" />
+          {keptAt && <span>{t("admin.atDropoff", { place: keptAt })}</span>}
         </p>
       </div>
       <div className="col-span-2 min-w-0 sm:col-span-1 sm:col-start-2">
@@ -92,7 +94,7 @@ export function MatchCard({ match, lostItemId, canFeedback, onFeedback, feedback
           {canFeedback && match.feedback === "confirmed" && claimable && lostItemId && (
             <Button asChild>
               <Link to={`/items/${other.id}?claim=1&lost=${lostItemId}`}>
-                {t("item.claimIt")}
+                {labels.isShelf(other.holding) ? t("item.viewItem") : t("item.claimIt")}
                 <ArrowRight aria-hidden data-icon="inline-end" />
               </Link>
             </Button>

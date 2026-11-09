@@ -10,6 +10,7 @@ import {
   Info,
   Lock,
   LogIn,
+  PackageCheck,
   PackageSearch,
   PartyPopper,
   SearchX,
@@ -32,6 +33,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Field, FieldContent, FieldError, FieldLabel, FieldLegend, FieldSet, FieldTitle } from "@/components/ui/field";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useLang } from "@/i18n";
@@ -41,8 +44,8 @@ import { categoryIcon } from "@/lib/categoryIcon";
 import { useErrorText } from "@/lib/errors";
 import { useDocumentTitle } from "@/lib/hooks";
 import { useLabels } from "@/lib/meta";
-import { formatDateTime, formatWindow } from "@/lib/time";
-import type { Claim, Item, ItemDetail, Match, Verdict } from "@/lib/types";
+import { formatDateTime, formatRelative, formatWindow } from "@/lib/time";
+import type { Claim, CloseReason, Item, ItemDetail, Match, Verdict } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 // --------------------------------------------------------------------------- gallery
@@ -133,9 +136,18 @@ function Attributes({ item, showDescription }: { item: Item; showDescription: bo
       </Attr>
       {item.kind === "found" && item.holding && (
         <Attr label={t("item.holding")}>
-          {t(`holding.${item.holding}`)}
+          {labels.dropoffLabel(item.holding) ??
+            (item.holding === "with_finder" || item.holding === "other" ? t(`holding.${item.holding}`) : item.holding)}
           {item.holding_note && <span className="block text-muted-foreground">{item.holding_note}</span>}
+          {item.checked_at && (
+            <span className="block text-muted-foreground" data-testid="checked-at">
+              {t("item.checkedAt", { time: formatRelative(item.checked_at, lang) })}
+            </span>
+          )}
         </Attr>
+      )}
+      {item.kind === "lost" && item.status === "closed" && item.close_reason && (
+        <Attr label={t("status.lost.closed")}>{t(`item.closeReasons.${item.close_reason}`)}</Attr>
       )}
       <Attr label={t("item.reported")}>
         <RelativeTime iso={item.created_at} /> <span className="text-muted-foreground">· {formatDateTime(item.created_at, lang)}</span>
@@ -386,6 +398,127 @@ function ClaimPanel({ item, claim, onClaim }: { item: Item; claim: Claim | null 
   );
 }
 
+// --------------------------------------------------------------------------- open shelf
+/** Nobody hands out what's on the open shelf: the owner takes it and says so, so the list stays true. */
+function ShelfPanel({ item, lostId }: { item: Item; lostId: string | null }) {
+  const { t } = useTranslation();
+  const labels = useLabels();
+  const { user } = useUser();
+  const location = useLocation();
+  const queryClient = useQueryClient();
+  const toast = useToast();
+  const errorText = useErrorText();
+  const [confirming, setConfirming] = useState(false);
+  const point = labels.dropoff(item.holding);
+  const mutation = useMutation({
+    mutationFn: () => api.collected(item.id, lostId),
+    onSuccess: (data) => {
+      queryClient.setQueryData<ItemDetail>(["item", item.id], (old) => (old ? { ...old, item: data.item } : old));
+      void queryClient.invalidateQueries({ queryKey: ["items"] });
+      void queryClient.invalidateQueries({ queryKey: ["myItems"] });
+      if (lostId) void queryClient.invalidateQueries({ queryKey: ["item", lostId] });
+      setConfirming(false);
+      toast({ message: t("item.shelfDone"), tone: "success" });
+    },
+  });
+
+  if (!["open", "matched"].includes(item.status))
+    return item.status === "returned" ? (
+      <StatusAlert icon={PackageCheck}>{t("item.shelfGone")}</StatusAlert>
+    ) : (
+      <StatusAlert icon={Info}>{t("item.notClaimable")}</StatusAlert>
+    );
+
+  const place = point ? labels.text(point.label) : "";
+  return (
+    <Card size="sm" data-testid="shelf-panel">
+      <CardHeader>
+        <CardTitle role="heading" aria-level={2}>
+          {t("item.shelfTitle")}
+        </CardTitle>
+        <CardDescription>
+          {t("item.shelfBody", { place })}{" "}
+          {point?.ttl_days ? t("item.shelfExpiry", { days: point.ttl_days }) : null}
+        </CardDescription>
+      </CardHeader>
+      <CardFooter>
+        {user ? (
+          <Button className="w-full sm:w-auto" onClick={() => setConfirming(true)}>
+            <PackageCheck aria-hidden data-icon="inline-start" />
+            {t("item.shelfTook")}
+          </Button>
+        ) : (
+          <Button asChild className="w-full sm:w-auto">
+            <Link to={`/login?next=${encodeURIComponent(location.pathname)}`}>
+              <LogIn aria-hidden data-icon="inline-start" />
+              {t("item.shelfLogin")}
+            </Link>
+          </Button>
+        )}
+      </CardFooter>
+      <ConfirmDialog
+        open={confirming}
+        onClose={() => {
+          setConfirming(false);
+          mutation.reset();
+        }}
+        onConfirm={() => mutation.mutate()}
+        title={t("item.shelfConfirmTitle")}
+        description={t("item.shelfConfirmBody")}
+        confirmLabel={t("item.shelfConfirm")}
+        busyLabel={t("item.shelfMarking")}
+        busy={mutation.isPending}
+        error={mutation.isError ? errorText(mutation.error) : undefined}
+      />
+    </Card>
+  );
+}
+
+// --------------------------------------------------------------------------- look-alikes
+/** Plain cups and pens the matcher can't tell apart: one card that says where to go and look, not a ranking. */
+function LookAlikes({ matches }: { matches: Match[] }) {
+  const { t } = useTranslation();
+  const labels = useLabels();
+  const lang = useLang();
+  const byPlace = new Map<string, Match[]>();
+  for (const match of matches) {
+    const key = match.item.holding ?? "other";
+    byPlace.set(key, [...(byPlace.get(key) ?? []), match]);
+  }
+  const categories = [...new Set(matches.map((m) => labels.category(m.item.category)))];
+  return (
+    <Card size="sm" data-testid="look-alikes" className="rounded-[1.5rem]">
+      <CardHeader>
+        <CardTitle role="heading" aria-level={3}>
+          {t("item.genericTitle", { count: matches.length, category: categories.join(lang === "zh" ? "、" : ", ") })}
+        </CardTitle>
+        <CardDescription>{t("item.genericBody")}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ul className="space-y-3">
+          {[...byPlace.entries()].map(([holding, group]) => (
+            <li key={holding}>
+              <p className="text-sm font-medium">
+                {labels.dropoffLabel(holding) ?? (holding === "with_finder" ? t("holding.with_finder") : t("holding.other"))} ·{" "}
+                {t("item.genericCount", { count: group.length })}
+              </p>
+              <ul className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                {group.map((match) => (
+                  <li key={match.id}>
+                    <Link to={`/items/${match.item.id}`} className="text-muted-foreground underline underline-offset-4 hover:text-foreground">
+                      {itemTitle(match.item, 40)}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
+  );
+}
+
 // --------------------------------------------------------------------------- matches
 function MatchesSection({ item, matches }: { item: Item; matches: Match[] }) {
   const { t } = useTranslation();
@@ -408,8 +541,12 @@ function MatchesSection({ item, matches }: { item: Item; matches: Match[] }) {
     onError: (error) => toast({ message: errorText(error), tone: "error" }),
   });
 
-  // Rejected matches drop to the bottom; everything else keeps the engine's order.
-  const ordered = [...matches].sort((a, b) => Number(a.feedback === "rejected") - Number(b.feedback === "rejected"));
+  // Look-alikes nobody can tell apart get one "go and look" card; the rest keep the engine's order,
+  // with rejected matches at the bottom.
+  const lookAlikes = item.kind === "lost" ? matches.filter((m) => m.item.generic && !m.feedback) : [];
+  const ordered = matches
+    .filter((m) => !lookAlikes.includes(m))
+    .sort((a, b) => Number(a.feedback === "rejected") - Number(b.feedback === "rejected"));
 
   return (
     <section aria-labelledby="matches-title">
@@ -419,7 +556,7 @@ function MatchesSection({ item, matches }: { item: Item; matches: Match[] }) {
         description={item.kind === "lost" ? t("item.matchesLeadLost") : t("item.matchesLeadFound")}
       />
       <div className="mt-5" aria-live="polite">
-        {ordered.length === 0 ? (
+        {ordered.length === 0 && lookAlikes.length === 0 ? (
           <EmptyState
             compact
             icon={PackageSearch}
@@ -447,6 +584,11 @@ function MatchesSection({ item, matches }: { item: Item; matches: Match[] }) {
                 />
               </li>
             ))}
+            {lookAlikes.length > 0 && (
+              <li>
+                <LookAlikes matches={lookAlikes} />
+              </li>
+            )}
           </ul>
         )}
       </div>
@@ -455,6 +597,82 @@ function MatchesSection({ item, matches }: { item: Item; matches: Match[] }) {
 }
 
 // --------------------------------------------------------------------------- owner tools
+const CLOSE_REASONS: CloseReason[] = ["found_myself", "from_desk", "gave_up"];
+
+/** Closing a lost report asks why, so the front desk can see how often students find things themselves. */
+function CloseLostDialog({ open, onClose, onConfirm, busy, error }: {
+  open: boolean;
+  onClose: () => void;
+  onConfirm: (reason: CloseReason) => void;
+  busy: boolean;
+  error?: string;
+}) {
+  const { t } = useTranslation();
+  const [reason, setReason] = useState<CloseReason | "">("");
+  const [missing, setMissing] = useState(false);
+  const submit = (event: FormEvent) => {
+    event.preventDefault();
+    if (!reason) {
+      setMissing(true);
+      return;
+    }
+    onConfirm(reason);
+  };
+  return (
+    <Dialog open={open} onOpenChange={(next) => !next && !busy && onClose()}>
+      <DialogContent className="sm:max-w-md" closeLabel={t("common.close")}>
+        <DialogHeader>
+          <DialogTitle className="text-lg">{t("item.closeConfirmTitle")}</DialogTitle>
+          <DialogDescription>{t("item.closeConfirmBody")}</DialogDescription>
+        </DialogHeader>
+        <form id="close-form" onSubmit={submit} noValidate>
+          <FieldSet className="gap-3">
+            <FieldLegend variant="label" className="mb-0">
+              {t("item.closeReasonLegend")}
+            </FieldLegend>
+            <RadioGroup
+              value={reason}
+              onValueChange={(value) => {
+                setReason(value as CloseReason);
+                setMissing(false);
+              }}
+              className="gap-2"
+              aria-invalid={missing || undefined}
+              aria-describedby={missing ? "close-reason-error" : undefined}
+            >
+              {CLOSE_REASONS.map((value) => (
+                <FieldLabel key={value} htmlFor={`close-${value}`}>
+                  <Field orientation="horizontal">
+                    <RadioGroupItem value={value} id={`close-${value}`} />
+                    <FieldContent>
+                      <FieldTitle>{t(`item.closeReasons.${value}`)}</FieldTitle>
+                    </FieldContent>
+                  </Field>
+                </FieldLabel>
+              ))}
+            </RadioGroup>
+            {missing && <FieldError id="close-reason-error">{t("item.closeReasonRequired")}</FieldError>}
+          </FieldSet>
+          {error && (
+            <Alert variant="destructive" className="mt-4">
+              <CircleAlert aria-hidden />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+        </form>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} disabled={busy}>
+            {t("common.cancel")}
+          </Button>
+          <BusyButton type="submit" form="close-form" variant="destructive" busy={busy} busyLabel={t("item.closing")}>
+            {t("item.closeConfirm")}
+          </BusyButton>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function OwnerTools({ item }: { item: Item }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -463,8 +681,9 @@ function OwnerTools({ item }: { item: Item }) {
   const [confirming, setConfirming] = useState(false);
   const closable = ["open", "matched", "claimed"].includes(item.status);
   const mutation = useMutation({
-    mutationFn: (status: "open" | "closed") => api.updateItem(item.id, { status }),
-    onSuccess: (data, status) => {
+    mutationFn: ({ status, reason }: { status: "open" | "closed"; reason?: CloseReason }) =>
+      api.updateItem(item.id, reason ? { status, close_reason: reason } : { status }),
+    onSuccess: (data, { status }) => {
       queryClient.setQueryData<ItemDetail>(["item", item.id], (old) => (old ? { ...old, item: data.item, matches: data.matches } : old));
       void queryClient.invalidateQueries({ queryKey: ["items"] });
       void queryClient.invalidateQueries({ queryKey: ["myItems"] });
@@ -488,7 +707,7 @@ function OwnerTools({ item }: { item: Item }) {
               {t("item.closeReport")}
             </Button>
           ) : (
-            <BusyButton variant="outline" busy={mutation.isPending} busyLabel={t("item.reopening")} onClick={() => mutation.mutate("open")}>
+            <BusyButton variant="outline" busy={mutation.isPending} busyLabel={t("item.reopening")} onClick={() => mutation.mutate({ status: "open" })}>
               {t("item.reopen")}
             </BusyButton>
           )}
@@ -499,18 +718,28 @@ function OwnerTools({ item }: { item: Item }) {
           </p>
         )}
       </CardContent>
-      <ConfirmDialog
-        open={confirming}
-        onClose={() => setConfirming(false)}
-        onConfirm={() => mutation.mutate("closed")}
-        title={t("item.closeConfirmTitle")}
-        description={t("item.closeConfirmBody")}
-        confirmLabel={t("item.closeConfirm")}
-        busyLabel={t("item.closing")}
-        busy={mutation.isPending}
-        destructive
-        error={mutation.isError ? errorText(mutation.error) : undefined}
-      />
+      {item.kind === "lost" ? (
+        <CloseLostDialog
+          open={confirming}
+          onClose={() => setConfirming(false)}
+          onConfirm={(reason) => mutation.mutate({ status: "closed", reason })}
+          busy={mutation.isPending}
+          error={mutation.isError ? errorText(mutation.error) : undefined}
+        />
+      ) : (
+        <ConfirmDialog
+          open={confirming}
+          onClose={() => setConfirming(false)}
+          onConfirm={() => mutation.mutate({ status: "closed" })}
+          title={t("item.closeConfirmTitle")}
+          description={t("item.closeConfirmBody")}
+          confirmLabel={t("item.closeConfirm")}
+          busyLabel={t("item.closing")}
+          busy={mutation.isPending}
+          destructive
+          error={mutation.isError ? errorText(mutation.error) : undefined}
+        />
+      )}
     </Card>
   );
 }
@@ -535,10 +764,12 @@ export default function ItemPage() {
   const detail = query.data;
   useDocumentTitle(detail ? itemTitle(detail.item, 50) : undefined);
 
+  const labels = useLabels();
   const canClaim =
     Boolean(user) &&
     detail?.item.kind === "found" &&
     !detail.item.is_mine &&
+    !labels.isShelf(detail.item.holding) &&
     ["open", "matched"].includes(detail.item.status) &&
     !["pending", "approved", "completed"].includes(detail.my_claim?.status ?? "");
 
@@ -704,6 +935,8 @@ export default function ItemPage() {
         >
           {item.is_mine ? (
             <OwnerTools item={item} />
+          ) : item.kind === "found" && labels.isShelf(item.holding) ? (
+            <ShelfPanel item={item} lostId={params.get("lost")} />
           ) : item.kind === "found" ? (
             <ClaimPanel item={item} claim={my_claim} onClaim={() => setClaimOpen(true)} />
           ) : (

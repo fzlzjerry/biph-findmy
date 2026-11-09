@@ -9,6 +9,7 @@ from matcher import get_matcher
 
 from ..config import get_settings
 from ..db import get_db
+from ..dropoffs import get_dropoffs
 
 router = APIRouter(tags=["meta"])
 
@@ -47,6 +48,9 @@ def meta() -> dict:
         "bands": m.weights.thresholds,
         "matcher": {"version": m.model_version, "embeddings": m.embedder is not None},
         "item_ttl_days": s.item_ttl_days,
+        "dropoffs": [{"id": p.id, "kind": p.kind, "label": p.label, "ttl_days": p.ttl_days}
+                     for p in get_dropoffs().points.values()],
+        "value_classes": {"high": sorted(get_dropoffs().high), "low": sorted(get_dropoffs().low)},
     }
 
 

@@ -5,6 +5,7 @@ Every permission check goes through `get_actor` / `get_actor_optional` / `requir
 
 from __future__ import annotations
 
+import logging
 import secrets
 import time
 import uuid
@@ -14,11 +15,12 @@ from functools import lru_cache
 
 import jwt
 from fastapi import Depends, HTTPException, Request, Response
+from sqlalchemy import inspect
 from sqlalchemy.orm import Session
 
 from .config import Settings, get_settings
 from .db import get_db
-from .models import Profile, utcnow
+from .models import Profile, StaffAccount, utcnow
 from .services.supabase_auth import AuthError, AuthSession, SupabaseAuth
 
 ACCESS_COOKIE = "fm_at"
@@ -26,6 +28,8 @@ REFRESH_COOKIE = "fm_rt"
 CSRF_HEADER = "x-requested-with"
 CSRF_VALUE = "findmy"
 LOCAL_NAMESPACE = uuid.UUID("6f1d1a3e-8c9b-4b7e-9a51-6a2c0e8f4b10")
+STAFF_ROLES = ("admin", "superadmin")
+log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -34,10 +38,15 @@ class Actor:
     email: str
     role: str
     display_name: str
+    desk: str | None = None
 
     @property
     def is_admin(self) -> bool:
-        return self.role == "admin"
+        return self.role in STAFF_ROLES
+
+    @property
+    def is_superadmin(self) -> bool:
+        return self.role == "superadmin"
 
 
 # --------------------------------------------------------------------------- backends
@@ -110,13 +119,51 @@ def clear_session_cookies(response: Response) -> None:
     response.delete_cookie(REFRESH_COOKIE, path="/")
 
 
-def role_for(email: str, stored_role: str | None) -> str:
-    """ADMIN_EMAILS decides who is staff, so removing an address takes effect on the next request.
-    With no list configured (local dev), the stored role from the seed data is kept."""
-    admins = get_settings().admins
-    if email in admins:
+# --------------------------------------------------------------------------- staff
+_staff_table = {"ok": False, "checked": 0.0}
+
+
+def staff_table_ready(db: Session) -> bool:
+    """False until supabase/migrations has created staff_accounts in production. Re-checked once a minute,
+    so the app keeps working (env-configured staff only) if a deploy lands before the migration."""
+    if _staff_table["ok"]:
+        return True
+    now = time.monotonic()
+    if _staff_table["checked"] and now - _staff_table["checked"] < 60:
+        return False
+    _staff_table["checked"] = now
+    _staff_table["ok"] = inspect(db.connection()).has_table(StaffAccount.__tablename__)
+    if not _staff_table["ok"]:
+        log.warning("staff_accounts table missing: apply supabase/migrations/0001_init.sql")
+    return _staff_table["ok"]
+
+
+def staff_account(db: Session, email: str) -> StaffAccount | None:
+    return db.get(StaffAccount, email) if staff_table_ready(db) else None
+
+
+def email_allowed(db: Session, email: str) -> bool:
+    """Who may sign in: the environment's rules, plus staff a super admin added in the app."""
+    return get_settings().email_allowed(email) or staff_account(db, email.strip().lower()) is not None
+
+
+def role_for(email: str, stored_role: str | None, staff: StaffAccount | None = None) -> str:
+    """The environment decides who is a super admin, the staff list in the app who else is staff, so removing
+    someone takes effect on the next request. With no list configured (local dev), the stored role is kept."""
+    s = get_settings()
+    if email in s.superadmins:
+        return "superadmin"
+    if staff is not None and staff.role in STAFF_ROLES:
+        return staff.role
+    if email in s.admins:
         return "admin"
-    return "user" if admins else (stored_role or "user")
+    return "user" if s.admins else (stored_role or "user")
+
+
+def actor_for(db: Session, profile: Profile, email: str) -> Actor:
+    staff = staff_account(db, email)
+    return Actor(profile.id, email, role_for(email, profile.role, staff), profile.display_name,
+                 staff.desk if staff else None)
 
 
 def upsert_profile(db: Session, user_id: str, email: str, display_name: str | None = None) -> Profile:
@@ -131,7 +178,7 @@ def upsert_profile(db: Session, user_id: str, email: str, display_name: str | No
         db.add(profile)
     if display_name:
         profile.display_name = display_name[:60]
-    profile.role = role_for(email, profile.role)
+    profile.role = role_for(email, profile.role, staff_account(db, email))
     profile.last_seen_at = utcnow()
     db.flush()
     return profile
@@ -161,14 +208,13 @@ def get_actor_optional(request: Request, response: Response, db: Session = Depen
         set_session_cookies(response, session)
         claims = {"sub": session.user_id, "email": session.email}
     email = (claims.get("email") or "").lower()
-    s = get_settings()
-    if not email or not s.email_allowed(email):
+    if not email or not email_allowed(db, email):
         return None
     profile = db.get(Profile, uuid.UUID(claims["sub"]))
     if profile is None:
         profile = upsert_profile(db, claims["sub"], email)
         db.commit()
-    return Actor(profile.id, email, role_for(email, profile.role), profile.display_name)
+    return actor_for(db, profile, email)
 
 
 def get_actor(actor: Actor | None = Depends(get_actor_optional)) -> Actor:
@@ -180,6 +226,12 @@ def get_actor(actor: Actor | None = Depends(get_actor_optional)) -> Actor:
 def require_admin(actor: Actor = Depends(get_actor)) -> Actor:
     if not actor.is_admin:
         raise HTTPException(403, "admin_only")
+    return actor
+
+
+def require_superadmin(actor: Actor = Depends(get_actor)) -> Actor:
+    if not actor.is_superadmin:
+        raise HTTPException(403, "superadmin_only")
     return actor
 
 

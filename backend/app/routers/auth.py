@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from ..auth import (ACCESS_COOKIE, Actor, LocalAuth, clear_session_cookies, get_actor, get_actor_optional,
-                    get_auth_backend, set_session_cookies, upsert_profile)
+from ..auth import (ACCESS_COOKIE, Actor, LocalAuth, actor_for, clear_session_cookies, email_allowed, get_actor,
+                    get_actor_optional, get_auth_backend, set_session_cookies, upsert_profile)
 from ..config import get_settings
 from ..db import get_db
 from ..models import Profile
@@ -30,14 +30,15 @@ class ProfileUpdate(BaseModel):
 
 
 def user_view(actor: Actor) -> dict:
-    return {"id": str(actor.id), "email": actor.email, "display_name": actor.display_name, "role": actor.role}
+    return {"id": str(actor.id), "email": actor.email, "display_name": actor.display_name, "role": actor.role,
+            "desk": actor.desk}
 
 
 @router.post("/auth/request-code")
-def request_code(body: CodeRequest) -> dict:
+def request_code(body: CodeRequest, db: Session = Depends(get_db)) -> dict:
     email = body.email.strip().lower()
     s = get_settings()
-    if not s.email_allowed(email):
+    if not email_allowed(db, email):
         raise HTTPException(403, "email_domain_not_allowed")
     backend = get_auth_backend()
     try:
@@ -53,7 +54,7 @@ def request_code(body: CodeRequest) -> dict:
 @router.post("/auth/verify")
 def verify(body: VerifyRequest, response: Response, db: Session = Depends(get_db)) -> dict:
     email = body.email.strip().lower()
-    if not get_settings().email_allowed(email):
+    if not email_allowed(db, email):
         raise HTTPException(403, "email_domain_not_allowed")
     try:
         session = get_auth_backend().verify(email, body.code.strip())
@@ -62,8 +63,7 @@ def verify(body: VerifyRequest, response: Response, db: Session = Depends(get_db
     profile = upsert_profile(db, session.user_id, session.email or email, body.display_name)
     db.commit()
     set_session_cookies(response, session)
-    return {"user": {"id": str(profile.id), "email": profile.email, "display_name": profile.display_name,
-                     "role": profile.role}}
+    return {"user": user_view(actor_for(db, profile, profile.email))}
 
 
 @router.post("/auth/logout")

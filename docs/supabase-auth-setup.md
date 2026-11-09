@@ -49,6 +49,7 @@ uv run python scripts/configure_supabase_auth.py  # 可重复执行
 | 变量 | 值 |
 |---|---|
 | `ALLOWED_EMAIL_DOMAINS` | `basischina.com` ✅ |
-| `ADMIN_EMAILS` | 前台老师和社团干部的邮箱，多个用英文逗号分隔。他们登录后能看到管理后台和前台快速登记。✅ 已设 1 个，要加人就在 Vercel 里改这个变量，然后重新部署 |
+| `ADMIN_EMAILS` | 前台老师和社团干部的邮箱，多个用英文逗号分隔。他们登录后能看到管理后台和前台快速登记。✅ 已设 1 个，这里的人是**超级管理员**，别的前台老师直接在网站「管理 → 管理员」里添加，不用改变量也不用重新部署 |
+| `SUPERADMIN_EMAILS` | 可选。只想让一部分人管理名单时才设；不设就是 `ADMIN_EMAILS` 里的人都是超级管理员 |
 
 后端会在每个请求上都检查邮箱域名，Supabase 的 hook 是第二道防线：就算有人绕过网站，直接调用 Supabase，也注册不了非学校邮箱，更消耗不了你的发信额度。

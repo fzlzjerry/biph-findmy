@@ -44,6 +44,24 @@ do $$ begin
   end if;
 end $$;
 
+CREATE TABLE IF NOT EXISTS staff_accounts (
+	email VARCHAR(320) NOT NULL, 
+	role VARCHAR(16) NOT NULL, 
+	desk VARCHAR(20), 
+	added_by UUID, 
+	created_at TIMESTAMP WITH TIME ZONE NOT NULL, 
+	updated_at TIMESTAMP WITH TIME ZONE NOT NULL, 
+	PRIMARY KEY (email)
+);
+ALTER TABLE staff_accounts ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE staff_accounts FROM anon, authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE staff_accounts TO app_backend;
+do $$ begin
+  if not exists (select from pg_policies where schemaname = 'public' and tablename = 'staff_accounts' and policyname = 'app_backend_all') then
+    create policy app_backend_all on staff_accounts for all to app_backend using (true) with check (true);
+  end if;
+end $$;
+
 CREATE TABLE IF NOT EXISTS items (
 	id UUID NOT NULL, 
 	kind VARCHAR(8) NOT NULL, 

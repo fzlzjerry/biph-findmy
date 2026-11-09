@@ -18,6 +18,7 @@ import { useErrorText } from "@/lib/errors";
 import { useLabels } from "@/lib/meta";
 import type { Item, ItemStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { DropoffSelect } from "./DropoffSelect";
 
 const STATUSES: ItemStatus[] = ["open", "matched", "claimed", "returned", "closed", "expired"];
 
@@ -61,6 +62,12 @@ function ItemRow({ item, onReturn }: { item: Item; onReturn: (item: Item) => voi
             </Link>
             <p className="mt-0.5 flex flex-wrap gap-x-1.5 text-sm text-muted-foreground">
               <span>{labels.category(item.category)}</span>
+              {item.kind === "found" && labels.dropoffLabel(item.holding) && (
+                <>
+                  <span aria-hidden>·</span>
+                  <span>{labels.dropoffLabel(item.holding)}</span>
+                </>
+              )}
               <span aria-hidden>·</span>
               <RelativeTime iso={item.created_at} />
               {item.reporter && (
@@ -119,7 +126,7 @@ export default function ItemsTab() {
   const queryClient = useQueryClient();
   const toast = useToast();
   const errorText = useErrorText();
-  const [filters, setFilters] = useState<AdminItemQuery>({ kind: "all", status: "all", hidden: "", q: "" });
+  const [filters, setFilters] = useState<AdminItemQuery>({ kind: "all", status: "all", hidden: "", q: "", dropoff: "" });
   const [search, setSearch] = useState("");
   const [returning, setReturning] = useState<Item | null>(null);
 
@@ -151,7 +158,7 @@ export default function ItemsTab() {
     <div>
       <Card size="sm">
         <CardContent>
-          <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[repeat(3,minmax(0,10rem))_minmax(0,1fr)]">
+          <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[repeat(4,minmax(0,10rem))_minmax(0,1fr)]">
             <div className="grid gap-2">
               <Label htmlFor="admin-kind">{t("admin.filterKind")}</Label>
               <NativeSelect
@@ -194,6 +201,13 @@ export default function ItemsTab() {
                 <NativeSelectOption value="true">{t("admin.hidden")}</NativeSelectOption>
               </NativeSelect>
             </div>
+            <DropoffSelect
+              id="admin-dropoff"
+              label={t("admin.filterDropoff")}
+              value={filters.dropoff ?? ""}
+              onChange={(dropoff) => setFilters((f) => ({ ...f, dropoff }))}
+              allLabel={t("admin.allDropoffs")}
+            />
             <div className="grid gap-2 sm:col-span-2 lg:col-span-1">
               <Label htmlFor="admin-search">{t("admin.searchLabel")}</Label>
               <div className="flex gap-2">

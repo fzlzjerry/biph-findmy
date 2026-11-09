@@ -1,6 +1,7 @@
 import type {
   Analysis,
   Claim,
+  CloseReason,
   ClaimStatus,
   Item,
   ItemDetail,
@@ -9,6 +10,7 @@ import type {
   ItemStatus,
   Match,
   Meta,
+  StaffMember,
   Stats,
   User,
   Verdict,
@@ -110,6 +112,7 @@ export interface AdminItemQuery {
   status?: string;
   hidden?: "true" | "false" | "";
   q?: string;
+  dropoff?: string;
 }
 
 export const api = {
@@ -137,8 +140,11 @@ export const api = {
     request<ItemPage>(`/api/items${query({ ...params })}`, { signal }),
   getItem: (id: string, signal?: AbortSignal) => request<ItemDetail>(`/api/items/${id}`, { signal }),
   createItem: (form: FormData) => request<{ item: Item; matches: Match[] }>("/api/items", { form }),
-  updateItem: (id: string, patch: { status?: "open" | "closed" } & Record<string, unknown>) =>
+  updateItem: (id: string, patch: { status?: "open" | "closed"; close_reason?: CloseReason } & Record<string, unknown>) =>
     request<{ item: Item; matches: Match[] }>(`/api/items/${id}`, { method: "PATCH", json: patch }),
+  /** Open-shelf items: "I took it" (optionally closing one of my lost reports too). */
+  collected: (itemId: string, lostItemId?: string | null) =>
+    request<{ item: Item }>(`/api/items/${itemId}/collected`, { json: { lost_item_id: lostItemId || null } }),
   feedback: (matchId: string, verdict: Verdict | null) =>
     request<{ ok: boolean; feedback: Verdict | null }>(`/api/matches/${matchId}/feedback`, { json: { verdict } }),
   createClaim: (itemId: string, proof: string, lostItemId?: string | null) =>
@@ -151,13 +157,24 @@ export const api = {
 
   // front desk
   admin: {
-    claims: (status: ClaimStatus | "all" | string) => request<{ claims: Claim[] }>(`/api/admin/claims${query({ status })}`),
+    claims: (status: ClaimStatus | "all" | string, desk = "") =>
+      request<{ claims: Claim[] }>(`/api/admin/claims${query({ status, desk })}`),
     decide: (claimId: string, decision: "approve" | "reject", note: string) =>
       request<{ claim: Claim }>(`/api/admin/claims/${claimId}/decide`, { json: { decision, note } }),
     returned: (itemId: string) => request<{ item: Item }>(`/api/admin/items/${itemId}/returned`, { method: "POST" }),
     items: (params: AdminItemQuery) => request<{ items: Item[] }>(`/api/admin/items${query({ ...params })}`),
-    patchItem: (itemId: string, patch: { status?: ItemStatus; is_hidden?: boolean }) =>
+    patchItem: (itemId: string, patch: { status?: ItemStatus; is_hidden?: boolean; holding?: string }) =>
       request<{ item: Item }>(`/api/admin/items/${itemId}`, { method: "PATCH", json: patch }),
+    inventory: (dropoff: string) => request<{ items: Item[] }>(`/api/admin/inventory${query({ dropoff })}`),
+    check: (itemId: string, action: "present" | "gone" | "move", to?: string) =>
+      request<{ item: Item }>(`/api/admin/items/${itemId}/check`, { json: { action, to } }),
+    staff: () => request<{ staff: StaffMember[]; ready: boolean }>("/api/admin/staff"),
+    addStaff: (body: { email: string; role: StaffMember["role"]; desk: string | null }) =>
+      request<{ staff: StaffMember }>("/api/admin/staff", { json: body }),
+    updateStaff: (email: string, patch: { role?: StaffMember["role"]; desk?: string | null }) =>
+      request<{ staff: StaffMember }>(`/api/admin/staff/${encodeURIComponent(email)}`, { method: "PATCH", json: patch }),
+    removeStaff: (email: string) =>
+      request<{ ok: boolean }>(`/api/admin/staff/${encodeURIComponent(email)}`, { method: "DELETE" }),
     stats: () => request<Stats>("/api/admin/stats"),
     rematch: () => request<{ ok: boolean; items: number; matcher: string }>("/api/admin/rematch", { method: "POST" }),
     purgeDemo: () => request<{ ok: boolean; deleted: number }>("/api/admin/purge-demo", { method: "POST" }),
