@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { createContext, useContext, useMemo, type ReactNode } from "react";
 import { useLang } from "../i18n";
 import { api } from "./api";
-import type { Bilingual, Lang, Meta, MetaCategoryGroup, MetaZone } from "./types";
+import type { Bilingual, Lang, Meta, MetaCategoryGroup, MetaDropoff, MetaZone } from "./types";
 
 export function useMetaQuery() {
   return useQuery({ queryKey: ["meta"], queryFn: api.meta, staleTime: Infinity, gcTime: Infinity, retry: 2 });
@@ -21,6 +21,24 @@ export interface Labels {
   zone(id: string): string;
   zoneOfPlace(id: string): MetaZone | undefined;
   brand(id: string | null | undefined): string;
+  /** A desk / shelf from dropoffs.yaml, or undefined for "with the finder", "somewhere else" and unknown ids. */
+  dropoff(id: string | null | undefined): MetaDropoff | undefined;
+  isShelf(id: string | null | undefined): boolean;
+  /** "Where it is now" in words: the drop-off point's name, or null for the two non-point answers. */
+  dropoffLabel(id: string | null | undefined): string | null;
+}
+
+/** Old reports said only "front desk" (dropoffs.yaml `legacy`). */
+const LEGACY_DROPOFF: Record<string, string> = { front_desk: "desk_5f" };
+
+export type DropoffAdvice = "desk" | "shelf" | null;
+
+/** The desk's rule of thumb: valuables, or anything with a name or mark on it, go to a front desk; a plain cup
+    or pen goes on the canteen's open shelf. Null when the category doesn't say either way. */
+export function dropoffAdvice(meta: Meta, category: string, hasMarks: boolean): DropoffAdvice {
+  if (meta.value_classes.high.includes(category)) return "desk";
+  if (meta.value_classes.low.includes(category)) return hasMarks ? "desk" : "shelf";
+  return null;
 }
 
 function buildLabels(meta: Meta, lang: Lang): Labels {
@@ -35,6 +53,8 @@ function buildLabels(meta: Meta, lang: Lang): Labels {
   for (const zone of meta.zones) for (const place of zone.places) places.set(place.id, { label: place.label, zone });
   const zones = new Map(meta.zones.map((z) => [z.id, z]));
   const brands = new Map(meta.brands.map((b) => [b.id, b.label]));
+  const dropoffs = new Map(meta.dropoffs.map((d) => [d.id, d]));
+  const dropoff = (id: string | null | undefined) => (id ? dropoffs.get(LEGACY_DROPOFF[id] ?? id) : undefined);
 
   return {
     meta,
@@ -55,6 +75,12 @@ function buildLabels(meta: Meta, lang: Lang): Labels {
     zone: (id) => text(zones.get(id)?.label) || id,
     zoneOfPlace: (id) => places.get(id)?.zone,
     brand: (id) => (id ? (brands.get(id) ?? id) : ""),
+    dropoff,
+    isShelf: (id) => dropoff(id)?.kind === "shelf",
+    dropoffLabel: (id) => {
+      const point = dropoff(id);
+      return point ? text(point.label) : null;
+    },
   };
 }
 

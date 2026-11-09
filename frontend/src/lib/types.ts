@@ -5,7 +5,10 @@ export type Bilingual = { en: string; zh: string };
 
 export type ItemKind = "lost" | "found";
 export type ItemStatus = "open" | "matched" | "claimed" | "returned" | "closed" | "expired";
-export type Holding = "front_desk" | "with_finder" | "other";
+/** A drop-off point id from GET /api/meta (`dropoffs`), or one of these two. */
+export type Holding = string;
+export type CloseReason = "found_myself" | "from_desk" | "gave_up";
+export type Role = "user" | "admin" | "superadmin";
 export type Band = "strong" | "possible" | "weak";
 export type Verdict = "confirmed" | "rejected";
 export type ClaimStatus = "pending" | "approved" | "rejected" | "cancelled" | "completed";
@@ -43,7 +46,13 @@ export interface Item {
   returned_at: string | null;
   language: string | null;
   is_mine: boolean;
+  // found items only
+  /** Low-value and nothing tells it apart from look-alikes (no marks, no private detail). */
+  generic?: boolean;
+  /** When a front desk last confirmed it is still there (daily check). */
+  checked_at?: string | null;
   // owner / admin only
+  close_reason?: CloseReason | null;
   private_detail?: string;
   is_hidden?: boolean;
   match_count?: number;
@@ -90,7 +99,19 @@ export interface User {
   id: string;
   email: string;
   display_name: string;
-  role: "user" | "admin";
+  role: Role;
+  /** Drop-off point a staff member works at. */
+  desk: string | null;
+}
+
+export interface StaffMember {
+  email: string;
+  role: "admin" | "superadmin";
+  desk: string | null;
+  /** env: set on the server (can't be changed here); app: added on the Staff tab. */
+  managed: "env" | "app";
+  display_name: string | null;
+  last_seen_at: string | null;
 }
 
 export interface ItemDetail {
@@ -137,6 +158,13 @@ export interface MetaZone {
   places: MetaPlace[];
 }
 
+export interface MetaDropoff {
+  id: string;
+  kind: "desk" | "shelf";
+  label: Bilingual;
+  ttl_days: number | null;
+}
+
 export interface Meta {
   categories: MetaCategoryGroup[];
   colors: MetaColor[];
@@ -146,6 +174,8 @@ export interface Meta {
   bands: { strong: number; possible: number };
   matcher: { version: string; embeddings: boolean };
   item_ttl_days: number;
+  dropoffs: MetaDropoff[];
+  value_classes: { high: string[]; low: string[] };
 }
 
 export interface Analysis {
@@ -178,5 +208,7 @@ export interface Stats {
   by_language: Record<string, number>;
   weekly: { week: string; lost: number; found: number; returned: number }[];
   feedback: { confirmed: number; rejected: number; strong_precision: number | null };
+  by_dropoff: Record<string, number>;
+  close_reasons: Partial<Record<CloseReason | "unknown", number>>;
   matcher: string;
 }

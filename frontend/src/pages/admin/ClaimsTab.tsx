@@ -17,10 +17,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Textarea } from "@/components/ui/textarea";
 import { useLang } from "@/i18n";
 import { api } from "@/lib/api";
+import { useUser } from "@/lib/auth";
 import { useErrorText } from "@/lib/errors";
 import { useLabels } from "@/lib/meta";
 import { formatDateTime, formatRelative, formatWindow, useNow } from "@/lib/time";
 import type { Claim, Item } from "@/lib/types";
+import { DropoffSelect } from "./DropoffSelect";
 
 function useInvalidateAdmin() {
   const queryClient = useQueryClient();
@@ -48,6 +50,9 @@ function ItemSummary({ item, showPrivate }: { item: Item; showPrivate?: boolean 
           {labels.category(item.category)}
           {item.locations.length > 0 && <> · {item.locations.map((p) => labels.place(p)).join(", ")}</>}
         </p>
+        {item.kind === "found" && labels.dropoffLabel(item.holding) && (
+          <p className="font-medium">{t("admin.atDropoff", { place: labels.dropoffLabel(item.holding) })}</p>
+        )}
         <p className="text-muted-foreground">
           {item.kind === "lost" ? formatWindow(item.time_from, item.time_to, lang) : formatDateTime(item.time_from, lang)}
         </p>
@@ -221,8 +226,11 @@ export default function ClaimsTab() {
   const toast = useToast();
   const errorText = useErrorText();
   const invalidate = useInvalidateAdmin();
-  const pending = useQuery({ queryKey: ["admin", "claims", "pending"], queryFn: () => api.admin.claims("pending") });
-  const approved = useQuery({ queryKey: ["admin", "claims", "approved"], queryFn: () => api.admin.claims("approved") });
+  const { user } = useUser();
+  // Claims go to the desk that holds the item: staff with a desk start with their own.
+  const [desk, setDesk] = useState(user?.desk ?? "");
+  const pending = useQuery({ queryKey: ["admin", "claims", "pending", desk], queryFn: () => api.admin.claims("pending", desk) });
+  const approved = useQuery({ queryKey: ["admin", "claims", "approved", desk], queryFn: () => api.admin.claims("approved", desk) });
   const [returning, setReturning] = useState<Claim | null>(null);
   const markReturned = useMutation({
     mutationFn: (claim: Claim) => api.admin.returned(claim.found?.id ?? ""),
@@ -235,6 +243,14 @@ export default function ClaimsTab() {
 
   return (
     <div className="space-y-10">
+      <DropoffSelect
+        id="claims-desk"
+        label={t("admin.filterDropoff")}
+        value={desk}
+        onChange={setDesk}
+        allLabel={t("admin.allDropoffs")}
+        className="w-full sm:w-72"
+      />
       <section aria-labelledby="pending-title">
         <SectionHeader
           id="pending-title"

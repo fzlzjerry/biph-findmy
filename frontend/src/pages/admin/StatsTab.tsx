@@ -103,6 +103,12 @@ export default function StatsTab() {
   }));
   const seriesLabels = { lost: t("admin.series_lost"), found: t("admin.series_found"), returned: t("admin.series_returned") };
   const fb = s.feedback;
+  const dropoffData = Object.entries(s.by_dropoff ?? {})
+    .sort((a, b) => b[1] - a[1])
+    .map(([id, value]) => ({ key: id, label: labels.dropoffLabel(id) ?? (id === "with_finder" ? t("holding.with_finder") : t("holding.other")), value }));
+  const closeData = (["found_myself", "from_desk", "gave_up", "unknown"] as const)
+    .filter((k) => s.close_reasons?.[k])
+    .map((k) => ({ key: k, label: k === "unknown" ? t("admin.closeReasonUnknown") : t(`item.closeReasons.${k}`), value: s.close_reasons[k] ?? 0 }));
 
   return (
     <div className="space-y-6">
@@ -157,6 +163,23 @@ export default function StatsTab() {
       >
         <WeeklyChart data={weekData} seriesLabels={seriesLabels} />
       </ChartFigure>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <ChartFigure
+          title={t("admin.byDropoff")}
+          lead={t("admin.byDropoffLead")}
+          table={<DataTable columns={[t("admin.filterDropoff"), t("admin.tableCount")]} rows={dropoffData.map((d) => [d.label, d.value])} />}
+        >
+          <HBarChart data={dropoffData} label={t("admin.byDropoff")} />
+        </ChartFigure>
+        <ChartFigure
+          title={t("admin.closeReasonsTitle")}
+          lead={t("admin.closeReasonsLead")}
+          table={<DataTable columns={[t("admin.closeReasonsTitle"), t("admin.tableCount")]} rows={closeData.map((d) => [d.label, d.value])} />}
+        >
+          <HBarChart data={closeData} label={t("admin.closeReasonsTitle")} />
+        </ChartFigure>
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <ChartFigure

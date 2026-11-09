@@ -46,9 +46,23 @@ class Profile(Base):
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True)
     email: Mapped[str] = mapped_column(String(320), unique=True, index=True)
     display_name: Mapped[str] = mapped_column(String(60), default="")
-    role: Mapped[str] = mapped_column(String(16), default="user")  # user | admin
+    role: Mapped[str] = mapped_column(String(16), default="user")  # user | admin | superadmin
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
     last_seen_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
+
+
+class StaffAccount(Base):
+    """Front desk staff added in the app by a super admin (super admins themselves come from the environment).
+    Keyed by email so an account can be set up before that person has ever signed in."""
+
+    __tablename__ = "staff_accounts"
+
+    email: Mapped[str] = mapped_column(String(320), primary_key=True)
+    role: Mapped[str] = mapped_column(String(16), default="admin")  # admin | superadmin
+    desk: Mapped[str | None] = mapped_column(String(20))  # drop-off point id this person works at
+    added_by: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow, onupdate=utcnow)
 
 
 class Item(Base):
@@ -68,7 +82,7 @@ class Item(Base):
     location_note: Mapped[str] = mapped_column(String(200), default="")
     time_from: Mapped[datetime] = mapped_column(UTCDateTime)
     time_to: Mapped[datetime | None] = mapped_column(UTCDateTime)
-    holding: Mapped[str | None] = mapped_column(String(20))  # front_desk | with_finder | other
+    holding: Mapped[str | None] = mapped_column(String(20))  # drop-off point id (dropoffs.yaml) | with_finder | other
     holding_note: Mapped[str] = mapped_column(String(200), default="")
     photos: Mapped[list] = mapped_column(JSONType, default=list)
     attrs: Mapped[dict] = mapped_column(JSONType, default=dict)

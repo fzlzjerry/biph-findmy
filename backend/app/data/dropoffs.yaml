@@ -1,0 +1,27 @@
+# Where a finder leaves a found item, from the front desk's feedback (2026-10).
+# Front desk staff: rename, add or remove points here. Ids are stored on items, so keep old ids
+# (or map them under `legacy`) once real reports use them.
+#
+# kind: desk  → staffed front desk. The owner sends a claim, the desk checks it and hands the item back.
+# kind: shelf → open shelf / cabinet with nobody on duty. No claim: the owner looks for it and marks it taken.
+#               ttl_days: shelf items leave the list after this many days (the shelf is cleared regularly).
+version: 1
+
+points:
+  - {id: desk_5f, kind: desk, label: {en: 5th-floor front desk, zh: 5 楼前台}}
+  - {id: desk_library, kind: desk, label: {en: Library front desk, zh: 图书馆前台}}
+  - {id: desk_lower_gym, kind: desk, label: {en: Lower Gym front desk, zh: 下体育馆前台}}
+  - {id: desk_dorm, kind: desk, label: {en: Dorm front desk, zh: 宿舍前台}}
+  - {id: canteen_shelf, kind: shelf, ttl_days: 14, label: {en: Canteen 1F open shelf, zh: 食堂一楼开放柜}}
+
+# Older reports said only "front desk".
+legacy:
+  front_desk: desk_5f
+
+# Which categories go where (taxonomy ids from matcher/data/taxonomy.yaml).
+# high: always to a front desk. low: to the open shelf, unless the finder saw a name or another mark on it.
+# Anything not listed: a front desk is suggested, the finder decides.
+value:
+  high: [phone, earbuds, headphones, laptop, tablet, stylus, charger, calculator, watch, other_electronics,
+         id_card, bank_card, wallet, keys, glasses, jewelry, instrument]
+  low: [water_bottle, lunch_box, utensils, pencil_case, notebook, textbook, pen, art_supplies]

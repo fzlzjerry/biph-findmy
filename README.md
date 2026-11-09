@@ -106,7 +106,7 @@ console instead of being emailed. Demo accounts: `student.demo@findmy.local`, `f
 and `desk.demo@findmy.local` (front desk / admin).
 
 ```bash
-make test         # 60 Python tests: extraction, scoring, golden cases, API, permissions, images
+make test         # 79 Python tests: extraction, scoring, golden cases, API, permissions, images
 make e2e          # Playwright: browse, report → match, claim → approve → returned, zh/en, screenshots
 ```
 
@@ -117,6 +117,9 @@ Production is a Vercel project connected to this repo: every push to `main` depl
 Settings are listed in [`.env.example`](.env.example). Production uses `APP_ENV=production`,
 `AUTH_BACKEND=supabase`, `STORAGE_BACKEND=blob`, `DATABASE_URL` (the pooler with `app_backend`),
 `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `CRON_SECRET`, `ALLOWED_EMAIL_DOMAINS` and `ADMIN_EMAILS`.
+People in `ADMIN_EMAILS` are super admins (or only those in `SUPERADMIN_EMAILS`, if set): they add
+the other front desk staff in the app under Admin → Staff. Drop-off desks and the open shelf are listed in
+[`backend/app/data/dropoffs.yaml`](backend/app/data/dropoffs.yaml).
 
 Schema changes: edit `backend/app/models.py`, then run `make schema` and apply the new migration in Supabase.
 

@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 from .auth import Actor
+from .dropoffs import get_dropoffs, is_generic
 from .models import Claim, Item, Match
 
 
@@ -31,8 +32,16 @@ def item_view(item: Item, viewer: Actor | None = None, match_count: int | None =
         "language": (item.attrs or {}).get("language"),
         "is_mine": is_owner,
     }
-    if item.kind == "found" and item.holding == "front_desk":
-        out["holding_note"] = item.holding_note  # where to pick it up is public information
+    if item.kind == "found":
+        attrs = item.attrs or {}
+        out["holding"] = get_dropoffs().canon(item.holding)
+        out["generic"] = is_generic(item)
+        # When the desk last saw it on the shelf / in the cupboard (daily check), so students know how fresh it is.
+        out["checked_at"] = attrs.get("checked_at")
+        if get_dropoffs().is_point(out["holding"]):
+            out["holding_note"] = item.holding_note  # where to pick it up is public information
+    elif is_owner or is_admin:
+        out["close_reason"] = (item.attrs or {}).get("close_reason")
     if is_owner or is_admin:
         out["private_detail"] = item.private_detail
         out["is_hidden"] = item.is_hidden
